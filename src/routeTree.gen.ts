@@ -17,6 +17,7 @@ import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndicadoresRouteImport } from './routes/indicadores'
 import { Route as DocumentosRouteImport } from './routes/documentos'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -60,6 +61,11 @@ const DocumentosRoute = DocumentosRouteImport.update({
   path: '/documentos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuditoriasRoute = AuditoriasRouteImport.update({
   id: '/auditorias',
   path: '/auditorias',
@@ -74,6 +80,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auditorias'
+    | '/configuracoes'
     | '/documentos'
     | '/indicadores'
     | '/login'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auditorias'
+    | '/configuracoes'
     | '/documentos'
     | '/indicadores'
     | '/login'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auditorias'
+    | '/configuracoes'
     | '/documentos'
     | '/indicadores'
     | '/login'
@@ -150,6 +162,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditoriasRoute: typeof AuditoriasRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   DocumentosRoute: typeof DocumentosRoute
   IndicadoresRoute: typeof IndicadoresRoute
   LoginRoute: typeof LoginRoute
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocumentosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auditorias': {
       id: '/auditorias'
       path: '/auditorias'
@@ -238,6 +258,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditoriasRoute: AuditoriasRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   DocumentosRoute: DocumentosRoute,
   IndicadoresRoute: IndicadoresRoute,
   LoginRoute: LoginRoute,
