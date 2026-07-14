@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TreinamentosRouteImport } from './routes/treinamentos'
 import { Route as RiscosRouteImport } from './routes/riscos'
 import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
 import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades'
@@ -18,6 +19,11 @@ import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TreinamentosRoute = TreinamentosRouteImport.update({
+  id: '/treinamentos',
+  path: '/treinamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RiscosRoute = RiscosRouteImport.update({
   id: '/riscos',
   path: '/riscos',
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
+  '/treinamentos': typeof TreinamentosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
+  '/treinamentos': typeof TreinamentosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
+  '/treinamentos': typeof TreinamentosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/nao-conformidades'
     | '/planos-de-acao'
     | '/riscos'
+    | '/treinamentos'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/nao-conformidades'
     | '/planos-de-acao'
     | '/riscos'
+    | '/treinamentos'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/nao-conformidades'
     | '/planos-de-acao'
     | '/riscos'
+    | '/treinamentos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,10 +144,18 @@ export interface RootRouteChildren {
   NaoConformidadesRoute: typeof NaoConformidadesRoute
   PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
   RiscosRoute: typeof RiscosRoute
+  TreinamentosRoute: typeof TreinamentosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/treinamentos': {
+      id: '/treinamentos'
+      path: '/treinamentos'
+      fullPath: '/treinamentos'
+      preLoaderRoute: typeof TreinamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/riscos': {
       id: '/riscos'
       path: '/riscos'
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   NaoConformidadesRoute: NaoConformidadesRoute,
   PlanosDeAcaoRoute: PlanosDeAcaoRoute,
   RiscosRoute: RiscosRoute,
+  TreinamentosRoute: TreinamentosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
