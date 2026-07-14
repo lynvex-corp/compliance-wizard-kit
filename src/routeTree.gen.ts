@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
 import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 
+const PlanosDeAcaoRoute = PlanosDeAcaoRouteImport.update({
+  id: '/planos-de-acao',
+  path: '/planos-de-acao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NaoConformidadesRoute = NaoConformidadesRouteImport.update({
   id: '/nao-conformidades',
   path: '/nao-conformidades',
@@ -33,34 +39,45 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
+  '/planos-de-acao': typeof PlanosDeAcaoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
+  '/planos-de-acao': typeof PlanosDeAcaoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
+  '/planos-de-acao': typeof PlanosDeAcaoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/nao-conformidades'
+  fullPaths: '/' | '/login' | '/nao-conformidades' | '/planos-de-acao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/nao-conformidades'
-  id: '__root__' | '/' | '/login' | '/nao-conformidades'
+  to: '/' | '/login' | '/nao-conformidades' | '/planos-de-acao'
+  id: '__root__' | '/' | '/login' | '/nao-conformidades' | '/planos-de-acao'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   NaoConformidadesRoute: typeof NaoConformidadesRoute
+  PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/planos-de-acao': {
+      id: '/planos-de-acao'
+      path: '/planos-de-acao'
+      fullPath: '/planos-de-acao'
+      preLoaderRoute: typeof PlanosDeAcaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/nao-conformidades': {
       id: '/nao-conformidades'
       path: '/nao-conformidades'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   NaoConformidadesRoute: NaoConformidadesRoute,
+  PlanosDeAcaoRoute: PlanosDeAcaoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
