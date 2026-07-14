@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
 import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,6 +31,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocumentosRoute = DocumentosRouteImport.update({
+  id: '/documentos',
+  path: '/documentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuditoriasRoute = AuditoriasRouteImport.update({
   id: '/auditorias',
   path: '/auditorias',
@@ -44,6 +50,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
+  '/documentos': typeof DocumentosRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
+  '/documentos': typeof DocumentosRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
+  '/documentos': typeof DocumentosRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
@@ -68,15 +77,23 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auditorias'
+    | '/documentos'
     | '/login'
     | '/nao-conformidades'
     | '/planos-de-acao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auditorias' | '/login' | '/nao-conformidades' | '/planos-de-acao'
+  to:
+    | '/'
+    | '/auditorias'
+    | '/documentos'
+    | '/login'
+    | '/nao-conformidades'
+    | '/planos-de-acao'
   id:
     | '__root__'
     | '/'
     | '/auditorias'
+    | '/documentos'
     | '/login'
     | '/nao-conformidades'
     | '/planos-de-acao'
@@ -85,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditoriasRoute: typeof AuditoriasRoute
+  DocumentosRoute: typeof DocumentosRoute
   LoginRoute: typeof LoginRoute
   NaoConformidadesRoute: typeof NaoConformidadesRoute
   PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
@@ -113,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/documentos': {
+      id: '/documentos'
+      path: '/documentos'
+      fullPath: '/documentos'
+      preLoaderRoute: typeof DocumentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auditorias': {
       id: '/auditorias'
       path: '/auditorias'
@@ -133,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditoriasRoute: AuditoriasRoute,
+  DocumentosRoute: DocumentosRoute,
   LoginRoute: LoginRoute,
   NaoConformidadesRoute: NaoConformidadesRoute,
   PlanosDeAcaoRoute: PlanosDeAcaoRoute,
