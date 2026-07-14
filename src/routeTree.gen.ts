@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
 import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as IndicadoresRouteImport } from './routes/indicadores'
 import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ const NaoConformidadesRoute = NaoConformidadesRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndicadoresRoute = IndicadoresRouteImport.update({
+  id: '/indicadores',
+  path: '/indicadores',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentosRoute = DocumentosRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
   '/documentos': typeof DocumentosRoute
+  '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
   '/documentos': typeof DocumentosRoute
+  '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auditorias': typeof AuditoriasRoute
   '/documentos': typeof DocumentosRoute
+  '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auditorias'
     | '/documentos'
+    | '/indicadores'
     | '/login'
     | '/nao-conformidades'
     | '/planos-de-acao'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auditorias'
     | '/documentos'
+    | '/indicadores'
     | '/login'
     | '/nao-conformidades'
     | '/planos-de-acao'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auditorias'
     | '/documentos'
+    | '/indicadores'
     | '/login'
     | '/nao-conformidades'
     | '/planos-de-acao'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditoriasRoute: typeof AuditoriasRoute
   DocumentosRoute: typeof DocumentosRoute
+  IndicadoresRoute: typeof IndicadoresRoute
   LoginRoute: typeof LoginRoute
   NaoConformidadesRoute: typeof NaoConformidadesRoute
   PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/indicadores': {
+      id: '/indicadores'
+      path: '/indicadores'
+      fullPath: '/indicadores'
+      preLoaderRoute: typeof IndicadoresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documentos': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditoriasRoute: AuditoriasRoute,
   DocumentosRoute: DocumentosRoute,
+  IndicadoresRoute: IndicadoresRoute,
   LoginRoute: LoginRoute,
   NaoConformidadesRoute: NaoConformidadesRoute,
   PlanosDeAcaoRoute: PlanosDeAcaoRoute,
