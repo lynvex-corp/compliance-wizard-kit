@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RiscosRouteImport } from './routes/riscos'
 import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
 import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades'
 import { Route as LoginRouteImport } from './routes/login'
@@ -17,6 +18,11 @@ import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RiscosRoute = RiscosRouteImport.update({
+  id: '/riscos',
+  path: '/riscos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlanosDeAcaoRoute = PlanosDeAcaoRouteImport.update({
   id: '/planos-de-acao',
   path: '/planos-de-acao',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
+  '/riscos': typeof RiscosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
+  '/riscos': typeof RiscosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRoute
   '/planos-de-acao': typeof PlanosDeAcaoRoute
+  '/riscos': typeof RiscosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nao-conformidades'
     | '/planos-de-acao'
+    | '/riscos'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nao-conformidades'
     | '/planos-de-acao'
+    | '/riscos'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nao-conformidades'
     | '/planos-de-acao'
+    | '/riscos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,10 +131,18 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   NaoConformidadesRoute: typeof NaoConformidadesRoute
   PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
+  RiscosRoute: typeof RiscosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/riscos': {
+      id: '/riscos'
+      path: '/riscos'
+      fullPath: '/riscos'
+      preLoaderRoute: typeof RiscosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/planos-de-acao': {
       id: '/planos-de-acao'
       path: '/planos-de-acao'
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   NaoConformidadesRoute: NaoConformidadesRoute,
   PlanosDeAcaoRoute: PlanosDeAcaoRoute,
+  RiscosRoute: RiscosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
