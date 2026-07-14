@@ -9,8 +9,68 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UsuariosRouteImport } from './routes/usuarios'
+import { Route as TreinamentosRouteImport } from './routes/treinamentos'
+import { Route as RiscosRouteImport } from './routes/riscos'
+import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
+import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as IndicadoresRouteImport } from './routes/indicadores'
+import { Route as DocumentosRouteImport } from './routes/documentos'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
 
+const UsuariosRoute = UsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TreinamentosRoute = TreinamentosRouteImport.update({
+  id: '/treinamentos',
+  path: '/treinamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiscosRoute = RiscosRouteImport.update({
+  id: '/riscos',
+  path: '/riscos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanosDeAcaoRoute = PlanosDeAcaoRouteImport.update({
+  id: '/planos-de-acao',
+  path: '/planos-de-acao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NaoConformidadesRoute = NaoConformidadesRouteImport.update({
+  id: '/nao-conformidades',
+  path: '/nao-conformidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndicadoresRoute = IndicadoresRouteImport.update({
+  id: '/indicadores',
+  path: '/indicadores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentosRoute = DocumentosRouteImport.update({
+  id: '/documentos',
+  path: '/documentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditoriasRoute = AuditoriasRouteImport.update({
+  id: '/auditorias',
+  path: '/auditorias',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +79,172 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auditorias': typeof AuditoriasRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/documentos': typeof DocumentosRoute
+  '/indicadores': typeof IndicadoresRoute
+  '/login': typeof LoginRoute
+  '/nao-conformidades': typeof NaoConformidadesRoute
+  '/planos-de-acao': typeof PlanosDeAcaoRoute
+  '/riscos': typeof RiscosRoute
+  '/treinamentos': typeof TreinamentosRoute
+  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auditorias': typeof AuditoriasRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/documentos': typeof DocumentosRoute
+  '/indicadores': typeof IndicadoresRoute
+  '/login': typeof LoginRoute
+  '/nao-conformidades': typeof NaoConformidadesRoute
+  '/planos-de-acao': typeof PlanosDeAcaoRoute
+  '/riscos': typeof RiscosRoute
+  '/treinamentos': typeof TreinamentosRoute
+  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auditorias': typeof AuditoriasRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/documentos': typeof DocumentosRoute
+  '/indicadores': typeof IndicadoresRoute
+  '/login': typeof LoginRoute
+  '/nao-conformidades': typeof NaoConformidadesRoute
+  '/planos-de-acao': typeof PlanosDeAcaoRoute
+  '/riscos': typeof RiscosRoute
+  '/treinamentos': typeof TreinamentosRoute
+  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auditorias'
+    | '/configuracoes'
+    | '/documentos'
+    | '/indicadores'
+    | '/login'
+    | '/nao-conformidades'
+    | '/planos-de-acao'
+    | '/riscos'
+    | '/treinamentos'
+    | '/usuarios'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auditorias'
+    | '/configuracoes'
+    | '/documentos'
+    | '/indicadores'
+    | '/login'
+    | '/nao-conformidades'
+    | '/planos-de-acao'
+    | '/riscos'
+    | '/treinamentos'
+    | '/usuarios'
+  id:
+    | '__root__'
+    | '/'
+    | '/auditorias'
+    | '/configuracoes'
+    | '/documentos'
+    | '/indicadores'
+    | '/login'
+    | '/nao-conformidades'
+    | '/planos-de-acao'
+    | '/riscos'
+    | '/treinamentos'
+    | '/usuarios'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditoriasRoute: typeof AuditoriasRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  DocumentosRoute: typeof DocumentosRoute
+  IndicadoresRoute: typeof IndicadoresRoute
+  LoginRoute: typeof LoginRoute
+  NaoConformidadesRoute: typeof NaoConformidadesRoute
+  PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
+  RiscosRoute: typeof RiscosRoute
+  TreinamentosRoute: typeof TreinamentosRoute
+  UsuariosRoute: typeof UsuariosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/usuarios': {
+      id: '/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof UsuariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/treinamentos': {
+      id: '/treinamentos'
+      path: '/treinamentos'
+      fullPath: '/treinamentos'
+      preLoaderRoute: typeof TreinamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/riscos': {
+      id: '/riscos'
+      path: '/riscos'
+      fullPath: '/riscos'
+      preLoaderRoute: typeof RiscosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planos-de-acao': {
+      id: '/planos-de-acao'
+      path: '/planos-de-acao'
+      fullPath: '/planos-de-acao'
+      preLoaderRoute: typeof PlanosDeAcaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nao-conformidades': {
+      id: '/nao-conformidades'
+      path: '/nao-conformidades'
+      fullPath: '/nao-conformidades'
+      preLoaderRoute: typeof NaoConformidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/indicadores': {
+      id: '/indicadores'
+      path: '/indicadores'
+      fullPath: '/indicadores'
+      preLoaderRoute: typeof IndicadoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documentos': {
+      id: '/documentos'
+      path: '/documentos'
+      fullPath: '/documentos'
+      preLoaderRoute: typeof DocumentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auditorias': {
+      id: '/auditorias'
+      path: '/auditorias'
+      fullPath: '/auditorias'
+      preLoaderRoute: typeof AuditoriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,17 +257,17 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditoriasRoute: AuditoriasRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  DocumentosRoute: DocumentosRoute,
+  IndicadoresRoute: IndicadoresRoute,
+  LoginRoute: LoginRoute,
+  NaoConformidadesRoute: NaoConformidadesRoute,
+  PlanosDeAcaoRoute: PlanosDeAcaoRoute,
+  RiscosRoute: RiscosRoute,
+  TreinamentosRoute: TreinamentosRoute,
+  UsuariosRoute: UsuariosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
