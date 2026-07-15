@@ -88,11 +88,13 @@ const statuses: NCStatus[] = [
 ];
 const locais = ["Produção", "Administrativo", "Serviço", "Almoxarifado"];
 
+// Fixed reference date so SSR and client render identical values (no hydration mismatch)
+const BASE_DATE = new Date("2026-07-15T12:00:00Z");
+
 export const mockNCs: NC[] = descricoes.map((desc, i) => {
   const [nome, iniciais] = pick(nomes, i);
   const daysOffset = (i % 14) - 5;
-  const prazo = new Date();
-  prazo.setDate(prazo.getDate() + daysOffset);
+  const prazo = new Date(BASE_DATE.getTime() + daysOffset * 86400000);
   const slaStatus: NC["slaStatus"] =
     daysOffset < 0 ? "vencido" : daysOffset <= 2 ? "proximo" : "ok";
   return {
@@ -106,10 +108,38 @@ export const mockNCs: NC[] = descricoes.map((desc, i) => {
     prazoSLA: prazo.toISOString(),
     slaStatus,
     reincidente: i % 5 === 0,
-    criadoEm: new Date(Date.now() - i * 86400000 * 2).toISOString(),
+    criadoEm: new Date(BASE_DATE.getTime() - i * 86400000 * 2).toISOString(),
     local: pick(locais, i),
   };
 });
+
+export const usuariosMock = [
+  { id: "u1", nome: "Ana Ribeiro", iniciais: "AR", cargo: "Analista da Qualidade" },
+  { id: "u2", nome: "Carlos Mendes", iniciais: "CM", cargo: "Coordenador de Produção" },
+  { id: "u3", nome: "Beatriz Souza", iniciais: "BS", cargo: "Gerente de Qualidade" },
+  { id: "u4", nome: "Diego Almeida", iniciais: "DA", cargo: "Supervisor de Envase" },
+  { id: "u5", nome: "Fernanda Lima", iniciais: "FL", cargo: "Especialista SGI" },
+  { id: "u6", nome: "Rafael Costa", iniciais: "RC", cargo: "Diretor Industrial" },
+  { id: "u7", nome: "Juliana Peixoto", iniciais: "JP", cargo: "Analista Regulatório" },
+  { id: "u8", nome: "Marcos Vinícius", iniciais: "MV", cargo: "Auditor Interno" },
+];
+
+export const requisitosNormativos = [
+  { id: "iso9001-8.7", codigo: "ISO 9001:2015 — 8.7", titulo: "Controle de saídas não conformes" },
+  { id: "iso9001-10.2", codigo: "ISO 9001:2015 — 10.2", titulo: "Não conformidade e ação corretiva" },
+  { id: "iso9001-9.1", codigo: "ISO 9001:2015 — 9.1", titulo: "Monitoramento, medição, análise e avaliação" },
+  { id: "iso14001-10.2", codigo: "ISO 14001:2015 — 10.2", titulo: "Não conformidade e ação corretiva (ambiental)" },
+  { id: "iso45001-10.2", codigo: "ISO 45001:2018 — 10.2", titulo: "Incidente, não conformidade e ação corretiva (SSO)" },
+  { id: "bpf-anvisa", codigo: "RDC 658/2022 — ANVISA", titulo: "Boas Práticas de Fabricação" },
+  { id: "haccp-7", codigo: "HACCP — Princípio 7", titulo: "Procedimentos de verificação" },
+];
+
+export const slaPorGravidade: Record<Severity, { horas: number; label: string; escalonamento: string }> = {
+  Baixa: { horas: 240, label: "10 dias úteis", escalonamento: "Coordenador de área" },
+  Média: { horas: 120, label: "5 dias úteis", escalonamento: "Gerente da Qualidade" },
+  Alta: { horas: 72, label: "72 horas", escalonamento: "Gerente da Qualidade + Diretor" },
+  Crítica: { horas: 24, label: "24 horas", escalonamento: "Diretoria e Comitê da Qualidade" },
+};
 
 export const kpis = {
   conformidade: 87,
