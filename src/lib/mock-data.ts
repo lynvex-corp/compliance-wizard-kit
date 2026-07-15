@@ -63,6 +63,10 @@ const descricoes = [
   "Amostra reprovada em ensaio microbiológico",
   "Ordem de produção sem assinatura do supervisor",
   "Vazamento identificado em tubulação da utilidade — vapor",
+  "Rótulo com informação nutricional divergente do especificado",
+  "Fornecedor entregou matéria-prima fora da especificação técnica",
+  "Higienização de equipamento não registrada no checklist do turno",
+  "Treinamento obrigatório NR-35 vencido para 4 colaboradores",
 ];
 
 const origens: Origem[] = [
