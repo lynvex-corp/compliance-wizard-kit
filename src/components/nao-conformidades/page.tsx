@@ -89,18 +89,12 @@ function formatDate(iso: string) {
   });
 }
 
-function daysUntil(iso: string) {
-  const diff = new Date(iso).getTime() - Date.now();
-  return Math.round(diff / 86_400_000);
-}
-
 function slaBadge(nc: NC) {
-  const d = daysUntil(nc.prazoSLA);
   if (nc.slaStatus === "vencido") {
     return (
       <div className="flex items-center gap-1.5 text-[color:var(--severity-critical)]">
         <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--severity-critical)]" />
-        <span className="text-xs font-medium">Vencido há {Math.abs(d)}d</span>
+        <span className="text-xs font-medium">Vencido — {formatDate(nc.prazoSLA)}</span>
       </div>
     );
   }
@@ -108,7 +102,7 @@ function slaBadge(nc: NC) {
     return (
       <div className="flex items-center gap-1.5 text-[color:var(--severity-high)]">
         <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--severity-high)]" />
-        <span className="text-xs font-medium">Vence em {d}d</span>
+        <span className="text-xs font-medium">Vence {formatDate(nc.prazoSLA)}</span>
       </div>
     );
   }

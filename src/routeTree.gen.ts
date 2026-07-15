@@ -20,6 +20,7 @@ import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NaoConformidadesNovaRouteImport } from './routes/nao-conformidades.nova'
 
 const UsuariosRoute = UsuariosRouteImport.update({
   id: '/usuarios',
@@ -76,6 +77,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NaoConformidadesNovaRoute = NaoConformidadesNovaRouteImport.update({
+  id: '/nova',
+  path: '/nova',
+  getParentRoute: () => NaoConformidadesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -84,11 +90,12 @@ export interface FileRoutesByFullPath {
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
-  '/nao-conformidades': typeof NaoConformidadesRoute
+  '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
   '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,11 +104,12 @@ export interface FileRoutesByTo {
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
-  '/nao-conformidades': typeof NaoConformidadesRoute
+  '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
   '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,11 +119,12 @@ export interface FileRoutesById {
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
-  '/nao-conformidades': typeof NaoConformidadesRoute
+  '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
   '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
+    | '/nao-conformidades/nova'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
+    | '/nao-conformidades/nova'
   id:
     | '__root__'
     | '/'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
+    | '/nao-conformidades/nova'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -166,7 +178,7 @@ export interface RootRouteChildren {
   DocumentosRoute: typeof DocumentosRoute
   IndicadoresRoute: typeof IndicadoresRoute
   LoginRoute: typeof LoginRoute
-  NaoConformidadesRoute: typeof NaoConformidadesRoute
+  NaoConformidadesRoute: typeof NaoConformidadesRouteWithChildren
   PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
   RiscosRoute: typeof RiscosRoute
   TreinamentosRoute: typeof TreinamentosRoute
@@ -252,8 +264,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nao-conformidades/nova': {
+      id: '/nao-conformidades/nova'
+      path: '/nova'
+      fullPath: '/nao-conformidades/nova'
+      preLoaderRoute: typeof NaoConformidadesNovaRouteImport
+      parentRoute: typeof NaoConformidadesRoute
+    }
   }
 }
+
+interface NaoConformidadesRouteChildren {
+  NaoConformidadesNovaRoute: typeof NaoConformidadesNovaRoute
+}
+
+const NaoConformidadesRouteChildren: NaoConformidadesRouteChildren = {
+  NaoConformidadesNovaRoute: NaoConformidadesNovaRoute,
+}
+
+const NaoConformidadesRouteWithChildren =
+  NaoConformidadesRoute._addFileChildren(NaoConformidadesRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -262,7 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentosRoute: DocumentosRoute,
   IndicadoresRoute: IndicadoresRoute,
   LoginRoute: LoginRoute,
-  NaoConformidadesRoute: NaoConformidadesRoute,
+  NaoConformidadesRoute: NaoConformidadesRouteWithChildren,
   PlanosDeAcaoRoute: PlanosDeAcaoRoute,
   RiscosRoute: RiscosRoute,
   TreinamentosRoute: TreinamentosRoute,
