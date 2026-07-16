@@ -39,6 +39,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Link } from "@tanstack/react-router";
 import {
   mockNCs,
   severityClasses,
@@ -421,8 +422,10 @@ export function NaoConformidadesPage() {
                           </TableCell>
                           <TableCell>{slaBadge(nc)}</TableCell>
                           <TableCell className="pr-6 text-right">
-                            <Button variant="ghost" size="sm" className="h-8 gap-1 text-brand hover:bg-brand-soft">
-                              <Eye className="h-4 w-4" /> Ver
+                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-brand hover:bg-brand-soft">
+                              <Link to="/nao-conformidades/$id" params={{ id: nc.id }}>
+                                <Eye className="h-4 w-4" /> Ver
+                              </Link>
                             </Button>
                           </TableCell>
                         </TableRow>
