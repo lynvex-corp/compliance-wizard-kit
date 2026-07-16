@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   Check,
   ChevronLeft,
@@ -14,6 +15,12 @@ import {
   ShieldAlert,
   BadgeCheck,
   Info,
+  Sparkles,
+  Plus,
+  ThumbsUp,
+  ThumbsDown,
+  AlertCircle,
+  PartyPopper,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
