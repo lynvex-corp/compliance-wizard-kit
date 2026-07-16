@@ -262,8 +262,11 @@ export function NaoConformidadesPage() {
                 Acompanhe registros, tratativas e prazos SLA ao longo de todo o ciclo de vida da NC.
               </p>
             </div>
-            <Button className="rounded-lg bg-brand text-brand-foreground hover:bg-brand/90">
-              <Plus className="mr-1 h-4 w-4" /> Nova Não Conformidade
+            <Button asChild className="rounded-lg bg-brand text-brand-foreground hover:bg-brand/90">
+  <Link to="/nao-conformidades/nova">
+    <Plus className="mr-1 h-4 w-4" /> Nova Não Conformidade
+  </Link>
+</Button>
             </Button>
           </div>
 
