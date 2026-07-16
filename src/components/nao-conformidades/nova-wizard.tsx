@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   Check,
   ChevronLeft,
@@ -14,6 +15,12 @@ import {
   ShieldAlert,
   BadgeCheck,
   Info,
+  Sparkles,
+  Plus,
+  ThumbsUp,
+  ThumbsDown,
+  AlertCircle,
+  PartyPopper,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -214,6 +221,7 @@ function UserPicker({
 export function NovaNCWizard() {
   const [step, setStep] = useState(1);
   const [completed, setCompleted] = useState<Set<number>>(new Set());
+  const [finalizado, setFinalizado] = useState(false);
 
   // Step 1
   const [dataOcorrencia, setDataOcorrencia] = useState<Date | undefined>(new Date("2026-07-14"));
@@ -236,6 +244,104 @@ export function NovaNCWizard() {
   const [categoria, setCategoria] = useState<string>();
   const [responsavel, setResponsavel] = useState<string>();
   const [aprovador, setAprovador] = useState<string>();
+
+  // Step 3
+  const [causaTool, setCausaTool] = useState<"5porques" | "ishikawa" | "pareto" | "fmea">("5porques");
+  const [porques, setPorques] = useState<string[]>(["", "", "", "", ""]);
+  const ISHI_CATS = ["Método", "Mão de obra", "Material", "Máquina", "Meio ambiente", "Medição"] as const;
+  const [ishikawa, setIshikawa] = useState<Record<string, string[]>>(
+    Object.fromEntries(ISHI_CATS.map((c) => [c, [] as string[]])),
+  );
+  const [ishInputs, setIshInputs] = useState<Record<string, string>>(
+    Object.fromEntries(ISHI_CATS.map((c) => [c, ""])),
+  );
+  const [causaRaiz, setCausaRaiz] = useState("");
+  const [revisarRiscos, setRevisarRiscos] = useState(false);
+
+  // Step 4
+  const [contDesc, setContDesc] = useState("");
+  const [contResp, setContResp] = useState<string>();
+  const [contData, setContData] = useState<Date | undefined>();
+  const [w5h2, setW5h2] = useState({ what: "", why: "", where: "", who: "", when: "", how: "", howMuch: "" });
+  const [resultadoEsperado, setResultadoEsperado] = useState("");
+
+  // Step 5
+  const [metodoAval, setMetodoAval] = useState<string>();
+  const [avaliador, setAvaliador] = useState<string>();
+  const [evidEficacia, setEvidEficacia] = useState<Evidence[]>([]);
+  const evidEficaciaRef = useRef<HTMLInputElement>(null);
+  const [resultado, setResultado] = useState<"aprovado" | "reprovado" | "reinspecao" | undefined>();
+  const [obsFinais, setObsFinais] = useState("");
+
+  function handleEfFiles(files: FileList | null) {
+    if (!files) return;
+    const next: Evidence[] = Array.from(files).map((f) => {
+      const kind = fileKind(f.name, f.type);
+      return {
+        id: `${f.name}-${f.size}-${Math.random().toString(36).slice(2, 8)}`,
+        name: f.name,
+        size: f.size,
+        kind,
+        url: kind === "image" ? URL.createObjectURL(f) : undefined,
+      };
+    });
+    setEvidEficacia((prev) => [...prev, ...next]);
+  }
+
+  function sugerirCausaIA() {
+    setPorques([
+      "O peso do lote 4821 ficou fora da tolerância especificada.",
+      "A balança BAL-07 apresentava desvio na leitura.",
+      "A calibração periódica não foi executada dentro do prazo.",
+      "O sistema de controle de calibração não emitiu alerta ao operador.",
+      "O checklist de verificação diária não inclui validação de calibração.",
+    ]);
+    setIshikawa((prev) => ({
+      ...prev,
+      Método: [...prev["Método"], "Checklist diário incompleto"],
+      Máquina: [...prev["Máquina"], "Balança fora de calibração"],
+      Medição: [...prev["Medição"], "Sistema não emite alerta"],
+    }));
+    setCausaRaiz(
+      "Falha no processo de gestão da calibração de equipamentos de medição, agravada pela ausência de verificação diária estruturada no checklist de linha.",
+    );
+    toast.success("Sugestão gerada pela IA", {
+      description: "Revise antes de continuar — a análise final é sua responsabilidade.",
+    });
+  }
+
+  function sugerirPlanoIA() {
+    setContDesc(
+      "Segregar imediatamente todos os lotes produzidos com a balança BAL-07 no período suspeito e substituir por balança BAL-03 (calibrada).",
+    );
+    setW5h2({
+      what: "Implantar sistema de bloqueio automático de equipamentos com calibração vencida.",
+      why: "Impedir que produtos sejam liberados com base em medições não confiáveis.",
+      where: "Linha de envase 03 e todo o setor de pesagem.",
+      who: "Coordenação de Manutenção + Qualidade",
+      when: "Em até 30 dias após aprovação do plano",
+      how: "Integrar cronograma de calibração ao sistema MES com bloqueio por leitor de código.",
+      howMuch: "Estimativa: R$ 12.400,00 (licenças + horas de integração)",
+    });
+    setResultadoEsperado(
+      "Redução a zero de liberações com equipamento de medição fora de calibração nos próximos 6 meses.",
+    );
+    toast.success("Rascunho de plano gerado pela IA", {
+      description: "Revise cada campo antes de submeter para aprovação.",
+    });
+  }
+
+  const proximoPorqueHabilitado = (i: number) => i === 0 || porques[i - 1].trim().length > 0;
+
+  function addIshikawaTag(cat: string) {
+    const val = ishInputs[cat]?.trim();
+    if (!val) return;
+    setIshikawa((prev) => ({ ...prev, [cat]: [...prev[cat], val] }));
+    setIshInputs((prev) => ({ ...prev, [cat]: "" }));
+  }
+  function removeIshikawaTag(cat: string, idx: number) {
+    setIshikawa((prev) => ({ ...prev, [cat]: prev[cat].filter((_, i) => i !== idx) }));
+  }
 
   const prazoFinal = useMemo(() => {
     if (!gravidade) return null;
@@ -266,6 +372,13 @@ export function NovaNCWizard() {
   function goNext() {
     setCompleted((prev) => new Set(prev).add(step));
     setStep((s) => Math.min(STEPS.length, s + 1));
+  }
+  function encerrarNC() {
+    setCompleted((prev) => new Set(prev).add(5));
+    setFinalizado(true);
+    toast.success("Não conformidade encerrada", {
+      description: `${NEW_CODE} concluída com sucesso.`,
+    });
   }
   function goPrev() {
     setStep((s) => Math.max(1, s - 1));
@@ -712,25 +825,409 @@ export function NovaNCWizard() {
           </Card>
         )}
 
-        {/* Steps 3-5 placeholders */}
-        {step > 2 && (
-          <Card className="rounded-xl border border-dashed border-border/80 bg-card/50 shadow-none">
-            <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-soft text-brand">
-                <Info className="h-6 w-6" />
+        {/* Step 3 — Análise de Causa */}
+        {step === 3 && !finalizado && (
+          <Card className="rounded-xl border-border/80 shadow-sm">
+            <CardContent className="space-y-6 p-6">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">3. Análise de Causa</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Selecione a ferramenta, mapeie as causas e consolide a causa raiz.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={sugerirCausaIA} className="gap-1.5 rounded-lg border-brand/40 text-brand hover:bg-brand-soft">
+                  <Sparkles className="h-4 w-4" /> Sugerir causa raiz com IA
+                </Button>
               </div>
-              <h2 className="text-base font-semibold text-foreground">
-                Etapa {step}: {STEPS[step - 1].label}
-              </h2>
-              <p className="max-w-sm text-sm text-muted-foreground">
-                Esta etapa será liberada em um próximo ciclo do protótipo.
-              </p>
+
+              <ToggleGroup
+                type="single"
+                value={causaTool}
+                onValueChange={(v) => v && setCausaTool(v as typeof causaTool)}
+                className="flex flex-wrap gap-2"
+              >
+                {[
+                  { v: "5porques", l: "5 Porquês" },
+                  { v: "ishikawa", l: "Ishikawa" },
+                  { v: "pareto", l: "Pareto" },
+                  { v: "fmea", l: "FMEA" },
+                ].map((t) => (
+                  <ToggleGroupItem
+                    key={t.v}
+                    value={t.v}
+                    className="h-9 rounded-lg border border-border px-4 data-[state=on]:border-brand data-[state=on]:bg-brand-soft data-[state=on]:text-brand"
+                  >
+                    {t.l}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+
+              {causaTool === "5porques" && (
+                <div className="relative pl-8">
+                  <div className="absolute left-3 top-2 bottom-2 w-px bg-border" />
+                  <div className="space-y-4">
+                    {porques.map((val, i) => {
+                      const enabled = proximoPorqueHabilitado(i);
+                      const filled = val.trim().length > 0;
+                      return (
+                        <div key={i} className="relative">
+                          <div
+                            className={cn(
+                              "absolute -left-8 top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 text-[10px] font-semibold",
+                              filled
+                                ? "border-brand bg-brand text-brand-foreground"
+                                : enabled
+                                  ? "border-brand bg-background text-brand"
+                                  : "border-border bg-muted text-muted-foreground",
+                            )}
+                          >
+                            {filled ? <Check className="h-3 w-3" /> : i + 1}
+                          </div>
+                          <div className="space-y-1">
+                            <Label className={cn(!enabled && "text-muted-foreground")}>
+                              {`${i + 1}º Por quê`}
+                            </Label>
+                            <Textarea
+                              rows={2}
+                              disabled={!enabled}
+                              value={val}
+                              onChange={(e) => {
+                                const next = [...porques];
+                                next[i] = e.target.value;
+                                setPorques(next);
+                              }}
+                              placeholder={enabled ? "Descreva por quê…" : "Preencha o passo anterior para liberar"}
+                              className="rounded-lg"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {causaTool === "ishikawa" && (
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  {ISHI_CATS.map((cat) => (
+                    <div key={cat} className="rounded-xl border border-border/80 bg-muted/20 p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-foreground">{cat}</span>
+                        <span className="text-[10px] text-muted-foreground">{ishikawa[cat].length} causa(s)</span>
+                      </div>
+                      <div className="mb-2 flex flex-wrap gap-1.5 min-h-[28px]">
+                        {ishikawa[cat].map((tag, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1 rounded-full border border-brand/30 bg-brand-soft px-2 py-0.5 text-[11px] text-brand"
+                          >
+                            {tag}
+                            <button type="button" onClick={() => removeIshikawaTag(cat, i)} className="rounded-full hover:bg-brand/10">
+                              <X className="h-2.5 w-2.5" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-1.5">
+                        <Input
+                          value={ishInputs[cat]}
+                          onChange={(e) => setIshInputs((p) => ({ ...p, [cat]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") { e.preventDefault(); addIshikawaTag(cat); }
+                          }}
+                          placeholder="Adicionar causa…"
+                          className="h-8 rounded-lg text-xs"
+                        />
+                        <Button type="button" size="sm" variant="outline" onClick={() => addIshikawaTag(cat)} className="h-8 rounded-lg px-2">
+                          <Plus className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {(causaTool === "pareto" || causaTool === "fmea") && (
+                <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border/80 bg-muted/20 py-12 text-center">
+                  <Info className="h-6 w-6 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Ferramenta {causaTool === "pareto" ? "Pareto" : "FMEA"} disponível em breve neste protótipo.
+                  </p>
+                </div>
+              )}
+
+              <Separator />
+
+              <div className="space-y-1.5">
+                <Label>Causa raiz identificada</Label>
+                <Textarea
+                  rows={4}
+                  value={causaRaiz}
+                  onChange={(e) => setCausaRaiz(e.target.value)}
+                  placeholder="Consolide a causa raiz com base na ferramenta escolhida…"
+                  className="rounded-lg"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/30 p-4">
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    Esta NC gera necessidade de revisão do mapa de riscos?
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Ao marcar Sim, uma tarefa será aberta no módulo Riscos e Oportunidades.
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-xs", !revisarRiscos && "font-medium text-foreground")}>Não</span>
+                  <Switch checked={revisarRiscos} onCheckedChange={setRevisarRiscos} />
+                  <span className={cn("text-xs", revisarRiscos && "font-medium text-foreground")}>Sim</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 4 — Plano de Ação */}
+        {step === 4 && !finalizado && (
+          <Card className="rounded-xl border-border/80 shadow-sm">
+            <CardContent className="space-y-6 p-6">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">4. Plano de Ação</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Defina contenção imediata e ação corretiva estruturada (5W2H).
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={sugerirPlanoIA} className="gap-1.5 rounded-lg border-brand/40 text-brand hover:bg-brand-soft">
+                  <Sparkles className="h-4 w-4" /> Gerar rascunho do plano com IA
+                </Button>
+              </div>
+
+              <section className="space-y-4 rounded-xl border border-[color:var(--severity-high)]/25 bg-[color:var(--severity-high)]/5 p-4">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-[color:var(--severity-high)]" />
+                  <h3 className="text-sm font-semibold text-foreground">Ação Imediata / Contenção</h3>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-1.5 md:col-span-2">
+                    <Label>Descrição da contenção</Label>
+                    <Textarea rows={3} value={contDesc} onChange={(e) => setContDesc(e.target.value)} className="rounded-lg" placeholder="Descreva o que será feito imediatamente para conter o desvio…" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Responsável</Label>
+                    <UserPicker value={contResp} onChange={setContResp} placeholder="Selecione o responsável" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Data</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className={cn("h-10 w-full justify-start rounded-lg text-left font-normal", !contData && "text-muted-foreground")}>
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {contData ? format(contData, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="single" selected={contData} onSelect={setContData} initialFocus className="pointer-events-auto p-3" />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <BadgeCheck className="h-4 w-4 text-brand" />
+                  <h3 className="text-sm font-semibold text-foreground">Ação Corretiva — 5W2H</h3>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {([
+                    ["what", "O quê", "What", "textarea"],
+                    ["why", "Por quê", "Why", "textarea"],
+                    ["where", "Onde", "Where", "input"],
+                    ["who", "Quem", "Who", "input"],
+                    ["when", "Quando", "When", "input"],
+                    ["how", "Como", "How", "textarea"],
+                    ["howMuch", "Quanto", "How much", "input"],
+                  ] as const).map(([key, ptL, enL, type]) => (
+                    <div key={key} className="space-y-1.5 rounded-xl border border-border/80 bg-card p-3">
+                      <div className="flex items-baseline justify-between">
+                        <Label className="text-sm font-semibold">{ptL}</Label>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{enL}</span>
+                      </div>
+                      {type === "textarea" ? (
+                        <Textarea rows={3} value={w5h2[key]} onChange={(e) => setW5h2((p) => ({ ...p, [key]: e.target.value }))} className="rounded-lg" />
+                      ) : (
+                        <Input value={w5h2[key]} onChange={(e) => setW5h2((p) => ({ ...p, [key]: e.target.value }))} className="h-10 rounded-lg" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <div className="space-y-1.5">
+                <Label>Resultado esperado</Label>
+                <Textarea rows={3} value={resultadoEsperado} onChange={(e) => setResultadoEsperado(e.target.value)} className="rounded-lg" placeholder="Descreva o indicador ou evidência que confirmará a eficácia…" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 5 — Avaliação de Eficácia */}
+        {step === 5 && !finalizado && (
+          <Card className="rounded-xl border-border/80 shadow-sm">
+            <CardContent className="space-y-6 p-6">
+              <div>
+                <h2 className="text-base font-semibold text-foreground">5. Avaliação de Eficácia</h2>
+                <p className="text-sm text-muted-foreground">
+                  Confirme se as ações resolveram a causa raiz e encerre a NC.
+                </p>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Método de avaliação</Label>
+                  <Select value={metodoAval} onValueChange={setMetodoAval}>
+                    <SelectTrigger className="h-10 rounded-lg">
+                      <SelectValue placeholder="Selecione o método" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["Teste", "Observação", "Entrevista", "Simulação", "Outros"].map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Avaliador</Label>
+                  <UserPicker value={avaliador} onChange={setAvaliador} placeholder="Selecione o avaliador" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Evidência de eficácia</Label>
+                <div
+                  onClick={() => evidEficaciaRef.current?.click()}
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/80 bg-muted/30 p-6 text-center hover:border-brand/50 hover:bg-brand-soft/20"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand">
+                    <UploadCloud className="h-5 w-5" />
+                  </div>
+                  <div className="text-sm font-medium text-foreground">
+                    Anexe fotos, relatórios ou registros de verificação
+                  </div>
+                  <input ref={evidEficaciaRef} type="file" multiple hidden onChange={(e) => handleEfFiles(e.target.files)} />
+                </div>
+                {evidEficacia.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                    {evidEficacia.map((ev) => (
+                      <div key={ev.id} className="aspect-square overflow-hidden rounded-lg border border-border/70 bg-muted">
+                        {ev.kind === "image" && ev.url ? (
+                          <img src={ev.url} alt={ev.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-muted-foreground">
+                            <FileText className="h-6 w-6" />
+                            <span className="line-clamp-2 text-center text-[10px]">{ev.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Resultado</Label>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {([
+                    { v: "aprovado", label: "Aprovado", desc: "Ação eficaz — NC pode ser encerrada.", cls: "border-[color:var(--success)]/40 bg-[color:var(--success)]/5 text-[color:var(--success)]", icon: ThumbsUp },
+                    { v: "reprovado", label: "Reprovado", desc: "Ação não resolveu — retorna ao Plano de Ação.", cls: "border-[color:var(--severity-critical)]/40 bg-[color:var(--severity-critical)]/5 text-[color:var(--severity-critical)]", icon: ThumbsDown },
+                    { v: "reinspecao", label: "Aprovado após nova inspeção", desc: "Requer nova verificação em prazo definido.", cls: "border-[color:var(--warning)]/50 bg-[color:var(--warning)]/10 text-[color:var(--severity-high)]", icon: AlertCircle },
+                  ] as const).map((opt) => {
+                    const Icon = opt.icon;
+                    const selected = resultado === opt.v;
+                    return (
+                      <button
+                        key={opt.v}
+                        type="button"
+                        onClick={() => setResultado(opt.v)}
+                        className={cn(
+                          "flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left transition-all",
+                          opt.cls,
+                          selected ? "ring-2 ring-offset-2 ring-current" : "opacity-80 hover:opacity-100",
+                        )}
+                      >
+                        <div className="flex w-full items-center justify-between">
+                          <Icon className="h-5 w-5" />
+                          {selected && <Check className="h-4 w-4" />}
+                        </div>
+                        <div className="text-sm font-semibold">{opt.label}</div>
+                        <div className="text-xs text-foreground/70">{opt.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {resultado === "reprovado" && (
+                <div className="flex items-start gap-3 rounded-xl border border-[color:var(--severity-critical)]/30 bg-[color:var(--severity-critical)]/5 p-4">
+                  <AlertCircle className="mt-0.5 h-5 w-5 text-[color:var(--severity-critical)]" />
+                  <div className="space-y-1">
+                    <div className="text-sm font-semibold text-foreground">A NC retornará para a etapa de Plano de Ação</div>
+                    <div className="text-xs text-muted-foreground">
+                      Ao encerrar, o responsável será notificado para revisar as ações corretivas e submeter uma nova avaliação.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <Label>Observações finais</Label>
+                <Textarea rows={3} value={obsFinais} onChange={(e) => setObsFinais(e.target.value)} className="rounded-lg" placeholder="Registre aprendizados, ressalvas ou próximos monitoramentos…" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Success / Encerramento */}
+        {finalizado && (
+          <Card className="rounded-xl border-[color:var(--success)]/30 bg-[color:var(--success)]/5 shadow-sm">
+            <CardContent className="flex flex-col items-center gap-4 py-14 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--success)] text-white">
+                <PartyPopper className="h-8 w-8" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground">Não Conformidade encerrada</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Todas as etapas foram concluídas e registradas na trilha de auditoria.
+                </p>
+              </div>
+              <div className="w-full max-w-lg rounded-xl border border-border/80 bg-card p-4 text-left">
+                <div className="mb-3 text-xs uppercase tracking-wider text-muted-foreground">Resumo</div>
+                <dl className="grid gap-2 text-sm">
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Código</dt><dd className="font-mono font-semibold text-brand">{NEW_CODE}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Gravidade</dt><dd className="font-medium">{gravidade ?? "—"}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Categoria</dt><dd className="font-medium">{categoria ?? "—"}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Responsável</dt><dd className="font-medium">{usuariosMock.find((u) => u.id === responsavel)?.nome ?? "—"}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Resultado</dt><dd className="font-medium capitalize">{resultado ?? "—"}</dd></div>
+                </dl>
+              </div>
+              <div className="flex gap-2">
+                <Button asChild variant="outline" className="rounded-lg">
+                  <Link to="/nao-conformidades">Voltar para lista</Link>
+                </Button>
+                <Button asChild className="rounded-lg bg-brand text-brand-foreground hover:bg-brand/90">
+                  <Link to="/nao-conformidades/nova">Registrar outra NC</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
       </div>
 
       {/* Sticky footer */}
+      {!finalizado && (
       <div className="sticky bottom-0 -mx-4 mt-6 border-t border-border/80 bg-background/95 px-4 py-3 backdrop-blur md:-mx-8 md:px-8">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3">
           <div>
@@ -747,16 +1244,25 @@ export function NovaNCWizard() {
             <Button variant="outline" className="gap-1 rounded-lg">
               <Save className="h-4 w-4" /> Salvar rascunho
             </Button>
-            <Button
-              onClick={goNext}
-              disabled={step === STEPS.length}
-              className="gap-1 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90"
-            >
-              Salvar e continuar <ChevronRight className="h-4 w-4" />
-            </Button>
+            {step < STEPS.length ? (
+              <Button
+                onClick={goNext}
+                className="gap-1 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90"
+              >
+                Salvar e continuar <ChevronRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={encerrarNC}
+                className="gap-1.5 rounded-lg bg-[color:var(--success)] px-5 py-5 text-white hover:bg-[color:var(--success)]/90"
+              >
+                <Check className="h-5 w-5" /> Encerrar Não Conformidade
+              </Button>
+            )}
           </div>
         </div>
       </div>
+      )}
     </AppShell>
   );
 }

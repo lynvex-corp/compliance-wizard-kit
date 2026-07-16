@@ -21,6 +21,7 @@ import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as NaoConformidadesNovaRouteImport } from './routes/nao-conformidades.nova'
+import { Route as NaoConformidadesIdRouteImport } from './routes/nao-conformidades.$id'
 
 const UsuariosRoute = UsuariosRouteImport.update({
   id: '/usuarios',
@@ -82,6 +83,11 @@ const NaoConformidadesNovaRoute = NaoConformidadesNovaRouteImport.update({
   path: '/nova',
   getParentRoute: () => NaoConformidadesRoute,
 } as any)
+const NaoConformidadesIdRoute = NaoConformidadesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => NaoConformidadesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
 }
 export interface FileRoutesByTo {
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
 }
 export interface FileRoutesById {
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
 }
 export interface FileRouteTypes {
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
+    | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
+    | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
   id:
     | '__root__'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
+    | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
   fileRoutesById: FileRoutesById
 }
@@ -271,14 +283,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NaoConformidadesNovaRouteImport
       parentRoute: typeof NaoConformidadesRoute
     }
+    '/nao-conformidades/$id': {
+      id: '/nao-conformidades/$id'
+      path: '/$id'
+      fullPath: '/nao-conformidades/$id'
+      preLoaderRoute: typeof NaoConformidadesIdRouteImport
+      parentRoute: typeof NaoConformidadesRoute
+    }
   }
 }
 
 interface NaoConformidadesRouteChildren {
+  NaoConformidadesIdRoute: typeof NaoConformidadesIdRoute
   NaoConformidadesNovaRoute: typeof NaoConformidadesNovaRoute
 }
 
 const NaoConformidadesRouteChildren: NaoConformidadesRouteChildren = {
+  NaoConformidadesIdRoute: NaoConformidadesIdRoute,
   NaoConformidadesNovaRoute: NaoConformidadesNovaRoute,
 }
 
