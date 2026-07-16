@@ -221,6 +221,7 @@ function UserPicker({
 export function NovaNCWizard() {
   const [step, setStep] = useState(1);
   const [completed, setCompleted] = useState<Set<number>>(new Set());
+  const [finalizado, setFinalizado] = useState(false);
 
   // Step 1
   const [dataOcorrencia, setDataOcorrencia] = useState<Date | undefined>(new Date("2026-07-14"));
@@ -243,6 +244,104 @@ export function NovaNCWizard() {
   const [categoria, setCategoria] = useState<string>();
   const [responsavel, setResponsavel] = useState<string>();
   const [aprovador, setAprovador] = useState<string>();
+
+  // Step 3
+  const [causaTool, setCausaTool] = useState<"5porques" | "ishikawa" | "pareto" | "fmea">("5porques");
+  const [porques, setPorques] = useState<string[]>(["", "", "", "", ""]);
+  const ISHI_CATS = ["Método", "Mão de obra", "Material", "Máquina", "Meio ambiente", "Medição"] as const;
+  const [ishikawa, setIshikawa] = useState<Record<string, string[]>>(
+    Object.fromEntries(ISHI_CATS.map((c) => [c, [] as string[]])),
+  );
+  const [ishInputs, setIshInputs] = useState<Record<string, string>>(
+    Object.fromEntries(ISHI_CATS.map((c) => [c, ""])),
+  );
+  const [causaRaiz, setCausaRaiz] = useState("");
+  const [revisarRiscos, setRevisarRiscos] = useState(false);
+
+  // Step 4
+  const [contDesc, setContDesc] = useState("");
+  const [contResp, setContResp] = useState<string>();
+  const [contData, setContData] = useState<Date | undefined>();
+  const [w5h2, setW5h2] = useState({ what: "", why: "", where: "", who: "", when: "", how: "", howMuch: "" });
+  const [resultadoEsperado, setResultadoEsperado] = useState("");
+
+  // Step 5
+  const [metodoAval, setMetodoAval] = useState<string>();
+  const [avaliador, setAvaliador] = useState<string>();
+  const [evidEficacia, setEvidEficacia] = useState<Evidence[]>([]);
+  const evidEficaciaRef = useRef<HTMLInputElement>(null);
+  const [resultado, setResultado] = useState<"aprovado" | "reprovado" | "reinspecao" | undefined>();
+  const [obsFinais, setObsFinais] = useState("");
+
+  function handleEfFiles(files: FileList | null) {
+    if (!files) return;
+    const next: Evidence[] = Array.from(files).map((f) => {
+      const kind = fileKind(f.name, f.type);
+      return {
+        id: `${f.name}-${f.size}-${Math.random().toString(36).slice(2, 8)}`,
+        name: f.name,
+        size: f.size,
+        kind,
+        url: kind === "image" ? URL.createObjectURL(f) : undefined,
+      };
+    });
+    setEvidEficacia((prev) => [...prev, ...next]);
+  }
+
+  function sugerirCausaIA() {
+    setPorques([
+      "O peso do lote 4821 ficou fora da tolerância especificada.",
+      "A balança BAL-07 apresentava desvio na leitura.",
+      "A calibração periódica não foi executada dentro do prazo.",
+      "O sistema de controle de calibração não emitiu alerta ao operador.",
+      "O checklist de verificação diária não inclui validação de calibração.",
+    ]);
+    setIshikawa((prev) => ({
+      ...prev,
+      Método: [...prev["Método"], "Checklist diário incompleto"],
+      Máquina: [...prev["Máquina"], "Balança fora de calibração"],
+      Medição: [...prev["Medição"], "Sistema não emite alerta"],
+    }));
+    setCausaRaiz(
+      "Falha no processo de gestão da calibração de equipamentos de medição, agravada pela ausência de verificação diária estruturada no checklist de linha.",
+    );
+    toast.success("Sugestão gerada pela IA", {
+      description: "Revise antes de continuar — a análise final é sua responsabilidade.",
+    });
+  }
+
+  function sugerirPlanoIA() {
+    setContDesc(
+      "Segregar imediatamente todos os lotes produzidos com a balança BAL-07 no período suspeito e substituir por balança BAL-03 (calibrada).",
+    );
+    setW5h2({
+      what: "Implantar sistema de bloqueio automático de equipamentos com calibração vencida.",
+      why: "Impedir que produtos sejam liberados com base em medições não confiáveis.",
+      where: "Linha de envase 03 e todo o setor de pesagem.",
+      who: "Coordenação de Manutenção + Qualidade",
+      when: "Em até 30 dias após aprovação do plano",
+      how: "Integrar cronograma de calibração ao sistema MES com bloqueio por leitor de código.",
+      howMuch: "Estimativa: R$ 12.400,00 (licenças + horas de integração)",
+    });
+    setResultadoEsperado(
+      "Redução a zero de liberações com equipamento de medição fora de calibração nos próximos 6 meses.",
+    );
+    toast.success("Rascunho de plano gerado pela IA", {
+      description: "Revise cada campo antes de submeter para aprovação.",
+    });
+  }
+
+  const proximoPorqueHabilitado = (i: number) => i === 0 || porques[i - 1].trim().length > 0;
+
+  function addIshikawaTag(cat: string) {
+    const val = ishInputs[cat]?.trim();
+    if (!val) return;
+    setIshikawa((prev) => ({ ...prev, [cat]: [...prev[cat], val] }));
+    setIshInputs((prev) => ({ ...prev, [cat]: "" }));
+  }
+  function removeIshikawaTag(cat: string, idx: number) {
+    setIshikawa((prev) => ({ ...prev, [cat]: prev[cat].filter((_, i) => i !== idx) }));
+  }
 
   const prazoFinal = useMemo(() => {
     if (!gravidade) return null;
@@ -273,6 +372,13 @@ export function NovaNCWizard() {
   function goNext() {
     setCompleted((prev) => new Set(prev).add(step));
     setStep((s) => Math.min(STEPS.length, s + 1));
+  }
+  function encerrarNC() {
+    setCompleted((prev) => new Set(prev).add(5));
+    setFinalizado(true);
+    toast.success("Não conformidade encerrada", {
+      description: `${NEW_CODE} concluída com sucesso.`,
+    });
   }
   function goPrev() {
     setStep((s) => Math.max(1, s - 1));
