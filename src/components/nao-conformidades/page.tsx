@@ -267,7 +267,6 @@ export function NaoConformidadesPage() {
     <Plus className="mr-1 h-4 w-4" /> Nova Não Conformidade
   </Link>
 </Button>
-            </Button>
           </div>
 
           {/* KPIs */}
