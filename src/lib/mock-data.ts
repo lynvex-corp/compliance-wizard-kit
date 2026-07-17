@@ -213,3 +213,413 @@ export function statusClasses(status: NCStatus) {
       return "bg-muted text-muted-foreground border-border line-through";
   }
 }
+
+// ============================================================
+// Planos de Ação — mock data
+// ============================================================
+
+export type PlanoStatus =
+  | "Planejado"
+  | "Em Execução"
+  | "Em Avaliação"
+  | "Concluído"
+  | "Atrasado"
+  | "Cancelado";
+
+export type PlanoOrigemTipo =
+  | "Não Conformidade"
+  | "Auditoria Interna"
+  | "Auditoria Externa"
+  | "Risco/Oportunidade"
+  | "Análise Crítica"
+  | "Reclamação de Cliente"
+  | "Melhoria Contínua";
+
+export type PDCA = "Plan" | "Do" | "Check" | "Act";
+
+export interface PlanoAcao {
+  id: string;
+  codigo: string;
+  descricao: string;
+  origemTipo: PlanoOrigemTipo;
+  vinculadoCodigo: string | null;
+  vinculadoLink: string | null;
+  responsavel: { nome: string; iniciais: string; departamento: string };
+  pdca: PDCA;
+  status: PlanoStatus;
+  inicio: string;
+  prazo: string;
+  percentual: number;
+  custo: number;
+  eficaciaAprovadaPrimeira: boolean | null; // null = ainda não avaliado
+  marcos: string[]; // ISO datas
+  concluidoNoPrazo: boolean | null;
+}
+
+const PLANO_BASE = new Date("2026-07-15T12:00:00Z");
+
+function isoOffset(days: number) {
+  return new Date(PLANO_BASE.getTime() + days * 86400000).toISOString();
+}
+
+const _planosSeed: Array<Omit<PlanoAcao, "id" | "codigo">> = [
+  {
+    descricao: "Recalibrar balança BAL-07 e revisar checklist de calibração mensal",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000005",
+    vinculadoLink: "nc-5",
+    responsavel: { nome: "Fernanda Lima", iniciais: "FL", departamento: "Qualidade" },
+    pdca: "Do",
+    status: "Em Execução",
+    inicio: isoOffset(-12),
+    prazo: isoOffset(6),
+    percentual: 62,
+    custo: 4200,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-6), isoOffset(0)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Substituir resistência da máquina de selagem SEL-02",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000011",
+    vinculadoLink: "nc-11",
+    responsavel: { nome: "Carlos Mendes", iniciais: "CM", departamento: "Manutenção" },
+    pdca: "Do",
+    status: "Atrasado",
+    inicio: isoOffset(-25),
+    prazo: isoOffset(-4),
+    percentual: 78,
+    custo: 18500,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-15), isoOffset(-8)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Treinamento NR-35 para colaboradores com certificação vencida",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000019",
+    vinculadoLink: "nc-19",
+    responsavel: { nome: "Beatriz Souza", iniciais: "BS", departamento: "RH & SST" },
+    pdca: "Plan",
+    status: "Planejado",
+    inicio: isoOffset(4),
+    prazo: isoOffset(25),
+    percentual: 5,
+    custo: 6800,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(10)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Revisar procedimento POP-ENV-03 e retreinar linha de envase",
+    origemTipo: "Auditoria Interna",
+    vinculadoCodigo: "AUD-2026-004",
+    vinculadoLink: null,
+    responsavel: { nome: "Diego Almeida", iniciais: "DA", departamento: "Produção" },
+    pdca: "Check",
+    status: "Em Avaliação",
+    inicio: isoOffset(-40),
+    prazo: isoOffset(-2),
+    percentual: 100,
+    custo: 2100,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-30), isoOffset(-15), isoOffset(-5)],
+    concluidoNoPrazo: true,
+  },
+  {
+    descricao: "Implantar controle automático de temperatura na câmara fria",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000002",
+    vinculadoLink: "nc-2",
+    responsavel: { nome: "Rafael Costa", iniciais: "RC", departamento: "Engenharia" },
+    pdca: "Act",
+    status: "Concluído",
+    inicio: isoOffset(-90),
+    prazo: isoOffset(-15),
+    percentual: 100,
+    custo: 42000,
+    eficaciaAprovadaPrimeira: true,
+    marcos: [isoOffset(-70), isoOffset(-40), isoOffset(-25)],
+    concluidoNoPrazo: true,
+  },
+  {
+    descricao: "Auditoria de fornecedor crítico e requalificação do MP-2231",
+    origemTipo: "Auditoria Externa",
+    vinculadoCodigo: "AUD-EXT-2026-01",
+    vinculadoLink: null,
+    responsavel: { nome: "Juliana Peixoto", iniciais: "JP", departamento: "Suprimentos" },
+    pdca: "Do",
+    status: "Em Execução",
+    inicio: isoOffset(-20),
+    prazo: isoOffset(15),
+    percentual: 45,
+    custo: 8900,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-10), isoOffset(5)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Implementar barreira de contenção no risco R-018 (vazamento vapor)",
+    origemTipo: "Risco/Oportunidade",
+    vinculadoCodigo: "R-018",
+    vinculadoLink: null,
+    responsavel: { nome: "Marcos Vinícius", iniciais: "MV", departamento: "Engenharia" },
+    pdca: "Do",
+    status: "Atrasado",
+    inicio: isoOffset(-45),
+    prazo: isoOffset(-12),
+    percentual: 55,
+    custo: 15200,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-30), isoOffset(-20)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Redesenhar formulário de ordem de produção com assinatura eletrônica",
+    origemTipo: "Análise Crítica",
+    vinculadoCodigo: "ACD-2026-Q1",
+    vinculadoLink: null,
+    responsavel: { nome: "Ana Ribeiro", iniciais: "AR", departamento: "Qualidade" },
+    pdca: "Check",
+    status: "Em Avaliação",
+    inicio: isoOffset(-60),
+    prazo: isoOffset(3),
+    percentual: 92,
+    custo: 3600,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-45), isoOffset(-20), isoOffset(-5)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Revisão de embalagem secundária após reclamação recorrente",
+    origemTipo: "Reclamação de Cliente",
+    vinculadoCodigo: "REC-2026-088",
+    vinculadoLink: null,
+    responsavel: { nome: "Fernanda Lima", iniciais: "FL", departamento: "Qualidade" },
+    pdca: "Act",
+    status: "Concluído",
+    inicio: isoOffset(-120),
+    prazo: isoOffset(-30),
+    percentual: 100,
+    custo: 12800,
+    eficaciaAprovadaPrimeira: false, // reprovado na 1ª avaliação
+    marcos: [isoOffset(-90), isoOffset(-60), isoOffset(-40)],
+    concluidoNoPrazo: true,
+  },
+  {
+    descricao: "Piloto de sensor IoT para monitorar dosagem em envase automático",
+    origemTipo: "Melhoria Contínua",
+    vinculadoCodigo: null,
+    vinculadoLink: null,
+    responsavel: { nome: "Diego Almeida", iniciais: "DA", departamento: "Produção" },
+    pdca: "Plan",
+    status: "Planejado",
+    inicio: isoOffset(10),
+    prazo: isoOffset(60),
+    percentual: 0,
+    custo: 22000,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(25), isoOffset(45)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Padronizar higienização de equipamentos entre turnos",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000018",
+    vinculadoLink: "nc-18",
+    responsavel: { nome: "Carlos Mendes", iniciais: "CM", departamento: "Produção" },
+    pdca: "Do",
+    status: "Em Execução",
+    inicio: isoOffset(-8),
+    prazo: isoOffset(14),
+    percentual: 28,
+    custo: 1800,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(0), isoOffset(8)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Ajustar cadastro de rótulos no ERP e revisar aprovação regulatória",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000016",
+    vinculadoLink: "nc-16",
+    responsavel: { nome: "Juliana Peixoto", iniciais: "JP", departamento: "Regulatório" },
+    pdca: "Check",
+    status: "Em Avaliação",
+    inicio: isoOffset(-35),
+    prazo: isoOffset(1),
+    percentual: 95,
+    custo: 2400,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-25), isoOffset(-10)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Inventário rotativo semanal e ajuste sistêmico do almoxarifado",
+    origemTipo: "Auditoria Interna",
+    vinculadoCodigo: "AUD-2026-006",
+    vinculadoLink: null,
+    responsavel: { nome: "Marcos Vinícius", iniciais: "MV", departamento: "Suprimentos" },
+    pdca: "Do",
+    status: "Em Execução",
+    inicio: isoOffset(-14),
+    prazo: isoOffset(21),
+    percentual: 40,
+    custo: 3200,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-5), isoOffset(7), isoOffset(14)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Revisar procedimento de amostragem microbiológica e requalificar analistas",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000013",
+    vinculadoLink: "nc-13",
+    responsavel: { nome: "Ana Ribeiro", iniciais: "AR", departamento: "Qualidade" },
+    pdca: "Act",
+    status: "Concluído",
+    inicio: isoOffset(-75),
+    prazo: isoOffset(-20),
+    percentual: 100,
+    custo: 5600,
+    eficaciaAprovadaPrimeira: true,
+    marcos: [isoOffset(-55), isoOffset(-35)],
+    concluidoNoPrazo: true,
+  },
+  {
+    descricao: "Escalar disponibilidade de EPI no setor de mistura e auditar uso",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000009",
+    vinculadoLink: "nc-9",
+    responsavel: { nome: "Beatriz Souza", iniciais: "BS", departamento: "SST" },
+    pdca: "Do",
+    status: "Atrasado",
+    inicio: isoOffset(-30),
+    prazo: isoOffset(-8),
+    percentual: 65,
+    custo: 4900,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-20), isoOffset(-12)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Instalar dispositivo poka-yoke na etiquetadora de rastreabilidade",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000003",
+    vinculadoLink: "nc-3",
+    responsavel: { nome: "Rafael Costa", iniciais: "RC", departamento: "Engenharia" },
+    pdca: "Do",
+    status: "Em Execução",
+    inicio: isoOffset(-18),
+    prazo: isoOffset(10),
+    percentual: 58,
+    custo: 9800,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-8), isoOffset(2)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Revisar contrato de transporte após reclamação de embalagem danificada",
+    origemTipo: "Reclamação de Cliente",
+    vinculadoCodigo: "REC-2026-052",
+    vinculadoLink: null,
+    responsavel: { nome: "Juliana Peixoto", iniciais: "JP", departamento: "Logística" },
+    pdca: "Plan",
+    status: "Planejado",
+    inicio: isoOffset(2),
+    prazo: isoOffset(45),
+    percentual: 8,
+    custo: 1200,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(15), isoOffset(30)],
+    concluidoNoPrazo: null,
+  },
+  {
+    descricao: "Descontinuar equipamento MIX-04 e reprocessar rota — plano cancelado",
+    origemTipo: "Melhoria Contínua",
+    vinculadoCodigo: null,
+    vinculadoLink: null,
+    responsavel: { nome: "Carlos Mendes", iniciais: "CM", departamento: "Produção" },
+    pdca: "Plan",
+    status: "Cancelado",
+    inicio: isoOffset(-50),
+    prazo: isoOffset(-10),
+    percentual: 20,
+    custo: 0,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-40)],
+    concluidoNoPrazo: null,
+  },
+];
+
+export const mockPlanos: PlanoAcao[] = _planosSeed.map((p, i) => ({
+  ...p,
+  id: `plano-${i + 1}`,
+  codigo: `PA-2026-${String(i + 1).padStart(6, "0")}`,
+}));
+
+export const planoStatusClasses: Record<PlanoStatus, { badge: string; dot: string; fill: string }> = {
+  Planejado: {
+    badge: "bg-muted text-muted-foreground border-border",
+    dot: "bg-[color:var(--severity-low)]",
+    fill: "var(--severity-low)",
+  },
+  "Em Execução": {
+    badge: "bg-brand-soft text-brand border-brand/20",
+    dot: "bg-brand",
+    fill: "var(--brand)",
+  },
+  "Em Avaliação": {
+    badge: "bg-[color:var(--warning)]/20 text-[color:var(--severity-high)] border-[color:var(--warning)]/40",
+    dot: "bg-[color:var(--warning)]",
+    fill: "var(--warning)",
+  },
+  Concluído: {
+    badge: "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
+    dot: "bg-[color:var(--success)]",
+    fill: "var(--success)",
+  },
+  Atrasado: {
+    badge: "bg-[color:var(--severity-critical)]/15 text-[color:var(--severity-critical)] border-[color:var(--severity-critical)]/30",
+    dot: "bg-[color:var(--severity-critical)]",
+    fill: "var(--severity-critical)",
+  },
+  Cancelado: {
+    badge: "bg-muted text-muted-foreground border-border line-through",
+    dot: "bg-muted-foreground",
+    fill: "var(--muted-foreground)",
+  },
+};
+
+export const pdcaClasses: Record<PDCA, string> = {
+  Plan: "bg-brand-soft text-brand border-brand/20",
+  Do: "bg-[color:var(--warning)]/15 text-[color:var(--severity-high)] border-[color:var(--warning)]/30",
+  Check: "bg-[color:var(--severity-high)]/15 text-[color:var(--severity-high)] border-[color:var(--severity-high)]/30",
+  Act: "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
+};
+
+export const planoBaseDate = PLANO_BASE.toISOString();
+
+// Séries agregadas mockadas para gráficos
+export const planosPorMes = [
+  { mes: "Ago", abertos: 6, concluidos: 4, tempoMedio: 42 },
+  { mes: "Set", abertos: 8, concluidos: 5, tempoMedio: 45 },
+  { mes: "Out", abertos: 10, concluidos: 7, tempoMedio: 41 },
+  { mes: "Nov", abertos: 7, concluidos: 9, tempoMedio: 38 },
+  { mes: "Dez", abertos: 11, concluidos: 8, tempoMedio: 40 },
+  { mes: "Jan", abertos: 9, concluidos: 10, tempoMedio: 36 },
+  { mes: "Fev", abertos: 12, concluidos: 9, tempoMedio: 39 },
+  { mes: "Mar", abertos: 8, concluidos: 11, tempoMedio: 35 },
+  { mes: "Abr", abertos: 14, concluidos: 10, tempoMedio: 37 },
+  { mes: "Mai", abertos: 10, concluidos: 12, tempoMedio: 33 },
+  { mes: "Jun", abertos: 13, concluidos: 11, tempoMedio: 31 },
+  { mes: "Jul", abertos: 9, concluidos: 13, tempoMedio: 29 },
+];
+
+export const eficaciaTrimestral = [
+  { trimestre: "T3/25", taxa: 72 },
+  { trimestre: "T4/25", taxa: 76 },
+  { trimestre: "T1/26", taxa: 81 },
+  { trimestre: "T2/26", taxa: 85 },
+];
