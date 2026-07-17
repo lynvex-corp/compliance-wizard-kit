@@ -20,6 +20,7 @@ import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NaoConformidadesIndexRouteImport } from './routes/nao-conformidades.index'
 import { Route as NaoConformidadesNovaRouteImport } from './routes/nao-conformidades.nova'
 import { Route as NaoConformidadesIdRouteImport } from './routes/nao-conformidades.$id'
 
@@ -78,6 +79,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NaoConformidadesIndexRoute = NaoConformidadesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => NaoConformidadesRoute,
+} as any)
 const NaoConformidadesNovaRoute = NaoConformidadesNovaRouteImport.update({
   id: '/nova',
   path: '/nova',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof UsuariosRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
+  '/nao-conformidades/': typeof NaoConformidadesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -111,13 +118,13 @@ export interface FileRoutesByTo {
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
-  '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
   '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
+  '/nao-conformidades': typeof NaoConformidadesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +141,7 @@ export interface FileRoutesById {
   '/usuarios': typeof UsuariosRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
+  '/nao-conformidades/': typeof NaoConformidadesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +159,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
+    | '/nao-conformidades/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -159,13 +168,13 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/indicadores'
     | '/login'
-    | '/nao-conformidades'
     | '/planos-de-acao'
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
+    | '/nao-conformidades'
   id:
     | '__root__'
     | '/'
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
+    | '/nao-conformidades/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -276,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nao-conformidades/': {
+      id: '/nao-conformidades/'
+      path: '/'
+      fullPath: '/nao-conformidades/'
+      preLoaderRoute: typeof NaoConformidadesIndexRouteImport
+      parentRoute: typeof NaoConformidadesRoute
+    }
     '/nao-conformidades/nova': {
       id: '/nao-conformidades/nova'
       path: '/nova'
@@ -296,11 +313,13 @@ declare module '@tanstack/react-router' {
 interface NaoConformidadesRouteChildren {
   NaoConformidadesIdRoute: typeof NaoConformidadesIdRoute
   NaoConformidadesNovaRoute: typeof NaoConformidadesNovaRoute
+  NaoConformidadesIndexRoute: typeof NaoConformidadesIndexRoute
 }
 
 const NaoConformidadesRouteChildren: NaoConformidadesRouteChildren = {
   NaoConformidadesIdRoute: NaoConformidadesIdRoute,
   NaoConformidadesNovaRoute: NaoConformidadesNovaRoute,
+  NaoConformidadesIndexRoute: NaoConformidadesIndexRoute,
 }
 
 const NaoConformidadesRouteWithChildren =
@@ -322,3 +341,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
