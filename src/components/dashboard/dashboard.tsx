@@ -91,6 +91,8 @@ export function Dashboard() {
   const ultimasNCs = [...mockNCs]
     .sort((a, b) => (a.criadoEm < b.criadoEm ? 1 : -1))
     .slice(0, 5);
+  const planosAtrasados = mockPlanos.filter((p) => p.status === "Atrasado").length;
+  const eficaciaAtual = eficaciaPlanosMensal[eficaciaPlanosMensal.length - 1].taxa;
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
@@ -113,6 +115,46 @@ export function Dashboard() {
         <KpiCard icon={AlertTriangle} label="NCs abertas" value={String(kpis.ncsAbertas)} hint="6 registradas nesta semana" tone="default" />
         <KpiCard icon={Clock} label="NCs vencidas" value={String(kpis.ncsVencidas)} hint="Requer ação imediata" tone="danger" />
         <KpiCard icon={CalendarCheck} label="Próximas auditorias" value={String(kpis.proximasAuditorias)} hint="Nos próximos 30 dias" tone="warning" />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Link to="/planos-de-acao" className="block">
+          <Card className="rounded-xl border-border/80 shadow-sm transition-colors hover:border-brand/40">
+            <CardContent className="flex items-start justify-between p-5">
+              <div>
+                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Planos de Ação Atrasados</div>
+                <div className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{planosAtrasados}</div>
+                <div className="mt-1 text-xs text-muted-foreground">Clique para ver detalhes →</div>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--severity-critical)]/10 text-[color:var(--severity-critical)]">
+                <ListChecks className="h-5 w-5" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Card className="rounded-xl border-border/80 shadow-sm lg:col-span-2">
+          <CardHeader className="flex flex-row items-start justify-between pb-2">
+            <div>
+              <CardTitle className="text-base font-semibold">Eficácia dos Planos de Ação</CardTitle>
+              <CardDescription>Últimos 6 meses — % aprovados na 1ª avaliação</CardDescription>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-semibold text-brand">{eficaciaAtual}%</div>
+              <div className="text-[10px] text-muted-foreground">mês atual</div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={{ taxa: { label: "Eficácia %", color: "var(--brand)" } }} className="h-[120px] w-full">
+              <LineChart data={eficaciaPlanosMensal}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="mes" tickLine={false} axisLine={false} tickMargin={6} style={{ fontSize: 11 }} />
+                <YAxis hide domain={[60, 100]} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line dataKey="taxa" type="monotone" stroke="var(--brand)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--brand)" }} activeDot={{ r: 5 }} />
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
