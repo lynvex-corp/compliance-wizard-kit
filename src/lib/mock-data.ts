@@ -264,6 +264,23 @@ function isoOffset(days: number) {
 
 const _planosSeed: Array<Omit<PlanoAcao, "id" | "codigo">> = [
   {
+    descricao:
+      "Investigar divergência de peso no lote 4821 e ajustar setup da envasadora ENV-02",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000001",
+    vinculadoLink: "nc-1",
+    responsavel: { nome: "Diego Almeida", iniciais: "DA", departamento: "Produção" },
+    pdca: "Do",
+    status: "Em Execução",
+    inicio: isoOffset(-9),
+    prazo: isoOffset(8),
+    percentual: 55,
+    custo: 7400,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-5), isoOffset(0), isoOffset(6)],
+    concluidoNoPrazo: null,
+  },
+  {
     descricao: "Recalibrar balança BAL-07 e revisar checklist de calibração mensal",
     origemTipo: "Não Conformidade",
     vinculadoCodigo: "NC-2026-000005",
