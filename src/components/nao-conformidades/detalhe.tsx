@@ -159,6 +159,8 @@ export function NCDetailPage() {
     ? mockNCs.filter((n) => n.id !== nc.id && n.gravidade === nc.gravidade).slice(0, 3)
     : [];
 
+  const planoVinculado = mockPlanos.find((p) => p.vinculadoLink === nc.id);
+
   return (
     <AppShell>
       <div className="mx-auto max-w-[1200px] space-y-6">
