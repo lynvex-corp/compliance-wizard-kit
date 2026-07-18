@@ -301,6 +301,37 @@ export function NCDetailPage() {
 
           {/* Coluna lateral */}
           <div className="space-y-6">
+            {planoVinculado && (
+              <Card className="rounded-xl border-brand/20 bg-brand-soft/20 shadow-sm">
+                <CardContent className="space-y-3 p-5">
+                  <div className="flex items-center gap-2">
+                    <ListChecks className="h-4 w-4 text-brand" />
+                    <h3 className="text-sm font-semibold text-foreground">Plano de Ação Vinculado</h3>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-semibold text-brand">{planoVinculado.codigo}</span>
+                    <Badge variant="outline" className={cn("rounded-md border text-[10px]", planoStatusClasses[planoVinculado.status].badge)}>
+                      {planoVinculado.status}
+                    </Badge>
+                  </div>
+                  <p className="line-clamp-2 text-xs text-foreground/80">{planoVinculado.descricao}</p>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>Progresso</span>
+                      <span className="font-medium text-foreground">{planoVinculado.percentual}%</span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div className="h-full bg-brand transition-all" style={{ width: `${planoVinculado.percentual}%` }} />
+                    </div>
+                  </div>
+                  <Button asChild size="sm" className="w-full gap-1 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90">
+                    <Link to="/planos-de-acao/$id" params={{ id: planoVinculado.id }}>
+                      Ver Plano Completo <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
             <Card className="rounded-xl border-border/80 shadow-sm">
               <CardContent className="space-y-4 p-5">
                 <h3 className="text-sm font-semibold text-foreground">Informações</h3>
