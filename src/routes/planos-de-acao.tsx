@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PlanosDeAcaoPage } from "@/components/planos-de-acao/page";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/planos-de-acao")({
-  component: PlanosDeAcaoPage,
+  component: () => <Outlet />,
 });

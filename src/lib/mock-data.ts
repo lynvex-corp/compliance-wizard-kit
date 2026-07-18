@@ -264,6 +264,23 @@ function isoOffset(days: number) {
 
 const _planosSeed: Array<Omit<PlanoAcao, "id" | "codigo">> = [
   {
+    descricao:
+      "Investigar divergência de peso no lote 4821 e ajustar setup da envasadora ENV-02",
+    origemTipo: "Não Conformidade",
+    vinculadoCodigo: "NC-2026-000001",
+    vinculadoLink: "nc-1",
+    responsavel: { nome: "Diego Almeida", iniciais: "DA", departamento: "Produção" },
+    pdca: "Do",
+    status: "Em Execução",
+    inicio: isoOffset(-9),
+    prazo: isoOffset(8),
+    percentual: 55,
+    custo: 7400,
+    eficaciaAprovadaPrimeira: null,
+    marcos: [isoOffset(-5), isoOffset(0), isoOffset(6)],
+    concluidoNoPrazo: null,
+  },
+  {
     descricao: "Recalibrar balança BAL-07 e revisar checklist de calibração mensal",
     origemTipo: "Não Conformidade",
     vinculadoCodigo: "NC-2026-000005",
@@ -622,4 +639,113 @@ export const eficaciaTrimestral = [
   { trimestre: "T4/25", taxa: 76 },
   { trimestre: "T1/26", taxa: 81 },
   { trimestre: "T2/26", taxa: 85 },
+];
+
+// Série mensal da eficácia dos planos de ação (últimos 6 meses)
+export const eficaciaPlanosMensal = [
+  { mes: "Fev", taxa: 74 },
+  { mes: "Mar", taxa: 78 },
+  { mes: "Abr", taxa: 81 },
+  { mes: "Mai", taxa: 79 },
+  { mes: "Jun", taxa: 84 },
+  { mes: "Jul", taxa: 87 },
+];
+
+// ============================================================
+// Indicadores e KPIs — mock data
+// ============================================================
+
+export interface Indicador {
+  id: string;
+  codigo: string;
+  nome: string;
+  categoria: "Qualidade" | "Produção" | "Segurança" | "Ambiental" | "Cliente";
+  meta: number;
+  atual: number;
+  unidade: string;
+  tendencia: "up" | "down" | "flat";
+  polaridade: "maior_melhor" | "menor_melhor";
+  responsavel: string;
+  planosVinculados: string[]; // ids de PlanoAcao que atuam neste indicador
+}
+
+export const mockIndicadores: Indicador[] = [
+  {
+    id: "ind-1",
+    codigo: "IND-Q-01",
+    nome: "Índice de Conformidade Geral",
+    categoria: "Qualidade",
+    meta: 95,
+    atual: 87,
+    unidade: "%",
+    tendencia: "up",
+    polaridade: "maior_melhor",
+    responsavel: "Beatriz Souza",
+    planosVinculados: ["plano-1", "plano-2", "plano-6"],
+  },
+  {
+    id: "ind-2",
+    codigo: "IND-Q-02",
+    nome: "Taxa de Reincidência de NCs",
+    categoria: "Qualidade",
+    meta: 5,
+    atual: 8,
+    unidade: "%",
+    tendencia: "down",
+    polaridade: "menor_melhor",
+    responsavel: "Ana Ribeiro",
+    planosVinculados: ["plano-1", "plano-16"],
+  },
+  {
+    id: "ind-3",
+    codigo: "IND-P-01",
+    nome: "OEE — Linha de Envase",
+    categoria: "Produção",
+    meta: 85,
+    atual: 78,
+    unidade: "%",
+    tendencia: "up",
+    polaridade: "maior_melhor",
+    responsavel: "Carlos Mendes",
+    planosVinculados: ["plano-3", "plano-11", "plano-17"],
+  },
+  {
+    id: "ind-4",
+    codigo: "IND-S-01",
+    nome: "Taxa de Acidentes com Afastamento",
+    categoria: "Segurança",
+    meta: 0,
+    atual: 1,
+    unidade: "casos",
+    tendencia: "flat",
+    polaridade: "menor_melhor",
+    responsavel: "Beatriz Souza",
+    planosVinculados: ["plano-4", "plano-16"],
+  },
+  {
+    id: "ind-5",
+    codigo: "IND-C-01",
+    nome: "Índice de Reclamação de Clientes",
+    categoria: "Cliente",
+    meta: 2,
+    atual: 3.4,
+    unidade: "por 1k",
+    tendencia: "down",
+    polaridade: "menor_melhor",
+    responsavel: "Fernanda Lima",
+    planosVinculados: ["plano-10", "plano-18"],
+  },
+  {
+    id: "ind-6",
+    codigo: "IND-A-01",
+    nome: "Consumo Energético por Tonelada",
+    categoria: "Ambiental",
+    meta: 120,
+    atual: 132,
+    unidade: "kWh/t",
+    tendencia: "down",
+    polaridade: "menor_melhor",
+    responsavel: "Rafael Costa",
+    planosVinculados: ["plano-8"],
+  },
 ];

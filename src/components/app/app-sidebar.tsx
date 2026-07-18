@@ -24,7 +24,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { JawdaLogo } from "@/components/brand/logo";
-import { menuItems } from "@/lib/mock-data";
+import { menuItems, mockPlanos } from "@/lib/mock-data";
 
 const iconMap = {
   LayoutDashboard,
@@ -43,6 +43,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const atrasados = mockPlanos.filter((p) => p.status === "Atrasado").length;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -59,6 +60,7 @@ export function AppSidebar() {
                   item.to === "/"
                     ? pathname === "/"
                     : pathname.startsWith(item.to);
+                const badge = item.to === "/planos-de-acao" && atrasados > 0 ? atrasados : null;
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton
@@ -70,6 +72,11 @@ export function AppSidebar() {
                       <Link to={item.to}>
                         <Icon className="h-[18px] w-[18px]" />
                         <span>{item.label}</span>
+                        {badge !== null && !collapsed && (
+                          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[color:var(--severity-critical)] px-1.5 text-[10px] font-semibold text-white">
+                            {badge}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

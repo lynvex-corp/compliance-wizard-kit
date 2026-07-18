@@ -20,7 +20,9 @@ import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlanosDeAcaoIndexRouteImport } from './routes/planos-de-acao.index'
 import { Route as NaoConformidadesIndexRouteImport } from './routes/nao-conformidades.index'
+import { Route as PlanosDeAcaoIdRouteImport } from './routes/planos-de-acao.$id'
 import { Route as NaoConformidadesNovaRouteImport } from './routes/nao-conformidades.nova'
 import { Route as NaoConformidadesIdRouteImport } from './routes/nao-conformidades.$id'
 
@@ -79,10 +81,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlanosDeAcaoIndexRoute = PlanosDeAcaoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlanosDeAcaoRoute,
+} as any)
 const NaoConformidadesIndexRoute = NaoConformidadesIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => NaoConformidadesRoute,
+} as any)
+const PlanosDeAcaoIdRoute = PlanosDeAcaoIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PlanosDeAcaoRoute,
 } as any)
 const NaoConformidadesNovaRoute = NaoConformidadesNovaRouteImport.update({
   id: '/nova',
@@ -103,13 +115,15 @@ export interface FileRoutesByFullPath {
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
-  '/planos-de-acao': typeof PlanosDeAcaoRoute
+  '/planos-de-acao': typeof PlanosDeAcaoRouteWithChildren
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
+  '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
+  '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,13 +132,14 @@ export interface FileRoutesByTo {
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
-  '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
+  '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/nao-conformidades': typeof NaoConformidadesIndexRoute
+  '/planos-de-acao': typeof PlanosDeAcaoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -135,13 +150,15 @@ export interface FileRoutesById {
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
-  '/planos-de-acao': typeof PlanosDeAcaoRoute
+  '/planos-de-acao': typeof PlanosDeAcaoRouteWithChildren
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
+  '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
+  '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,7 +176,9 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
+    | '/planos-de-acao/$id'
     | '/nao-conformidades/'
+    | '/planos-de-acao/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -168,13 +187,14 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/indicadores'
     | '/login'
-    | '/planos-de-acao'
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
+    | '/planos-de-acao/$id'
     | '/nao-conformidades'
+    | '/planos-de-acao'
   id:
     | '__root__'
     | '/'
@@ -190,7 +210,9 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
+    | '/planos-de-acao/$id'
     | '/nao-conformidades/'
+    | '/planos-de-acao/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -201,7 +223,7 @@ export interface RootRouteChildren {
   IndicadoresRoute: typeof IndicadoresRoute
   LoginRoute: typeof LoginRoute
   NaoConformidadesRoute: typeof NaoConformidadesRouteWithChildren
-  PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
+  PlanosDeAcaoRoute: typeof PlanosDeAcaoRouteWithChildren
   RiscosRoute: typeof RiscosRoute
   TreinamentosRoute: typeof TreinamentosRoute
   UsuariosRoute: typeof UsuariosRoute
@@ -286,12 +308,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/planos-de-acao/': {
+      id: '/planos-de-acao/'
+      path: '/'
+      fullPath: '/planos-de-acao/'
+      preLoaderRoute: typeof PlanosDeAcaoIndexRouteImport
+      parentRoute: typeof PlanosDeAcaoRoute
+    }
     '/nao-conformidades/': {
       id: '/nao-conformidades/'
       path: '/'
       fullPath: '/nao-conformidades/'
       preLoaderRoute: typeof NaoConformidadesIndexRouteImport
       parentRoute: typeof NaoConformidadesRoute
+    }
+    '/planos-de-acao/$id': {
+      id: '/planos-de-acao/$id'
+      path: '/$id'
+      fullPath: '/planos-de-acao/$id'
+      preLoaderRoute: typeof PlanosDeAcaoIdRouteImport
+      parentRoute: typeof PlanosDeAcaoRoute
     }
     '/nao-conformidades/nova': {
       id: '/nao-conformidades/nova'
@@ -325,6 +361,20 @@ const NaoConformidadesRouteChildren: NaoConformidadesRouteChildren = {
 const NaoConformidadesRouteWithChildren =
   NaoConformidadesRoute._addFileChildren(NaoConformidadesRouteChildren)
 
+interface PlanosDeAcaoRouteChildren {
+  PlanosDeAcaoIdRoute: typeof PlanosDeAcaoIdRoute
+  PlanosDeAcaoIndexRoute: typeof PlanosDeAcaoIndexRoute
+}
+
+const PlanosDeAcaoRouteChildren: PlanosDeAcaoRouteChildren = {
+  PlanosDeAcaoIdRoute: PlanosDeAcaoIdRoute,
+  PlanosDeAcaoIndexRoute: PlanosDeAcaoIndexRoute,
+}
+
+const PlanosDeAcaoRouteWithChildren = PlanosDeAcaoRoute._addFileChildren(
+  PlanosDeAcaoRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditoriasRoute: AuditoriasRoute,
@@ -333,7 +383,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndicadoresRoute: IndicadoresRoute,
   LoginRoute: LoginRoute,
   NaoConformidadesRoute: NaoConformidadesRouteWithChildren,
-  PlanosDeAcaoRoute: PlanosDeAcaoRoute,
+  PlanosDeAcaoRoute: PlanosDeAcaoRouteWithChildren,
   RiscosRoute: RiscosRoute,
   TreinamentosRoute: TreinamentosRoute,
   UsuariosRoute: UsuariosRoute,
