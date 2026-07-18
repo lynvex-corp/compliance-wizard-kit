@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   ArrowRight,
 } from "lucide-react";
+import { ListChecks } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -38,6 +39,9 @@ import {
   severityClasses,
   statusClasses,
 } from "@/lib/mock-data";
+import { mockPlanos, eficaciaPlanosMensal } from "@/lib/mock-data";
+import { Line, LineChart } from "recharts";
+import { Link } from "@tanstack/react-router";
 
 const chartConfig: ChartConfig = {
   abertas: { label: "Abertas", color: "var(--brand)" },
