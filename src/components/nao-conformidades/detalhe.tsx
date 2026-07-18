@@ -16,6 +16,7 @@ import {
   BadgeCheck,
   Sparkles,
 } from "lucide-react";
+import { ListChecks, ChevronRight } from "lucide-react";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AppShell } from "@/components/app/app-shell";
@@ -37,6 +38,7 @@ import {
   statusClasses,
   usuariosMock,
 } from "@/lib/mock-data";
+import { mockPlanos, planoStatusClasses } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 type StepStatus = "done" | "current" | "pending";
