@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as TreinamentosRouteImport } from './routes/treinamentos'
 import { Route as RiscosRouteImport } from './routes/riscos'
-import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
 import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndicadoresRouteImport } from './routes/indicadores'
@@ -37,11 +36,6 @@ const TreinamentosRoute = TreinamentosRouteImport.update({
 const RiscosRoute = RiscosRouteImport.update({
   id: '/riscos',
   path: '/riscos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlanosDeAcaoRoute = PlanosDeAcaoRouteImport.update({
-  id: '/planos-de-acao',
-  path: '/planos-de-acao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NaoConformidadesRoute = NaoConformidadesRouteImport.update({
@@ -103,7 +97,6 @@ export interface FileRoutesByFullPath {
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
-  '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
@@ -118,7 +111,6 @@ export interface FileRoutesByTo {
   '/documentos': typeof DocumentosRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
-  '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
@@ -135,7 +127,6 @@ export interface FileRoutesById {
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
   '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
-  '/planos-de-acao': typeof PlanosDeAcaoRoute
   '/riscos': typeof RiscosRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
@@ -153,7 +144,6 @@ export interface FileRouteTypes {
     | '/indicadores'
     | '/login'
     | '/nao-conformidades'
-    | '/planos-de-acao'
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
@@ -168,7 +158,6 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/indicadores'
     | '/login'
-    | '/planos-de-acao'
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
@@ -184,7 +173,6 @@ export interface FileRouteTypes {
     | '/indicadores'
     | '/login'
     | '/nao-conformidades'
-    | '/planos-de-acao'
     | '/riscos'
     | '/treinamentos'
     | '/usuarios'
@@ -201,7 +189,6 @@ export interface RootRouteChildren {
   IndicadoresRoute: typeof IndicadoresRoute
   LoginRoute: typeof LoginRoute
   NaoConformidadesRoute: typeof NaoConformidadesRouteWithChildren
-  PlanosDeAcaoRoute: typeof PlanosDeAcaoRoute
   RiscosRoute: typeof RiscosRoute
   TreinamentosRoute: typeof TreinamentosRoute
   UsuariosRoute: typeof UsuariosRoute
@@ -228,13 +215,6 @@ declare module '@tanstack/react-router' {
       path: '/riscos'
       fullPath: '/riscos'
       preLoaderRoute: typeof RiscosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/planos-de-acao': {
-      id: '/planos-de-acao'
-      path: '/planos-de-acao'
-      fullPath: '/planos-de-acao'
-      preLoaderRoute: typeof PlanosDeAcaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nao-conformidades': {
@@ -333,7 +313,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndicadoresRoute: IndicadoresRoute,
   LoginRoute: LoginRoute,
   NaoConformidadesRoute: NaoConformidadesRouteWithChildren,
-  PlanosDeAcaoRoute: PlanosDeAcaoRoute,
   RiscosRoute: RiscosRoute,
   TreinamentosRoute: TreinamentosRoute,
   UsuariosRoute: UsuariosRoute,
