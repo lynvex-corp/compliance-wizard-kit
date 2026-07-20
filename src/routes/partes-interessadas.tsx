@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/app/placeholder-page";
+import { PartesInteressadasPage } from "@/components/estrategia/partes-interessadas";
 
 export const Route = createFileRoute("/partes-interessadas")({
-  component: () => <PlaceholderPage title="Partes Interessadas" description="Mapeamento de stakeholders, necessidades e expectativas." />,
+  component: PartesInteressadasPage,
 });
