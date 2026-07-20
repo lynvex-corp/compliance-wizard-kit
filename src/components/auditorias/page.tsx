@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   CalendarDays,
   CheckCircle2,
@@ -127,6 +127,7 @@ function AuditCard({ a }: { a: Auditoria }) {
 }
 
 export function AuditoriasPage() {
+  const navigate = useNavigate();
   const [ano, setAno] = useState("2026");
   const [tipo, setTipo] = useState("all");
   const [norma, setNorma] = useState("all");
@@ -300,7 +301,11 @@ export function AuditoriasPage() {
                   </TableHeader>
                   <TableBody>
                     {filtered.map((a) => (
-                      <TableRow key={a.id} className="hover:bg-muted/40">
+                      <TableRow
+                        key={a.id}
+                        className="cursor-pointer hover:bg-muted/40"
+                        onClick={() => navigate({ to: "/auditorias/$id", params: { id: a.id } })}
+                      >
                         <TableCell className="font-mono text-xs">{a.codigo}</TableCell>
                         <TableCell className="text-sm">
                           {a.tipo === "Interna" ? (
