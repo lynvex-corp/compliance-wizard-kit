@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   Plus,
   FilePlus2,
@@ -657,8 +658,10 @@ export function PlanosDeAcaoPage() {
                           </TableCell>
                           <TableCell className="pr-6 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="sm" className="h-8 gap-1 text-brand hover:bg-brand-soft">
-                                <Eye className="h-4 w-4" /> Ver
+                              <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-brand hover:bg-brand-soft">
+                                <Link to="/planos-de-acao/$id" params={{ id: p.id }}>
+                                  <Eye className="h-4 w-4" /> Ver
+                                </Link>
                               </Button>
                               <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
                             </div>
