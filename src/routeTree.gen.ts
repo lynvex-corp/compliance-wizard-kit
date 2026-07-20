@@ -38,6 +38,7 @@ import { Route as AuditoriasIndexRouteImport } from './routes/auditorias.index'
 import { Route as PlanosDeAcaoIdRouteImport } from './routes/planos-de-acao.$id'
 import { Route as NaoConformidadesNovaRouteImport } from './routes/nao-conformidades.nova'
 import { Route as NaoConformidadesIdRouteImport } from './routes/nao-conformidades.$id'
+import { Route as IndicadoresNovoRouteImport } from './routes/indicadores.novo'
 import { Route as AuditoriasNovaRouteImport } from './routes/auditorias.nova'
 import { Route as AuditoriasIdRouteImport } from './routes/auditorias.$id'
 
@@ -186,6 +187,11 @@ const NaoConformidadesIdRoute = NaoConformidadesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => NaoConformidadesRoute,
 } as any)
+const IndicadoresNovoRoute = IndicadoresNovoRouteImport.update({
+  id: '/novo',
+  path: '/novo',
+  getParentRoute: () => IndicadoresRoute,
+} as any)
 const AuditoriasNovaRoute = AuditoriasNovaRouteImport.update({
   id: '/nova',
   path: '/nova',
@@ -209,7 +215,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
   '/escopo-sistema': typeof EscopoSistemaRoute
-  '/indicadores': typeof IndicadoresRoute
+  '/indicadores': typeof IndicadoresRouteWithChildren
   '/login': typeof LoginRoute
   '/mudancas-sg': typeof MudancasSgRoute
   '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof UsuariosRoute
   '/auditorias/$id': typeof AuditoriasIdRoute
   '/auditorias/nova': typeof AuditoriasNovaRoute
+  '/indicadores/novo': typeof IndicadoresNovoRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
@@ -241,7 +248,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
   '/escopo-sistema': typeof EscopoSistemaRoute
-  '/indicadores': typeof IndicadoresRoute
+  '/indicadores': typeof IndicadoresRouteWithChildren
   '/login': typeof LoginRoute
   '/mudancas-sg': typeof MudancasSgRoute
   '/partes-interessadas': typeof PartesInteressadasRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/usuarios': typeof UsuariosRoute
   '/auditorias/$id': typeof AuditoriasIdRoute
   '/auditorias/nova': typeof AuditoriasNovaRoute
+  '/indicadores/novo': typeof IndicadoresNovoRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
@@ -273,7 +281,7 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
   '/escopo-sistema': typeof EscopoSistemaRoute
-  '/indicadores': typeof IndicadoresRoute
+  '/indicadores': typeof IndicadoresRouteWithChildren
   '/login': typeof LoginRoute
   '/mudancas-sg': typeof MudancasSgRoute
   '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
@@ -287,6 +295,7 @@ export interface FileRoutesById {
   '/usuarios': typeof UsuariosRoute
   '/auditorias/$id': typeof AuditoriasIdRoute
   '/auditorias/nova': typeof AuditoriasNovaRoute
+  '/indicadores/novo': typeof IndicadoresNovoRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
@@ -322,6 +331,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/auditorias/$id'
     | '/auditorias/nova'
+    | '/indicadores/novo'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/auditorias/$id'
     | '/auditorias/nova'
+    | '/indicadores/novo'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
@@ -385,6 +396,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/auditorias/$id'
     | '/auditorias/nova'
+    | '/indicadores/novo'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
@@ -405,7 +417,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   DocumentosRoute: typeof DocumentosRoute
   EscopoSistemaRoute: typeof EscopoSistemaRoute
-  IndicadoresRoute: typeof IndicadoresRoute
+  IndicadoresRoute: typeof IndicadoresRouteWithChildren
   LoginRoute: typeof LoginRoute
   MudancasSgRoute: typeof MudancasSgRoute
   NaoConformidadesRoute: typeof NaoConformidadesRouteWithChildren
@@ -624,6 +636,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NaoConformidadesIdRouteImport
       parentRoute: typeof NaoConformidadesRoute
     }
+    '/indicadores/novo': {
+      id: '/indicadores/novo'
+      path: '/novo'
+      fullPath: '/indicadores/novo'
+      preLoaderRoute: typeof IndicadoresNovoRouteImport
+      parentRoute: typeof IndicadoresRoute
+    }
     '/auditorias/nova': {
       id: '/auditorias/nova'
       path: '/nova'
@@ -655,6 +674,18 @@ const AuditoriasRouteChildren: AuditoriasRouteChildren = {
 
 const AuditoriasRouteWithChildren = AuditoriasRoute._addFileChildren(
   AuditoriasRouteChildren,
+)
+
+interface IndicadoresRouteChildren {
+  IndicadoresNovoRoute: typeof IndicadoresNovoRoute
+}
+
+const IndicadoresRouteChildren: IndicadoresRouteChildren = {
+  IndicadoresNovoRoute: IndicadoresNovoRoute,
+}
+
+const IndicadoresRouteWithChildren = IndicadoresRoute._addFileChildren(
+  IndicadoresRouteChildren,
 )
 
 interface NaoConformidadesRouteChildren {
@@ -698,7 +729,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   DocumentosRoute: DocumentosRoute,
   EscopoSistemaRoute: EscopoSistemaRoute,
-  IndicadoresRoute: IndicadoresRoute,
+  IndicadoresRoute: IndicadoresRouteWithChildren,
   LoginRoute: LoginRoute,
   MudancasSgRoute: MudancasSgRoute,
   NaoConformidadesRoute: NaoConformidadesRouteWithChildren,
