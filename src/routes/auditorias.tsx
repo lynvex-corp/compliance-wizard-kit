@@ -1,8 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/app/placeholder-page";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auditorias")({
-  component: () => (
-    <PlaceholderPage title="Auditorias" description="Programação e execução de auditorias internas e externas." />
-  ),
+  component: () => <Outlet />,
 });

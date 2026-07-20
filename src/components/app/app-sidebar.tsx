@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -7,9 +8,26 @@ import {
   FileText,
   BarChart3,
   ShieldAlert,
+  ShieldCheck,
   GraduationCap,
   Users,
+  UsersRound,
   Settings,
+  Compass,
+  Radar,
+  Handshake,
+  Target,
+  Shuffle,
+  Workflow,
+  GitBranch,
+  Truck,
+  Factory,
+  MessageSquare,
+  IdCard,
+  BookOpen,
+  Gauge,
+  LifeBuoy,
+  ChevronDown,
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,9 +42,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { JawdaLogo } from "@/components/brand/logo";
-import { menuItems, mockPlanos } from "@/lib/mock-data";
+import {
+  navTop,
+  navGroups,
+  navFooter,
+  mockPlanos,
+  mockNCs,
+  type NavItem,
+} from "@/lib/mock-data";
+import { cn } from "@/lib/utils";
 
-const iconMap = {
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
   AlertTriangle,
   ListChecks,
@@ -34,16 +60,96 @@ const iconMap = {
   FileText,
   BarChart3,
   ShieldAlert,
+  ShieldCheck,
   GraduationCap,
   Users,
+  UsersRound,
   Settings,
+  Compass,
+  Radar,
+  Handshake,
+  Target,
+  Shuffle,
+  Workflow,
+  GitBranch,
+  Truck,
+  Factory,
+  MessageSquare,
+  IdCard,
+  BookOpen,
+  Gauge,
+  LifeBuoy,
 };
+
+function useBadge(to: string): number | null {
+  if (to === "/planos-de-acao") {
+    const n = mockPlanos.filter((p) => p.status === "Atrasado").length;
+    return n > 0 ? n : null;
+  }
+  if (to === "/nao-conformidades") {
+    const n = mockNCs.filter((n) => n.slaStatus === "vencido").length;
+    return n > 0 ? n : null;
+  }
+  return null;
+}
+
+function isItemActive(pathname: string, to: string) {
+  return to === "/" ? pathname === "/" : pathname.startsWith(to);
+}
+
+function NavRow({
+  item,
+  active,
+  collapsed,
+}: {
+  item: NavItem;
+  active: boolean;
+  collapsed: boolean;
+}) {
+  const Icon = iconMap[item.icon] ?? LayoutDashboard;
+  const badge = useBadge(item.to);
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        tooltip={item.label}
+        className="h-9 rounded-lg data-[active=true]:bg-brand-soft data-[active=true]:text-brand data-[active=true]:font-medium hover:bg-brand-soft/60"
+      >
+        <Link to={item.to}>
+          <Icon className="h-[18px] w-[18px]" />
+          <span className="truncate">{item.label}</span>
+          {!collapsed && badge !== null && (
+            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[color:var(--severity-critical)] px-1.5 text-[10px] font-semibold text-white">
+              {badge}
+            </span>
+          )}
+          {!collapsed && item.externo && (
+            <span
+              className="ml-auto rounded-full border border-border bg-muted px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted-foreground"
+              title="Integração externa: dados vêm de sistema já existente"
+            >
+              Externo
+            </span>
+          )}
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const atrasados = mockPlanos.filter((p) => p.status === "Atrasado").length;
+
+  const activeGroupIdx = useMemo(() => {
+    return navGroups.findIndex((g) => g.items.some((it) => isItemActive(pathname, it.to)));
+  }, [pathname]);
+
+  const [openIdx, setOpenIdx] = useState<number>(activeGroupIdx >= 0 ? activeGroupIdx : 0);
+  // when nav changes to a different group, auto-open it
+  const effectiveOpen = activeGroupIdx >= 0 ? activeGroupIdx : openIdx;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -51,43 +157,91 @@ export function AppSidebar() {
         <JawdaLogo showWordmark={!collapsed} size={26} />
       </SidebarHeader>
       <SidebarContent className="px-2">
+        {/* Top single item */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {menuItems.map((item) => {
-                const Icon = iconMap[item.icon];
-                const active =
-                  item.to === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.to);
-                const badge = item.to === "/planos-de-acao" && atrasados > 0 ? atrasados : null;
-                return (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={active}
-                      tooltip={item.label}
-                      className="h-10 rounded-lg data-[active=true]:bg-brand-soft data-[active=true]:text-brand data-[active=true]:font-medium hover:bg-brand-soft/60"
-                    >
-                      <Link to={item.to}>
-                        <Icon className="h-[18px] w-[18px]" />
-                        <span>{item.label}</span>
-                        {badge !== null && !collapsed && (
-                          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[color:var(--severity-critical)] px-1.5 text-[10px] font-semibold text-white">
-                            {badge}
-                          </span>
-                        )}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              <NavRow
+                item={navTop}
+                active={isItemActive(pathname, navTop.to)}
+                collapsed={collapsed}
+              />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Groups */}
+        {navGroups.map((group, idx) => {
+          const GroupIcon = iconMap[group.icon] ?? Compass;
+          const open = effectiveOpen === idx;
+          const hasActive = group.items.some((it) => isItemActive(pathname, it.to));
+          return (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupContent>
+                <SidebarMenu className="gap-1">
+                  {/* Group header */}
+                  {collapsed ? (
+                    // In collapsed mode: render items directly with tooltips
+                    group.items.map((item) => (
+                      <NavRow
+                        key={item.to}
+                        item={item}
+                        active={isItemActive(pathname, item.to)}
+                        collapsed
+                      />
+                    ))
+                  ) : (
+                    <>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          onClick={() => setOpenIdx(open ? -1 : idx)}
+                          className={cn(
+                            "h-9 rounded-lg text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:bg-brand-soft/40",
+                            hasActive && "text-brand",
+                          )}
+                        >
+                          <GroupIcon className="h-[16px] w-[16px]" />
+                          <span className="truncate">{group.label}</span>
+                          <ChevronDown
+                            className={cn(
+                              "ml-auto h-4 w-4 transition-transform",
+                              open && "rotate-180",
+                            )}
+                          />
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      {open &&
+                        group.items.map((item) => (
+                          <div key={item.to} className="pl-3">
+                            <NavRow
+                              item={item}
+                              active={isItemActive(pathname, item.to)}
+                              collapsed={false}
+                            />
+                          </div>
+                        ))}
+                    </>
+                  )}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })}
       </SidebarContent>
-      <SidebarFooter className="px-4 py-4 text-xs text-muted-foreground">
-        {!collapsed && <span>v1.0 · Jáwda Quality</span>}
+      <SidebarFooter className="border-t border-sidebar-border px-2 py-3">
+        <SidebarMenu className="gap-1">
+          {navFooter.map((item) => (
+            <NavRow
+              key={item.to}
+              item={item}
+              active={isItemActive(pathname, item.to)}
+              collapsed={collapsed}
+            />
+          ))}
+        </SidebarMenu>
+        {!collapsed && (
+          <div className="mt-3 px-2 text-[10px] text-muted-foreground">v1.0 · Jáwda Quality</div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

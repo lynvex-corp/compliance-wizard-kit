@@ -11,20 +11,34 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as TreinamentosRouteImport } from './routes/treinamentos'
+import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as RiscosRouteImport } from './routes/riscos'
+import { Route as ProducaoRouteImport } from './routes/producao'
+import { Route as ProcessosRouteImport } from './routes/processos'
 import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
+import { Route as PartesInteressadasRouteImport } from './routes/partes-interessadas'
 import { Route as NaoConformidadesRouteImport } from './routes/nao-conformidades'
+import { Route as MudancasSgRouteImport } from './routes/mudancas-sg'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndicadoresRouteImport } from './routes/indicadores'
+import { Route as EscopoSistemaRouteImport } from './routes/escopo-sistema'
 import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as ComunicacoesRouteImport } from './routes/comunicacoes'
+import { Route as CargosRouteImport } from './routes/cargos'
+import { Route as AvaliacaoPerformanceRouteImport } from './routes/avaliacao-performance'
 import { Route as AuditoriasRouteImport } from './routes/auditorias'
+import { Route as AquisicaoRouteImport } from './routes/aquisicao'
+import { Route as AprendizagemRouteImport } from './routes/aprendizagem'
+import { Route as AnaliseCenarioRouteImport } from './routes/analise-cenario'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlanosDeAcaoIndexRouteImport } from './routes/planos-de-acao.index'
 import { Route as NaoConformidadesIndexRouteImport } from './routes/nao-conformidades.index'
+import { Route as AuditoriasIndexRouteImport } from './routes/auditorias.index'
 import { Route as PlanosDeAcaoIdRouteImport } from './routes/planos-de-acao.$id'
 import { Route as NaoConformidadesNovaRouteImport } from './routes/nao-conformidades.nova'
 import { Route as NaoConformidadesIdRouteImport } from './routes/nao-conformidades.$id'
+import { Route as AuditoriasNovaRouteImport } from './routes/auditorias.nova'
 
 const UsuariosRoute = UsuariosRouteImport.update({
   id: '/usuarios',
@@ -36,9 +50,24 @@ const TreinamentosRoute = TreinamentosRouteImport.update({
   path: '/treinamentos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RiscosRoute = RiscosRouteImport.update({
   id: '/riscos',
   path: '/riscos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProducaoRoute = ProducaoRouteImport.update({
+  id: '/producao',
+  path: '/producao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProcessosRoute = ProcessosRouteImport.update({
+  id: '/processos',
+  path: '/processos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanosDeAcaoRoute = PlanosDeAcaoRouteImport.update({
@@ -46,9 +75,19 @@ const PlanosDeAcaoRoute = PlanosDeAcaoRouteImport.update({
   path: '/planos-de-acao',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartesInteressadasRoute = PartesInteressadasRouteImport.update({
+  id: '/partes-interessadas',
+  path: '/partes-interessadas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NaoConformidadesRoute = NaoConformidadesRouteImport.update({
   id: '/nao-conformidades',
   path: '/nao-conformidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MudancasSgRoute = MudancasSgRouteImport.update({
+  id: '/mudancas-sg',
+  path: '/mudancas-sg',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -61,6 +100,11 @@ const IndicadoresRoute = IndicadoresRouteImport.update({
   path: '/indicadores',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EscopoSistemaRoute = EscopoSistemaRouteImport.update({
+  id: '/escopo-sistema',
+  path: '/escopo-sistema',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocumentosRoute = DocumentosRouteImport.update({
   id: '/documentos',
   path: '/documentos',
@@ -71,9 +115,39 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComunicacoesRoute = ComunicacoesRouteImport.update({
+  id: '/comunicacoes',
+  path: '/comunicacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CargosRoute = CargosRouteImport.update({
+  id: '/cargos',
+  path: '/cargos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvaliacaoPerformanceRoute = AvaliacaoPerformanceRouteImport.update({
+  id: '/avaliacao-performance',
+  path: '/avaliacao-performance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuditoriasRoute = AuditoriasRouteImport.update({
   id: '/auditorias',
   path: '/auditorias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AquisicaoRoute = AquisicaoRouteImport.update({
+  id: '/aquisicao',
+  path: '/aquisicao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AprendizagemRoute = AprendizagemRouteImport.update({
+  id: '/aprendizagem',
+  path: '/aprendizagem',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnaliseCenarioRoute = AnaliseCenarioRouteImport.update({
+  id: '/analise-cenario',
+  path: '/analise-cenario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -91,6 +165,11 @@ const NaoConformidadesIndexRoute = NaoConformidadesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => NaoConformidadesRoute,
 } as any)
+const AuditoriasIndexRoute = AuditoriasIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuditoriasRoute,
+} as any)
 const PlanosDeAcaoIdRoute = PlanosDeAcaoIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -106,57 +185,103 @@ const NaoConformidadesIdRoute = NaoConformidadesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => NaoConformidadesRoute,
 } as any)
+const AuditoriasNovaRoute = AuditoriasNovaRouteImport.update({
+  id: '/nova',
+  path: '/nova',
+  getParentRoute: () => AuditoriasRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auditorias': typeof AuditoriasRoute
+  '/analise-cenario': typeof AnaliseCenarioRoute
+  '/aprendizagem': typeof AprendizagemRoute
+  '/aquisicao': typeof AquisicaoRoute
+  '/auditorias': typeof AuditoriasRouteWithChildren
+  '/avaliacao-performance': typeof AvaliacaoPerformanceRoute
+  '/cargos': typeof CargosRoute
+  '/comunicacoes': typeof ComunicacoesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
+  '/escopo-sistema': typeof EscopoSistemaRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
+  '/mudancas-sg': typeof MudancasSgRoute
   '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
+  '/partes-interessadas': typeof PartesInteressadasRoute
   '/planos-de-acao': typeof PlanosDeAcaoRouteWithChildren
+  '/processos': typeof ProcessosRoute
+  '/producao': typeof ProducaoRoute
   '/riscos': typeof RiscosRoute
+  '/suporte': typeof SuporteRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/auditorias/nova': typeof AuditoriasNovaRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
+  '/auditorias/': typeof AuditoriasIndexRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
   '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auditorias': typeof AuditoriasRoute
+  '/analise-cenario': typeof AnaliseCenarioRoute
+  '/aprendizagem': typeof AprendizagemRoute
+  '/aquisicao': typeof AquisicaoRoute
+  '/avaliacao-performance': typeof AvaliacaoPerformanceRoute
+  '/cargos': typeof CargosRoute
+  '/comunicacoes': typeof ComunicacoesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
+  '/escopo-sistema': typeof EscopoSistemaRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
+  '/mudancas-sg': typeof MudancasSgRoute
+  '/partes-interessadas': typeof PartesInteressadasRoute
+  '/processos': typeof ProcessosRoute
+  '/producao': typeof ProducaoRoute
   '/riscos': typeof RiscosRoute
+  '/suporte': typeof SuporteRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/auditorias/nova': typeof AuditoriasNovaRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
+  '/auditorias': typeof AuditoriasIndexRoute
   '/nao-conformidades': typeof NaoConformidadesIndexRoute
   '/planos-de-acao': typeof PlanosDeAcaoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auditorias': typeof AuditoriasRoute
+  '/analise-cenario': typeof AnaliseCenarioRoute
+  '/aprendizagem': typeof AprendizagemRoute
+  '/aquisicao': typeof AquisicaoRoute
+  '/auditorias': typeof AuditoriasRouteWithChildren
+  '/avaliacao-performance': typeof AvaliacaoPerformanceRoute
+  '/cargos': typeof CargosRoute
+  '/comunicacoes': typeof ComunicacoesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
+  '/escopo-sistema': typeof EscopoSistemaRoute
   '/indicadores': typeof IndicadoresRoute
   '/login': typeof LoginRoute
+  '/mudancas-sg': typeof MudancasSgRoute
   '/nao-conformidades': typeof NaoConformidadesRouteWithChildren
+  '/partes-interessadas': typeof PartesInteressadasRoute
   '/planos-de-acao': typeof PlanosDeAcaoRouteWithChildren
+  '/processos': typeof ProcessosRoute
+  '/producao': typeof ProducaoRoute
   '/riscos': typeof RiscosRoute
+  '/suporte': typeof SuporteRoute
   '/treinamentos': typeof TreinamentosRoute
   '/usuarios': typeof UsuariosRoute
+  '/auditorias/nova': typeof AuditoriasNovaRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
+  '/auditorias/': typeof AuditoriasIndexRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
   '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
 }
@@ -164,67 +289,120 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/analise-cenario'
+    | '/aprendizagem'
+    | '/aquisicao'
     | '/auditorias'
+    | '/avaliacao-performance'
+    | '/cargos'
+    | '/comunicacoes'
     | '/configuracoes'
     | '/documentos'
+    | '/escopo-sistema'
     | '/indicadores'
     | '/login'
+    | '/mudancas-sg'
     | '/nao-conformidades'
+    | '/partes-interessadas'
     | '/planos-de-acao'
+    | '/processos'
+    | '/producao'
     | '/riscos'
+    | '/suporte'
     | '/treinamentos'
     | '/usuarios'
+    | '/auditorias/nova'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
+    | '/auditorias/'
     | '/nao-conformidades/'
     | '/planos-de-acao/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/auditorias'
+    | '/analise-cenario'
+    | '/aprendizagem'
+    | '/aquisicao'
+    | '/avaliacao-performance'
+    | '/cargos'
+    | '/comunicacoes'
     | '/configuracoes'
     | '/documentos'
+    | '/escopo-sistema'
     | '/indicadores'
     | '/login'
+    | '/mudancas-sg'
+    | '/partes-interessadas'
+    | '/processos'
+    | '/producao'
     | '/riscos'
+    | '/suporte'
     | '/treinamentos'
     | '/usuarios'
+    | '/auditorias/nova'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
+    | '/auditorias'
     | '/nao-conformidades'
     | '/planos-de-acao'
   id:
     | '__root__'
     | '/'
+    | '/analise-cenario'
+    | '/aprendizagem'
+    | '/aquisicao'
     | '/auditorias'
+    | '/avaliacao-performance'
+    | '/cargos'
+    | '/comunicacoes'
     | '/configuracoes'
     | '/documentos'
+    | '/escopo-sistema'
     | '/indicadores'
     | '/login'
+    | '/mudancas-sg'
     | '/nao-conformidades'
+    | '/partes-interessadas'
     | '/planos-de-acao'
+    | '/processos'
+    | '/producao'
     | '/riscos'
+    | '/suporte'
     | '/treinamentos'
     | '/usuarios'
+    | '/auditorias/nova'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
+    | '/auditorias/'
     | '/nao-conformidades/'
     | '/planos-de-acao/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuditoriasRoute: typeof AuditoriasRoute
+  AnaliseCenarioRoute: typeof AnaliseCenarioRoute
+  AprendizagemRoute: typeof AprendizagemRoute
+  AquisicaoRoute: typeof AquisicaoRoute
+  AuditoriasRoute: typeof AuditoriasRouteWithChildren
+  AvaliacaoPerformanceRoute: typeof AvaliacaoPerformanceRoute
+  CargosRoute: typeof CargosRoute
+  ComunicacoesRoute: typeof ComunicacoesRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   DocumentosRoute: typeof DocumentosRoute
+  EscopoSistemaRoute: typeof EscopoSistemaRoute
   IndicadoresRoute: typeof IndicadoresRoute
   LoginRoute: typeof LoginRoute
+  MudancasSgRoute: typeof MudancasSgRoute
   NaoConformidadesRoute: typeof NaoConformidadesRouteWithChildren
+  PartesInteressadasRoute: typeof PartesInteressadasRoute
   PlanosDeAcaoRoute: typeof PlanosDeAcaoRouteWithChildren
+  ProcessosRoute: typeof ProcessosRoute
+  ProducaoRoute: typeof ProducaoRoute
   RiscosRoute: typeof RiscosRoute
+  SuporteRoute: typeof SuporteRoute
   TreinamentosRoute: typeof TreinamentosRoute
   UsuariosRoute: typeof UsuariosRoute
 }
@@ -245,11 +423,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TreinamentosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/riscos': {
       id: '/riscos'
       path: '/riscos'
       fullPath: '/riscos'
       preLoaderRoute: typeof RiscosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/producao': {
+      id: '/producao'
+      path: '/producao'
+      fullPath: '/producao'
+      preLoaderRoute: typeof ProducaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/processos': {
+      id: '/processos'
+      path: '/processos'
+      fullPath: '/processos'
+      preLoaderRoute: typeof ProcessosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planos-de-acao': {
@@ -259,11 +458,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanosDeAcaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/partes-interessadas': {
+      id: '/partes-interessadas'
+      path: '/partes-interessadas'
+      fullPath: '/partes-interessadas'
+      preLoaderRoute: typeof PartesInteressadasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/nao-conformidades': {
       id: '/nao-conformidades'
       path: '/nao-conformidades'
       fullPath: '/nao-conformidades'
       preLoaderRoute: typeof NaoConformidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mudancas-sg': {
+      id: '/mudancas-sg'
+      path: '/mudancas-sg'
+      fullPath: '/mudancas-sg'
+      preLoaderRoute: typeof MudancasSgRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -280,6 +493,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndicadoresRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/escopo-sistema': {
+      id: '/escopo-sistema'
+      path: '/escopo-sistema'
+      fullPath: '/escopo-sistema'
+      preLoaderRoute: typeof EscopoSistemaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/documentos': {
       id: '/documentos'
       path: '/documentos'
@@ -294,11 +514,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comunicacoes': {
+      id: '/comunicacoes'
+      path: '/comunicacoes'
+      fullPath: '/comunicacoes'
+      preLoaderRoute: typeof ComunicacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cargos': {
+      id: '/cargos'
+      path: '/cargos'
+      fullPath: '/cargos'
+      preLoaderRoute: typeof CargosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avaliacao-performance': {
+      id: '/avaliacao-performance'
+      path: '/avaliacao-performance'
+      fullPath: '/avaliacao-performance'
+      preLoaderRoute: typeof AvaliacaoPerformanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auditorias': {
       id: '/auditorias'
       path: '/auditorias'
       fullPath: '/auditorias'
       preLoaderRoute: typeof AuditoriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aquisicao': {
+      id: '/aquisicao'
+      path: '/aquisicao'
+      fullPath: '/aquisicao'
+      preLoaderRoute: typeof AquisicaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aprendizagem': {
+      id: '/aprendizagem'
+      path: '/aprendizagem'
+      fullPath: '/aprendizagem'
+      preLoaderRoute: typeof AprendizagemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analise-cenario': {
+      id: '/analise-cenario'
+      path: '/analise-cenario'
+      fullPath: '/analise-cenario'
+      preLoaderRoute: typeof AnaliseCenarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -322,6 +584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NaoConformidadesIndexRouteImport
       parentRoute: typeof NaoConformidadesRoute
     }
+    '/auditorias/': {
+      id: '/auditorias/'
+      path: '/'
+      fullPath: '/auditorias/'
+      preLoaderRoute: typeof AuditoriasIndexRouteImport
+      parentRoute: typeof AuditoriasRoute
+    }
     '/planos-de-acao/$id': {
       id: '/planos-de-acao/$id'
       path: '/$id'
@@ -343,8 +612,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NaoConformidadesIdRouteImport
       parentRoute: typeof NaoConformidadesRoute
     }
+    '/auditorias/nova': {
+      id: '/auditorias/nova'
+      path: '/nova'
+      fullPath: '/auditorias/nova'
+      preLoaderRoute: typeof AuditoriasNovaRouteImport
+      parentRoute: typeof AuditoriasRoute
+    }
   }
 }
+
+interface AuditoriasRouteChildren {
+  AuditoriasNovaRoute: typeof AuditoriasNovaRoute
+  AuditoriasIndexRoute: typeof AuditoriasIndexRoute
+}
+
+const AuditoriasRouteChildren: AuditoriasRouteChildren = {
+  AuditoriasNovaRoute: AuditoriasNovaRoute,
+  AuditoriasIndexRoute: AuditoriasIndexRoute,
+}
+
+const AuditoriasRouteWithChildren = AuditoriasRoute._addFileChildren(
+  AuditoriasRouteChildren,
+)
 
 interface NaoConformidadesRouteChildren {
   NaoConformidadesIdRoute: typeof NaoConformidadesIdRoute
@@ -377,14 +667,26 @@ const PlanosDeAcaoRouteWithChildren = PlanosDeAcaoRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuditoriasRoute: AuditoriasRoute,
+  AnaliseCenarioRoute: AnaliseCenarioRoute,
+  AprendizagemRoute: AprendizagemRoute,
+  AquisicaoRoute: AquisicaoRoute,
+  AuditoriasRoute: AuditoriasRouteWithChildren,
+  AvaliacaoPerformanceRoute: AvaliacaoPerformanceRoute,
+  CargosRoute: CargosRoute,
+  ComunicacoesRoute: ComunicacoesRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   DocumentosRoute: DocumentosRoute,
+  EscopoSistemaRoute: EscopoSistemaRoute,
   IndicadoresRoute: IndicadoresRoute,
   LoginRoute: LoginRoute,
+  MudancasSgRoute: MudancasSgRoute,
   NaoConformidadesRoute: NaoConformidadesRouteWithChildren,
+  PartesInteressadasRoute: PartesInteressadasRoute,
   PlanosDeAcaoRoute: PlanosDeAcaoRouteWithChildren,
+  ProcessosRoute: ProcessosRoute,
+  ProducaoRoute: ProducaoRoute,
   RiscosRoute: RiscosRoute,
+  SuporteRoute: SuporteRoute,
   TreinamentosRoute: TreinamentosRoute,
   UsuariosRoute: UsuariosRoute,
 }

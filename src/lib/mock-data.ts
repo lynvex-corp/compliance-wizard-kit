@@ -170,17 +170,69 @@ export const empresas = [
   { id: "3", nome: "Nova Aurora — Filial RS" },
 ];
 
-export const menuItems = [
-  { label: "Dashboard Executivo", to: "/", icon: "LayoutDashboard" as const },
-  { label: "Não Conformidades", to: "/nao-conformidades", icon: "AlertTriangle" as const },
-  { label: "Planos de Ação", to: "/planos-de-acao", icon: "ListChecks" as const },
-  { label: "Auditorias", to: "/auditorias", icon: "ClipboardCheck" as const },
-  { label: "Documentos", to: "/documentos", icon: "FileText" as const },
-  { label: "Indicadores e KPIs", to: "/indicadores", icon: "BarChart3" as const },
-  { label: "Riscos e Oportunidades", to: "/riscos", icon: "ShieldAlert" as const },
-  { label: "Treinamentos", to: "/treinamentos", icon: "GraduationCap" as const },
-  { label: "Usuários e Permissões", to: "/usuarios", icon: "Users" as const },
-  { label: "Configurações", to: "/configuracoes", icon: "Settings" as const },
+export type NavItem = {
+  label: string;
+  to: string;
+  icon: string;
+  externo?: boolean;
+};
+export type NavGroup = { label: string; icon: string; items: NavItem[] };
+
+export const navTop: NavItem = {
+  label: "Dashboard Executivo",
+  to: "/",
+  icon: "LayoutDashboard",
+};
+
+export const navGroups: NavGroup[] = [
+  {
+    label: "Gestão da Qualidade",
+    icon: "ShieldCheck",
+    items: [
+      { label: "Não Conformidades", to: "/nao-conformidades", icon: "AlertTriangle" },
+      { label: "Planos de Ação", to: "/planos-de-acao", icon: "ListChecks" },
+      { label: "Auditorias", to: "/auditorias", icon: "ClipboardCheck" },
+      { label: "Indicadores e KPIs", to: "/indicadores", icon: "BarChart3" },
+    ],
+  },
+  {
+    label: "Estratégia",
+    icon: "Compass",
+    items: [
+      { label: "Análise de Cenário", to: "/analise-cenario", icon: "Radar" },
+      { label: "Partes Interessadas", to: "/partes-interessadas", icon: "Handshake" },
+      { label: "Escopo do Sistema", to: "/escopo-sistema", icon: "Target" },
+      { label: "Riscos e Oportunidades", to: "/riscos", icon: "ShieldAlert" },
+      { label: "Mudanças no SG", to: "/mudancas-sg", icon: "Shuffle" },
+    ],
+  },
+  {
+    label: "Processos e Operação",
+    icon: "Workflow",
+    items: [
+      { label: "Processos e Fluxos", to: "/processos", icon: "GitBranch" },
+      { label: "Documentos", to: "/documentos", icon: "FileText" },
+      { label: "Aquisição/Fornecedores", to: "/aquisicao", icon: "Truck" },
+      { label: "Produção e Serviços", to: "/producao", icon: "Factory", externo: true },
+      { label: "Comunicações", to: "/comunicacoes", icon: "MessageSquare" },
+    ],
+  },
+  {
+    label: "Pessoas",
+    icon: "UsersRound",
+    items: [
+      { label: "Cargos e Perfis", to: "/cargos", icon: "IdCard", externo: true },
+      { label: "Gestão de Aprendizagem", to: "/aprendizagem", icon: "BookOpen" },
+      { label: "Avaliação de Performance", to: "/avaliacao-performance", icon: "Gauge" },
+    ],
+  },
+];
+
+export const navFooter: NavItem[] = [
+  { label: "Treinamentos da Plataforma", to: "/treinamentos", icon: "GraduationCap" },
+  { label: "Usuários e Permissões", to: "/usuarios", icon: "Users" },
+  { label: "Configurações", to: "/configuracoes", icon: "Settings" },
+  { label: "Suporte", to: "/suporte", icon: "LifeBuoy" },
 ];
 
 export function severityClasses(sev: Severity) {
@@ -749,3 +801,194 @@ export const mockIndicadores: Indicador[] = [
     planosVinculados: ["plano-8"],
   },
 ];
+// ============================================================
+// Auditorias — mock data
+// ============================================================
+
+export type AuditoriaTipo = "Interna" | "Externa";
+export type AuditoriaStatus = "Programada" | "Em andamento" | "Concluída" | "Atrasada";
+export type AuditoriaEvento =
+  | "Certificação"
+  | "Monitoração 12 meses"
+  | "Monitoração 24 meses"
+  | "Recertificação"
+  | "Auditoria Interna Ciclo 2026";
+
+export interface Auditoria {
+  id: string;
+  codigo: string;
+  tipo: AuditoriaTipo;
+  certificadora?: string;
+  normas: string[];
+  evento: AuditoriaEvento;
+  escopo: string;
+  status: AuditoriaStatus;
+  mesInicio: number; // 1-12
+  mesFim: number;
+  dataInicio: string;
+  dataFim: string;
+  auditorLider: { nome: string; iniciais: string };
+  locais: string[];
+  apontamentos: { opm: number; ncSimples: number; ncModerada: number; ncCritica: number };
+}
+
+export const auditoriasKPIs = {
+  totalAno: 8,
+  realizadas: 5,
+  programadas: 2,
+  emAndamento: 1,
+  apontamentosAbertos: 12,
+  taxaConformidade: 94,
+};
+
+export const mockAuditorias: Auditoria[] = [
+  {
+    id: "aud-1",
+    codigo: "AUD-2026-001",
+    tipo: "Interna",
+    normas: ["ISO 9001"],
+    evento: "Auditoria Interna Ciclo 2026",
+    escopo: "Processos comerciais e engenharia — Sede",
+    status: "Concluída",
+    mesInicio: 2,
+    mesFim: 2,
+    dataInicio: "2026-02-10",
+    dataFim: "2026-02-12",
+    auditorLider: { nome: "Marcos Vinícius", iniciais: "MV" },
+    locais: ["Sede/Escritório"],
+    apontamentos: { opm: 3, ncSimples: 2, ncModerada: 1, ncCritica: 0 },
+  },
+  {
+    id: "aud-2",
+    codigo: "AUD-2026-002",
+    tipo: "Externa",
+    certificadora: "BRTÜV",
+    normas: ["ISO 9001", "ISO 14001"],
+    evento: "Monitoração 12 meses",
+    escopo: "SGI — matriz e obra Zona Norte",
+    status: "Concluída",
+    mesInicio: 3,
+    mesFim: 3,
+    dataInicio: "2026-03-18",
+    dataFim: "2026-03-20",
+    auditorLider: { nome: "Auditor Externo — BRTÜV", iniciais: "BT" },
+    locais: ["Sede/Escritório", "Obra Zona Norte"],
+    apontamentos: { opm: 4, ncSimples: 3, ncModerada: 2, ncCritica: 0 },
+  },
+  {
+    id: "aud-3",
+    codigo: "AUD-2026-003",
+    tipo: "Interna",
+    normas: ["ISO 45001"],
+    evento: "Auditoria Interna Ciclo 2026",
+    escopo: "Saúde e segurança nas obras",
+    status: "Concluída",
+    mesInicio: 4,
+    mesFim: 4,
+    dataInicio: "2026-04-08",
+    dataFim: "2026-04-09",
+    auditorLider: { nome: "Beatriz Souza", iniciais: "BS" },
+    locais: ["Obra Zona Sul", "Obra Zona Norte"],
+    apontamentos: { opm: 2, ncSimples: 1, ncModerada: 1, ncCritica: 1 },
+  },
+  {
+    id: "aud-4",
+    codigo: "AUD-2026-004",
+    tipo: "Interna",
+    normas: ["ISO 9001", "ISO 14001"],
+    evento: "Auditoria Interna Ciclo 2026",
+    escopo: "Suprimentos e logística",
+    status: "Concluída",
+    mesInicio: 5,
+    mesFim: 5,
+    dataInicio: "2026-05-14",
+    dataFim: "2026-05-15",
+    auditorLider: { nome: "Ana Ribeiro", iniciais: "AR" },
+    locais: ["Sede/Escritório", "Almoxarifado Central"],
+    apontamentos: { opm: 1, ncSimples: 2, ncModerada: 0, ncCritica: 0 },
+  },
+  {
+    id: "aud-5",
+    codigo: "AUD-2026-005",
+    tipo: "Interna",
+    normas: ["ISO 9001"],
+    evento: "Auditoria Interna Ciclo 2026",
+    escopo: "Recursos humanos e treinamentos",
+    status: "Concluída",
+    mesInicio: 6,
+    mesFim: 6,
+    dataInicio: "2026-06-02",
+    dataFim: "2026-06-03",
+    auditorLider: { nome: "Fernanda Lima", iniciais: "FL" },
+    locais: ["Sede/Escritório"],
+    apontamentos: { opm: 2, ncSimples: 1, ncModerada: 0, ncCritica: 0 },
+  },
+  {
+    id: "aud-6",
+    codigo: "AUD-2026-006",
+    tipo: "Externa",
+    certificadora: "DNV",
+    normas: ["ISO 9001", "ISO 14001", "ISO 45001"],
+    evento: "Monitoração 12 meses",
+    escopo: "SGI — todas as obras",
+    status: "Em andamento",
+    mesInicio: 7,
+    mesFim: 7,
+    dataInicio: "2026-07-13",
+    dataFim: "2026-07-17",
+    auditorLider: { nome: "Auditor Externo — DNV", iniciais: "DN" },
+    locais: ["Sede/Escritório", "Obra Zona Norte", "Obra Zona Sul"],
+    apontamentos: { opm: 1, ncSimples: 0, ncModerada: 0, ncCritica: 0 },
+  },
+  {
+    id: "aud-7",
+    codigo: "AUD-2026-007",
+    tipo: "Interna",
+    normas: ["ISO 14001"],
+    evento: "Auditoria Interna Ciclo 2026",
+    escopo: "Gestão ambiental — utilidades e resíduos",
+    status: "Programada",
+    mesInicio: 9,
+    mesFim: 9,
+    dataInicio: "2026-09-15",
+    dataFim: "2026-09-16",
+    auditorLider: { nome: "Rafael Costa", iniciais: "RC" },
+    locais: ["Sede/Escritório", "Obra Zona Sul"],
+    apontamentos: { opm: 0, ncSimples: 0, ncModerada: 0, ncCritica: 0 },
+  },
+  {
+    id: "aud-8",
+    codigo: "AUD-2026-008",
+    tipo: "Externa",
+    certificadora: "BRTÜV",
+    normas: ["ISO 9001", "ISO 14001"],
+    evento: "Recertificação",
+    escopo: "SGI — ciclo de recertificação",
+    status: "Programada",
+    mesInicio: 11,
+    mesFim: 11,
+    dataInicio: "2026-11-09",
+    dataFim: "2026-11-13",
+    auditorLider: { nome: "Auditor Externo — BRTÜV", iniciais: "BT" },
+    locais: ["Sede/Escritório", "Obra Zona Norte", "Obra Zona Sul", "Almoxarifado Central"],
+    apontamentos: { opm: 0, ncSimples: 0, ncModerada: 0, ncCritica: 0 },
+  },
+];
+
+export const auditoriaStatusClasses: Record<AuditoriaStatus, string> = {
+  Programada: "bg-brand-soft text-brand border-brand/20",
+  "Em andamento": "bg-brand text-white border-brand",
+  Concluída: "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
+  Atrasada: "bg-[color:var(--severity-critical)]/15 text-[color:var(--severity-critical)] border-[color:var(--severity-critical)]/30",
+};
+
+export const locaisAuditaveis = [
+  "Sede/Escritório",
+  "Obra Zona Norte",
+  "Obra Zona Sul",
+  "Almoxarifado Central",
+  "Filial SP",
+  "Filial RS",
+];
+
+export const normasDisponiveis = ["ISO 9001", "ISO 14001", "ISO 45001", "ISO 27001", "ISO 50001"];
