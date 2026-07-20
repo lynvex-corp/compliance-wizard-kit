@@ -170,17 +170,69 @@ export const empresas = [
   { id: "3", nome: "Nova Aurora — Filial RS" },
 ];
 
-export const menuItems = [
-  { label: "Dashboard Executivo", to: "/", icon: "LayoutDashboard" as const },
-  { label: "Não Conformidades", to: "/nao-conformidades", icon: "AlertTriangle" as const },
-  { label: "Planos de Ação", to: "/planos-de-acao", icon: "ListChecks" as const },
-  { label: "Auditorias", to: "/auditorias", icon: "ClipboardCheck" as const },
-  { label: "Documentos", to: "/documentos", icon: "FileText" as const },
-  { label: "Indicadores e KPIs", to: "/indicadores", icon: "BarChart3" as const },
-  { label: "Riscos e Oportunidades", to: "/riscos", icon: "ShieldAlert" as const },
-  { label: "Treinamentos", to: "/treinamentos", icon: "GraduationCap" as const },
-  { label: "Usuários e Permissões", to: "/usuarios", icon: "Users" as const },
-  { label: "Configurações", to: "/configuracoes", icon: "Settings" as const },
+export type NavItem = {
+  label: string;
+  to: string;
+  icon: string;
+  externo?: boolean;
+};
+export type NavGroup = { label: string; icon: string; items: NavItem[] };
+
+export const navTop: NavItem = {
+  label: "Dashboard Executivo",
+  to: "/",
+  icon: "LayoutDashboard",
+};
+
+export const navGroups: NavGroup[] = [
+  {
+    label: "Gestão da Qualidade",
+    icon: "ShieldCheck",
+    items: [
+      { label: "Não Conformidades", to: "/nao-conformidades", icon: "AlertTriangle" },
+      { label: "Planos de Ação", to: "/planos-de-acao", icon: "ListChecks" },
+      { label: "Auditorias", to: "/auditorias", icon: "ClipboardCheck" },
+      { label: "Indicadores e KPIs", to: "/indicadores", icon: "BarChart3" },
+    ],
+  },
+  {
+    label: "Estratégia",
+    icon: "Compass",
+    items: [
+      { label: "Análise de Cenário", to: "/analise-cenario", icon: "Radar" },
+      { label: "Partes Interessadas", to: "/partes-interessadas", icon: "Handshake" },
+      { label: "Escopo do Sistema", to: "/escopo-sistema", icon: "Target" },
+      { label: "Riscos e Oportunidades", to: "/riscos", icon: "ShieldAlert" },
+      { label: "Mudanças no SG", to: "/mudancas-sg", icon: "Shuffle" },
+    ],
+  },
+  {
+    label: "Processos e Operação",
+    icon: "Workflow",
+    items: [
+      { label: "Processos e Fluxos", to: "/processos", icon: "GitBranch" },
+      { label: "Documentos", to: "/documentos", icon: "FileText" },
+      { label: "Aquisição/Fornecedores", to: "/aquisicao", icon: "Truck" },
+      { label: "Produção e Serviços", to: "/producao", icon: "Factory", externo: true },
+      { label: "Comunicações", to: "/comunicacoes", icon: "MessageSquare" },
+    ],
+  },
+  {
+    label: "Pessoas",
+    icon: "UsersRound",
+    items: [
+      { label: "Cargos e Perfis", to: "/cargos", icon: "IdCard", externo: true },
+      { label: "Gestão de Aprendizagem", to: "/aprendizagem", icon: "BookOpen" },
+      { label: "Avaliação de Performance", to: "/avaliacao-performance", icon: "Gauge" },
+    ],
+  },
+];
+
+export const navFooter: NavItem[] = [
+  { label: "Treinamentos da Plataforma", to: "/treinamentos", icon: "GraduationCap" },
+  { label: "Usuários e Permissões", to: "/usuarios", icon: "Users" },
+  { label: "Configurações", to: "/configuracoes", icon: "Settings" },
+  { label: "Suporte", to: "/suporte", icon: "LifeBuoy" },
 ];
 
 export function severityClasses(sev: Severity) {
