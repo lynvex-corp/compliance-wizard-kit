@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/app/placeholder-page";
+import { EscopoSistemaPage } from "@/components/estrategia/escopo-sistema";
 
 export const Route = createFileRoute("/escopo-sistema")({
-  component: () => <PlaceholderPage title="Escopo do Sistema" description="Definição e limites do sistema de gestão." />,
+  component: EscopoSistemaPage,
 });

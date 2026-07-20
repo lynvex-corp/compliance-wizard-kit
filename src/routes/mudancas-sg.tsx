@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/app/placeholder-page";
+import { MudancasSGPage } from "@/components/estrategia/mudancas-sg";
 
 export const Route = createFileRoute("/mudancas-sg")({
-  component: () => <PlaceholderPage title="Mudanças no SG" description="Controle de mudanças no sistema de gestão." />,
+  component: MudancasSGPage,
 });

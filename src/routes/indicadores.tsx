@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { IndicadoresPage } from "@/components/indicadores/page";
+import { IndicadoresDashboard } from "@/components/indicadores/dashboard";
 
 export const Route = createFileRoute("/indicadores")({
-  component: IndicadoresPage,
+  component: IndicadoresDashboard,
 });
