@@ -35,6 +35,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlanosDeAcaoIndexRouteImport } from './routes/planos-de-acao.index'
 import { Route as NaoConformidadesIndexRouteImport } from './routes/nao-conformidades.index'
 import { Route as AuditoriasIndexRouteImport } from './routes/auditorias.index'
+import { Route as PlanosDeAcaoNovoRouteImport } from './routes/planos-de-acao.novo'
 import { Route as PlanosDeAcaoIdRouteImport } from './routes/planos-de-acao.$id'
 import { Route as NaoConformidadesNovaRouteImport } from './routes/nao-conformidades.nova'
 import { Route as NaoConformidadesIdRouteImport } from './routes/nao-conformidades.$id'
@@ -172,6 +173,11 @@ const AuditoriasIndexRoute = AuditoriasIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuditoriasRoute,
 } as any)
+const PlanosDeAcaoNovoRoute = PlanosDeAcaoNovoRouteImport.update({
+  id: '/novo',
+  path: '/novo',
+  getParentRoute: () => PlanosDeAcaoRoute,
+} as any)
 const PlanosDeAcaoIdRoute = PlanosDeAcaoIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
+  '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias/': typeof AuditoriasIndexRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
   '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
@@ -264,6 +271,7 @@ export interface FileRoutesByTo {
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
+  '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias': typeof AuditoriasIndexRoute
   '/nao-conformidades': typeof NaoConformidadesIndexRoute
   '/planos-de-acao': typeof PlanosDeAcaoIndexRoute
@@ -299,6 +307,7 @@ export interface FileRoutesById {
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
+  '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias/': typeof AuditoriasIndexRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
   '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
@@ -335,6 +344,7 @@ export interface FileRouteTypes {
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
+    | '/planos-de-acao/novo'
     | '/auditorias/'
     | '/nao-conformidades/'
     | '/planos-de-acao/'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
+    | '/planos-de-acao/novo'
     | '/auditorias'
     | '/nao-conformidades'
     | '/planos-de-acao'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
+    | '/planos-de-acao/novo'
     | '/auditorias/'
     | '/nao-conformidades/'
     | '/planos-de-acao/'
@@ -615,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuditoriasIndexRouteImport
       parentRoute: typeof AuditoriasRoute
     }
+    '/planos-de-acao/novo': {
+      id: '/planos-de-acao/novo'
+      path: '/novo'
+      fullPath: '/planos-de-acao/novo'
+      preLoaderRoute: typeof PlanosDeAcaoNovoRouteImport
+      parentRoute: typeof PlanosDeAcaoRoute
+    }
     '/planos-de-acao/$id': {
       id: '/planos-de-acao/$id'
       path: '/$id'
@@ -705,11 +724,13 @@ const NaoConformidadesRouteWithChildren =
 
 interface PlanosDeAcaoRouteChildren {
   PlanosDeAcaoIdRoute: typeof PlanosDeAcaoIdRoute
+  PlanosDeAcaoNovoRoute: typeof PlanosDeAcaoNovoRoute
   PlanosDeAcaoIndexRoute: typeof PlanosDeAcaoIndexRoute
 }
 
 const PlanosDeAcaoRouteChildren: PlanosDeAcaoRouteChildren = {
   PlanosDeAcaoIdRoute: PlanosDeAcaoIdRoute,
+  PlanosDeAcaoNovoRoute: PlanosDeAcaoNovoRoute,
   PlanosDeAcaoIndexRoute: PlanosDeAcaoIndexRoute,
 }
 
