@@ -96,6 +96,20 @@ export interface ParteInteressada {
   requisitos: string;
 }
 
+export interface EscopoRevisao {
+  rev: string; // "00", "01"
+  data: string; // ISO
+  texto: string;
+  autor: string;
+}
+
+export interface Exclusao {
+  id: string;
+  requisito: string;
+  descricao: string;
+  justificativa: string;
+}
+
 export interface Documento {
   id: string;
   codigo: string;
@@ -145,6 +159,9 @@ interface JawdaState {
   colaboradores: Colaborador[];
   notificacoes: AppNotification[];
   logAtividades: Activity[];
+  escopoTexto: string;
+  escopoRevisoes: EscopoRevisao[];
+  exclusoes: Exclusao[];
 }
 
 interface JawdaContextValue extends JawdaState {
@@ -165,6 +182,18 @@ interface JawdaContextValue extends JawdaState {
   addApontamento: (a: Partial<Apontamento> & { auditoriaId: string; requisito: string; tipo: Apontamento["tipo"] }) => Apontamento;
   addRisco: (r: Partial<Risco> & { descricao: string }) => Risco;
   addSwotItem: (item: Omit<SwotItem, "id">) => SwotItem;
+  updateSwotItem: (id: string, patch: Partial<SwotItem>) => void;
+  removeSwotItem: (id: string) => void;
+  moveSwotItem: (id: string, quadrante: SwotItem["quadrante"]) => void;
+
+  addParte: (p: Omit<ParteInteressada, "id">) => ParteInteressada;
+  updateParte: (id: string, patch: Partial<ParteInteressada>) => void;
+  removeParte: (id: string) => void;
+
+  updateEscopoTexto: (novoTexto: string) => void;
+  addExclusao: (e: Omit<Exclusao, "id">) => Exclusao;
+  updateExclusao: (id: string, patch: Partial<Exclusao>) => void;
+  removeExclusao: (id: string) => void;
 
   kpis: {
     conformidade: number;
@@ -184,6 +213,48 @@ const JawdaContext = createContext<JawdaContextValue | null>(null);
  * ============================================================ */
 
 const NOW_ISO = new Date("2026-07-15T14:30:00Z").toISOString();
+
+/* ============================================================
+ * Seeds de Estratégia (SWOT / Partes / Escopo)
+ * ============================================================ */
+
+const seedSwot: SwotItem[] = [
+  { id: "swot-s1", quadrante: "F", texto: "Equipe técnica certificada (12 engenheiros PMP/Lean)" },
+  { id: "swot-s2", quadrante: "F", texto: "Marca reconhecida — 22 anos de mercado" },
+  { id: "swot-s3", quadrante: "F", texto: "Certificação ISO 9001 ativa desde 2011" },
+  { id: "swot-w1", quadrante: "W", texto: "Turnover de 28% no chão de fábrica" },
+  { id: "swot-w2", quadrante: "W", texto: "ERP e MES sem integração — dupla digitação" },
+  { id: "swot-w3", quadrante: "W", texto: "Baixa maturidade digital em processos operacionais" },
+  { id: "swot-o1", quadrante: "O", texto: "Expansão para mercado sul (SC/RS) com demanda mapeada" },
+  { id: "swot-o2", quadrante: "O", texto: "Linha de crédito verde BNDES para modernização" },
+  { id: "swot-o3", quadrante: "O", texto: "Parceria de P&D com UFMG" },
+  { id: "swot-t1", quadrante: "T", texto: "Nova RDC 658/2022 amplia exigências até 2027" },
+  { id: "swot-t2", quadrante: "T", texto: "Concorrente asiático com preço 18% abaixo" },
+  { id: "swot-t3", quadrante: "T", texto: "Escassez regional de soldadores e operadores" },
+];
+
+const seedPartes: ParteInteressada[] = [
+  { id: "pi-1", nome: "Clientes Corporativos (Top 20)", categoria: "Cliente", influencia: 5, interesse: 5, necessidades: "Prazo, qualidade e rastreabilidade", requisitos: "ISO 9001, SLA ≤ 5 dias" },
+  { id: "pi-2", nome: "Colaboradores diretos", categoria: "Colaborador", influencia: 4, interesse: 5, necessidades: "Ambiente seguro e desenvolvimento", requisitos: "NR-05, NR-35, plano de carreira" },
+  { id: "pi-3", nome: "Fornecedores críticos (Classe A)", categoria: "Fornecedor", influencia: 4, interesse: 3, necessidades: "Previsibilidade de compra e pagamento", requisitos: "Homologação + auditoria anual" },
+  { id: "pi-4", nome: "ANVISA", categoria: "Órgão regulador", influencia: 5, interesse: 3, necessidades: "Conformidade sanitária plena", requisitos: "RDC 658/2022 — BPF" },
+  { id: "pi-5", nome: "Comunidade do entorno", categoria: "Comunidade", influencia: 2, interesse: 4, necessidades: "Baixo impacto ambiental e ruído", requisitos: "Licenciamento IBAMA" },
+  { id: "pi-6", nome: "Acionistas / Board", categoria: "Acionista", influencia: 5, interesse: 4, necessidades: "Retorno financeiro sustentável", requisitos: "Relatórios trimestrais + compliance" },
+];
+
+const ESCOPO_INICIAL =
+  "O Sistema de Gestão Integrada da Indústria Nova Aurora Ltda. abrange as atividades de recebimento, fabricação, envase, controle de qualidade, armazenagem e expedição de produtos alimentícios e farmacêuticos nas unidades da Matriz (Betim/MG) e Filial SP (Guarulhos/SP), contemplando todos os processos de suporte relacionados — suprimentos, engenharia, manutenção, recursos humanos, segurança do trabalho e meio ambiente.";
+
+const seedRevisoes: EscopoRevisao[] = [
+  { rev: "05", data: "2025-08-14T10:00:00Z", texto: "Inclusão da Filial SP no escopo operacional.", autor: "Ana Ribeiro" },
+  { rev: "06", data: "2026-01-22T10:00:00Z", texto: "Filial RS adicionada como centro de distribuição.", autor: "Rafael Costa" },
+  { rev: "07", data: "2026-03-12T10:00:00Z", texto: ESCOPO_INICIAL, autor: "Ana Ribeiro" },
+];
+
+const seedExclusoes: Exclusao[] = [
+  { id: "exc-1", requisito: "ISO 9001 · 8.3", descricao: "Projeto e desenvolvimento de produtos", justificativa: "A organização atua exclusivamente na fabricação sob especificação do cliente, não realizando projeto próprio." },
+  { id: "exc-2", requisito: "ISO 9001 · 7.1.5.2", descricao: "Rastreabilidade de medição", justificativa: "Aplicável apenas a instrumentos críticos — em revisão pela metrologia." },
+];
 
 function seedNotifications(state: Pick<JawdaState, "planosDeAcao" | "naoConformidades" | "auditorias">): AppNotification[] {
   const notifs: AppNotification[] = [];
@@ -277,8 +348,10 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
   const [indicadores] = useState<Indicador[]>(mockIndicadores);
   const [documentos] = useState<Documento[]>([]);
   const [fornecedores] = useState<Fornecedor[]>([]);
-  const [partesInteressadas, setPartes] = useState<ParteInteressada[]>([]);
-  const [swotItens, setSwot] = useState<SwotItem[]>([]);
+  const [partesInteressadas, setPartes] = useState<ParteInteressada[]>(seedPartes);
+  const [swotItens, setSwot] = useState<SwotItem[]>(seedSwot);
+  const [escopoRevisoes, setEscopoRevisoes] = useState<EscopoRevisao[]>(seedRevisoes);
+  const [exclusoes, setExclusoes] = useState<Exclusao[]>(seedExclusoes);
   const [colaboradores] = useState<Colaborador[]>([]);
   const [notificacoes, setNotificacoes] = useState<AppNotification[]>(() =>
     seedNotifications({ planosDeAcao: mockPlanos, naoConformidades: mockNCs, auditorias: mockAuditorias }),
@@ -535,7 +608,86 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
   const addSwotItem = useCallback((item: Omit<SwotItem, "id">) => {
     const s: SwotItem = { ...item, id: `swot-${Date.now()}` };
     setSwot((prev) => [s, ...prev]);
+    logActivity({ verb: "adicionou item SWOT", target: item.quadrante, targetType: "Sistema" });
     return s;
+  }, [logActivity]);
+
+  const updateSwotItem = useCallback((id: string, patch: Partial<SwotItem>) => {
+    setSwot((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  }, []);
+
+  const removeSwotItem = useCallback((id: string) => {
+    setSwot((prev) => prev.filter((s) => s.id !== id));
+  }, []);
+
+  const moveSwotItem = useCallback(
+    (id: string, quadrante: SwotItem["quadrante"]) => {
+      setSwot((prev) => prev.map((s) => (s.id === id ? { ...s, quadrante } : s)));
+    },
+    [],
+  );
+
+  const addParte = useCallback(
+    (p: Omit<ParteInteressada, "id">) => {
+      const parte: ParteInteressada = { ...p, id: `pi-${Date.now()}` };
+      setPartes((prev) => [parte, ...prev]);
+      logActivity({ verb: "cadastrou parte interessada", target: p.nome, targetType: "Sistema" });
+      return parte;
+    },
+    [logActivity],
+  );
+
+  const updateParte = useCallback((id: string, patch: Partial<ParteInteressada>) => {
+    setPartes((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  }, []);
+
+  const removeParte = useCallback((id: string) => {
+    setPartes((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  const updateEscopoTexto = useCallback(
+    (novoTexto: string) => {
+      setEscopoRevisoes((prev) => {
+        const ultimaRev = prev[prev.length - 1]?.rev ?? "00";
+        const proxRev = String(parseInt(ultimaRev, 10) + 1).padStart(2, "0");
+        const nova: EscopoRevisao = {
+          rev: proxRev,
+          data: new Date().toISOString(),
+          texto: novoTexto,
+          autor: CURRENT_USER.nome,
+        };
+        return [...prev, nova];
+      });
+      logActivity({ verb: "revisou escopo do SGI", target: "DOC-SG-001", targetType: "Sistema" });
+      addNotification({
+        title: "Escopo do SGI revisado",
+        description: "Nova revisão registrada no histórico.",
+        tone: "success",
+      });
+    },
+    [logActivity, addNotification],
+  );
+
+  const addExclusao = useCallback((e: Omit<Exclusao, "id">) => {
+    const ex: Exclusao = { ...e, id: `exc-${Date.now()}` };
+    setExclusoes((prev) => [...prev, ex]);
+    if (!e.justificativa.trim()) {
+      addNotification({
+        title: "Exclusão sem justificativa",
+        description: `${e.requisito} — risco de NC no item 4.3`,
+        tone: "danger",
+        link: "/escopo-sistema",
+      });
+    }
+    return ex;
+  }, [addNotification]);
+
+  const updateExclusao = useCallback((id: string, patch: Partial<Exclusao>) => {
+    setExclusoes((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+  }, []);
+
+  const removeExclusao = useCallback((id: string) => {
+    setExclusoes((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
   const kpis = useMemo(() => {
@@ -577,6 +729,9 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
     colaboradores,
     notificacoes,
     logAtividades,
+    escopoTexto: escopoRevisoes[escopoRevisoes.length - 1]?.texto ?? ESCOPO_INICIAL,
+    escopoRevisoes,
+    exclusoes,
     usuario: CURRENT_USER,
     nextCode,
     logActivity,
@@ -593,6 +748,16 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
     addApontamento,
     addRisco,
     addSwotItem,
+    updateSwotItem,
+    removeSwotItem,
+    moveSwotItem,
+    addParte,
+    updateParte,
+    removeParte,
+    updateEscopoTexto,
+    addExclusao,
+    updateExclusao,
+    removeExclusao,
     kpis,
   };
 
