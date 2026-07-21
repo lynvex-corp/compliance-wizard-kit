@@ -1,9 +1,10 @@
-import { Search, Bell, ChevronDown, LogOut, User } from "lucide-react";
+import { Search, ChevronDown, LogOut, User } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
+import { NotificationsDrawer } from "./notifications-drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,16 +49,7 @@ export function Topbar() {
 
       <div className="ml-auto flex items-center gap-1 md:ml-0">
       <ThemeToggle />
-      <Button
-        variant="ghost"
-        size="icon"
-        className="relative h-9 w-9 rounded-lg"
-      >
-        <Bell className="h-[18px] w-[18px]" />
-        <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[color:var(--severity-critical)] px-1 text-[10px] font-semibold text-white">
-          4
-        </span>
-      </Button>
+      <NotificationsDrawer />
       </div>
 
       <DropdownMenu>

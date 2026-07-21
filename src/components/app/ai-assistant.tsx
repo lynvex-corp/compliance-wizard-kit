@@ -11,7 +11,6 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useJawda } from "@/lib/jawda-store";
@@ -157,7 +156,7 @@ export function AIAssistant() {
             </div>
           </SheetHeader>
 
-          <ScrollArea className="flex-1" viewportRef={scrollRef}>
+          <div ref={scrollRef} className="flex-1 overflow-y-auto">
             <div className="space-y-4 px-5 py-4">
               {messages.map((m) => (
                 <MessageBubble
@@ -168,7 +167,7 @@ export function AIAssistant() {
               ))}
               {thinking && <ThinkingBubble />}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Chips */}
           {messages.length <= 1 && !thinking && (
