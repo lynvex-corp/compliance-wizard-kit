@@ -694,8 +694,14 @@ export function PlanosDeAcaoPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filtered.map((p) => (
-                        <TableRow key={p.id} className="border-border/60 transition-colors hover:bg-brand-soft/30">
+                       {filtered.map((p) => (
+                         <TableRow
+                           key={p.id}
+                           className={cn(
+                             "border-border/60 transition-colors hover:bg-brand-soft/30",
+                             isAtrasado(p) && "border-l-2 border-l-[color:var(--severity-critical)] bg-[color:var(--severity-critical)]/5",
+                           )}
+                         >
                           <TableCell className="pl-6 font-mono text-xs font-semibold text-brand">{p.codigo}</TableCell>
                           <TableCell className="max-w-[320px] truncate text-sm">{p.descricao}</TableCell>
                           <TableCell><OrigemBadge tipo={p.origemTipo} /></TableCell>
