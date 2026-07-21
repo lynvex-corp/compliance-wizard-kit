@@ -35,11 +35,11 @@ import {
   mockNCs,
   ncsPorMes,
   ncsPorGravidade,
-  kpis,
   severityClasses,
   statusClasses,
 } from "@/lib/mock-data";
-import { mockPlanos, eficaciaPlanosMensal } from "@/lib/mock-data";
+import { eficaciaPlanosMensal } from "@/lib/mock-data";
+import { useJawda } from "@/lib/jawda-store";
 import { Line, LineChart } from "recharts";
 import { Link } from "@tanstack/react-router";
 
@@ -88,10 +88,12 @@ function KpiCard({
 }
 
 export function Dashboard() {
-  const ultimasNCs = [...mockNCs]
+  const { naoConformidades, kpis } = useJawda();
+  const source = naoConformidades.length ? naoConformidades : mockNCs;
+  const ultimasNCs = [...source]
     .sort((a, b) => (a.criadoEm < b.criadoEm ? 1 : -1))
     .slice(0, 5);
-  const planosAtrasados = mockPlanos.filter((p) => p.status === "Atrasado").length;
+  const planosAtrasados = kpis.planosAtrasados;
   const eficaciaAtual = eficaciaPlanosMensal[eficaciaPlanosMensal.length - 1].taxa;
 
   return (
