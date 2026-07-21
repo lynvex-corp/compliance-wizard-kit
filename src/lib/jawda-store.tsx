@@ -348,8 +348,10 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
   const [indicadores] = useState<Indicador[]>(mockIndicadores);
   const [documentos] = useState<Documento[]>([]);
   const [fornecedores] = useState<Fornecedor[]>([]);
-  const [partesInteressadas, setPartes] = useState<ParteInteressada[]>([]);
-  const [swotItens, setSwot] = useState<SwotItem[]>([]);
+  const [partesInteressadas, setPartes] = useState<ParteInteressada[]>(seedPartes);
+  const [swotItens, setSwot] = useState<SwotItem[]>(seedSwot);
+  const [escopoRevisoes, setEscopoRevisoes] = useState<EscopoRevisao[]>(seedRevisoes);
+  const [exclusoes, setExclusoes] = useState<Exclusao[]>(seedExclusoes);
   const [colaboradores] = useState<Colaborador[]>([]);
   const [notificacoes, setNotificacoes] = useState<AppNotification[]>(() =>
     seedNotifications({ planosDeAcao: mockPlanos, naoConformidades: mockNCs, auditorias: mockAuditorias }),
@@ -606,7 +608,86 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
   const addSwotItem = useCallback((item: Omit<SwotItem, "id">) => {
     const s: SwotItem = { ...item, id: `swot-${Date.now()}` };
     setSwot((prev) => [s, ...prev]);
+    logActivity({ verb: "adicionou item SWOT", target: item.quadrante, targetType: "Sistema" });
     return s;
+  }, [logActivity]);
+
+  const updateSwotItem = useCallback((id: string, patch: Partial<SwotItem>) => {
+    setSwot((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  }, []);
+
+  const removeSwotItem = useCallback((id: string) => {
+    setSwot((prev) => prev.filter((s) => s.id !== id));
+  }, []);
+
+  const moveSwotItem = useCallback(
+    (id: string, quadrante: SwotItem["quadrante"]) => {
+      setSwot((prev) => prev.map((s) => (s.id === id ? { ...s, quadrante } : s)));
+    },
+    [],
+  );
+
+  const addParte = useCallback(
+    (p: Omit<ParteInteressada, "id">) => {
+      const parte: ParteInteressada = { ...p, id: `pi-${Date.now()}` };
+      setPartes((prev) => [parte, ...prev]);
+      logActivity({ verb: "cadastrou parte interessada", target: p.nome, targetType: "Sistema" });
+      return parte;
+    },
+    [logActivity],
+  );
+
+  const updateParte = useCallback((id: string, patch: Partial<ParteInteressada>) => {
+    setPartes((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  }, []);
+
+  const removeParte = useCallback((id: string) => {
+    setPartes((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  const updateEscopoTexto = useCallback(
+    (novoTexto: string) => {
+      setEscopoRevisoes((prev) => {
+        const ultimaRev = prev[prev.length - 1]?.rev ?? "00";
+        const proxRev = String(parseInt(ultimaRev, 10) + 1).padStart(2, "0");
+        const nova: EscopoRevisao = {
+          rev: proxRev,
+          data: new Date().toISOString(),
+          texto: novoTexto,
+          autor: CURRENT_USER.nome,
+        };
+        return [...prev, nova];
+      });
+      logActivity({ verb: "revisou escopo do SGI", target: "DOC-SG-001", targetType: "Sistema" });
+      addNotification({
+        title: "Escopo do SGI revisado",
+        description: "Nova revisão registrada no histórico.",
+        tone: "success",
+      });
+    },
+    [logActivity, addNotification],
+  );
+
+  const addExclusao = useCallback((e: Omit<Exclusao, "id">) => {
+    const ex: Exclusao = { ...e, id: `exc-${Date.now()}` };
+    setExclusoes((prev) => [...prev, ex]);
+    if (!e.justificativa.trim()) {
+      addNotification({
+        title: "Exclusão sem justificativa",
+        description: `${e.requisito} — risco de NC no item 4.3`,
+        tone: "danger",
+        link: "/escopo-sistema",
+      });
+    }
+    return ex;
+  }, [addNotification]);
+
+  const updateExclusao = useCallback((id: string, patch: Partial<Exclusao>) => {
+    setExclusoes((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+  }, []);
+
+  const removeExclusao = useCallback((id: string) => {
+    setExclusoes((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
   const kpis = useMemo(() => {
@@ -648,6 +729,9 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
     colaboradores,
     notificacoes,
     logAtividades,
+    escopoTexto: escopoRevisoes[escopoRevisoes.length - 1]?.texto ?? ESCOPO_INICIAL,
+    escopoRevisoes,
+    exclusoes,
     usuario: CURRENT_USER,
     nextCode,
     logActivity,
@@ -664,6 +748,16 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
     addApontamento,
     addRisco,
     addSwotItem,
+    updateSwotItem,
+    removeSwotItem,
+    moveSwotItem,
+    addParte,
+    updateParte,
+    removeParte,
+    updateEscopoTexto,
+    addExclusao,
+    updateExclusao,
+    removeExclusao,
     kpis,
   };
 
