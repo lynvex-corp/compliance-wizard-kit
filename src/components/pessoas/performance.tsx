@@ -13,19 +13,10 @@ const ciclos = [
 
 // Grid ninebox 3x3 — perf x potencial
 interface P { nome: string; iniciais: string; }
-const ninebox: P[][] = [
-  // linha 3 (alto potencial)
-  [
-    [], [{ nome: "Ana Ribeiro", iniciais: "AR" }], [{ nome: "Carla Menezes", iniciais: "CM" }, { nome: "Fernanda Lima", iniciais: "FL" }],
-  ] as any,
-  // linha 2
-  [
-    [{ nome: "Juliana Peixoto", iniciais: "JP" }], [{ nome: "Rafael Costa", iniciais: "RC" }, { nome: "Diego Almeida", iniciais: "DA" }], [{ nome: "Beatriz Souza", iniciais: "BS" }],
-  ] as any,
-  // linha 1 (baixo potencial)
-  [
-    [{ nome: "Op. Turno 3", iniciais: "OT" }], [{ nome: "Marcos Vinícius", iniciais: "MV" }], [],
-  ] as any,
+const ninebox: P[][][] = [
+  [[], [{ nome: "Ana Ribeiro", iniciais: "AR" }], [{ nome: "Carla Menezes", iniciais: "CM" }, { nome: "Fernanda Lima", iniciais: "FL" }]],
+  [[{ nome: "Juliana Peixoto", iniciais: "JP" }], [{ nome: "Rafael Costa", iniciais: "RC" }, { nome: "Diego Almeida", iniciais: "DA" }], [{ nome: "Beatriz Souza", iniciais: "BS" }]],
+  [[{ nome: "Op. Turno 3", iniciais: "OT" }], [{ nome: "Marcos Vinícius", iniciais: "MV" }], []],
 ];
 
 const cellLabel = [
@@ -97,7 +88,7 @@ export function PerformancePage() {
                 <div className="flex-1">
                   <div className="grid grid-cols-3 gap-2">
                     {ninebox.map((row, ri) =>
-                      row.map((cell: P[], ci: number) => (
+                      row.map((cell, ci) => (
                         <div key={`${ri}-${ci}`} className={cn("rounded-xl border border-border/50 p-3 min-h-[130px]", cellColor[ri][ci])}>
                           <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{cellLabel[ri][ci]}</div>
                           <div className="flex flex-wrap gap-1">
