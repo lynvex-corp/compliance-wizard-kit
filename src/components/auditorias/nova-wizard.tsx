@@ -12,6 +12,9 @@ import {
   Users,
   ClipboardList,
   FileText,
+  Sparkles,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app/app-shell";
@@ -42,6 +45,7 @@ import {
 } from "@/lib/mock-data";
 import { JawdaLogo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
+import { useJawda } from "@/lib/jawda-store";
 
 const STEPS = [
   { id: 1, label: "Dados gerais", icon: ClipboardList },
@@ -220,6 +224,7 @@ function EquipeCard({
 
 export function NovaAuditoriaWizard() {
   const navigate = useNavigate();
+  const { addAuditoria } = useJawda();
   const [step, setStep] = useState(1);
 
   // Step 1
@@ -331,9 +336,118 @@ export function NovaAuditoriaWizard() {
     [locais],
   );
 
+  // Overlap detection: parse "08:00 – 12:00" into minutes and flag conflicts
+  const parseRange = (h: string): [number, number] | null => {
+    const m = h.match(/(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})/);
+    if (!m) return null;
+    return [Number(m[1]) * 60 + Number(m[2]), Number(m[3]) * 60 + Number(m[4])];
+  };
+  const blocosConflito = useMemo(() => {
+    const conflict = new Set<string>();
+    dias.forEach((d) => {
+      for (let i = 0; i < d.blocos.length; i++) {
+        for (let j = i + 1; j < d.blocos.length; j++) {
+          const a = d.blocos[i], b = d.blocos[j];
+          if (!a.auditor || a.auditor !== b.auditor) continue;
+          const ra = parseRange(a.horario), rb = parseRange(b.horario);
+          if (!ra || !rb) continue;
+          if (ra[0] < rb[1] && rb[0] < ra[1]) {
+            conflict.add(a.id); conflict.add(b.id);
+          }
+        }
+      }
+    });
+    return conflict;
+  }, [dias]);
+
+  // IA — Montar plano de auditoria
+  const [iaLoading, setIaLoading] = useState(false);
+  const [iaNota, setIaNota] = useState<string | null>(null);
+
+  const montarComIA = () => {
+    if (normasSel.length === 0) {
+      toast.error("Selecione ao menos uma norma para a IA propor a agenda.");
+      return;
+    }
+    setIaLoading(true);
+    setTimeout(() => {
+      const carga = Math.max(1, Number(cargaDias) || 3);
+      const startDate = new Date(dataInicio);
+      const propostaProcessos = [
+        { processo: "Alta Direção — Contexto e Liderança", itens: ["4.1", "4.2", "5.1", "5.2", "6.1", "9.3"] },
+        { processo: "Planejamento e Riscos", itens: ["6.1", "6.2", "6.3"] },
+        { processo: "Operação — Produção", itens: ["8.1", "8.5", "8.6"] },
+        { processo: "Suprimentos e Fornecedores", itens: ["8.4"] },
+        { processo: "Recursos Humanos e Competência", itens: ["7.1", "7.2", "7.3"] },
+        { processo: "Gestão Documental e Comunicação", itens: ["7.4", "7.5"] },
+        { processo: "Avaliação de Desempenho e Melhoria", itens: ["9.1", "9.2", "10.1", "10.2"] },
+      ];
+      const novosDias: Dia[] = [];
+      let idx = 0;
+      for (let d = 0; d < carga; d++) {
+        const data = new Date(startDate);
+        data.setDate(startDate.getDate() + d);
+        const blocos: Bloco[] = [];
+        if (d === 0) {
+          blocos.push({
+            id: `ia-${Date.now()}-open`,
+            horario: "08:00 – 08:30",
+            auditor: "Auditor Líder",
+            processo: "Reunião de Abertura",
+            itens: ["5.1", "9.2"],
+          });
+        }
+        const restantes = d === 0 ? 2 : 3;
+        for (let b = 0; b < restantes && idx < propostaProcessos.length; b++, idx++) {
+          const p = propostaProcessos[idx];
+          const horario = b === 0 ? "08:30 – 12:00" : b === 1 ? "13:30 – 15:30" : "15:45 – 17:30";
+          blocos.push({
+            id: `ia-${Date.now()}-${d}-${b}`,
+            horario,
+            auditor: b % 2 === 0 ? "Ana Ribeiro" : "Marcos Vinícius",
+            processo: p.processo,
+            itens: p.itens,
+          });
+        }
+        if (d === carga - 1) {
+          blocos.push({
+            id: `ia-${Date.now()}-close`,
+            horario: "17:30 – 18:00",
+            auditor: "Auditor Líder",
+            processo: "Reunião de Encerramento",
+            itens: ["9.2", "10.2"],
+          });
+        }
+        novosDias.push({ data: data.toISOString().slice(0, 10), blocos });
+      }
+      setDias(novosDias);
+      setIaNota(
+        "Sugeri auditar Suprimentos junto de 8.4 porque o último ciclo apontou fragilidade em qualificação de fornecedor. Alta Direção concentrada no D1 para liberar auditor líder nos processos operacionais.",
+      );
+      setIaLoading(false);
+      toast.success("Agenda gerada pela IA — revise e ajuste antes de emitir.");
+    }, 1800);
+  };
+
   const emitir = () => {
+    if (blocosConflito.size > 0) {
+      toast.error("Existem sobreposições de horário do mesmo auditor. Ajuste antes de emitir.");
+      return;
+    }
+    const aud = addAuditoria({
+      tipo,
+      normas: normasSel,
+      evento,
+      escopo,
+      status: "Programada",
+      mesInicio: new Date(dataInicio).getMonth() + 1,
+      mesFim: new Date(dataFim).getMonth() + 1,
+      dataInicio,
+      dataFim,
+      locais: locaisSelecionados,
+    });
     toast.success("Plano de Auditoria emitido", {
-      description: `${normasSel.join(" · ")} — ${evento}. Aguardando ciência do auditor líder.`,
+      description: `${aud.codigo} · ${normasSel.join(" · ")} — ${evento}. Aguardando ciência do auditor líder.`,
     });
     setTimeout(() => navigate({ to: "/auditorias" }), 700);
   };
