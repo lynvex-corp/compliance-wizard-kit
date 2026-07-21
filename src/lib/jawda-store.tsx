@@ -160,6 +160,8 @@ interface JawdaContextValue extends JawdaState {
   updatePlano: (id: string, patch: Partial<PlanoAcao>) => void;
   updatePlanoStatus: (id: string, status: PlanoStatus) => void;
   addAuditoria: (a: Partial<Auditoria> & { escopo: string }) => Auditoria;
+  updateAuditoria: (id: string, patch: Partial<Auditoria>) => void;
+  updateAuditoriaStatus: (id: string, status: Auditoria["status"]) => void;
   addApontamento: (a: Partial<Apontamento> & { auditoriaId: string; requisito: string; tipo: Apontamento["tipo"] }) => Apontamento;
   addRisco: (r: Partial<Risco> & { descricao: string }) => Risco;
   addSwotItem: (item: Omit<SwotItem, "id">) => SwotItem;
@@ -462,6 +464,26 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
     [nextCode, logActivity, addNotification],
   );
 
+  const updateAuditoria = useCallback((id: string, patch: Partial<Auditoria>) => {
+    setAuditorias((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch } : a)));
+  }, []);
+
+  const updateAuditoriaStatus = useCallback(
+    (id: string, status: Auditoria["status"]) => {
+      updateAuditoria(id, { status });
+      const aud = auditorias.find((a) => a.id === id);
+      if (aud) {
+        logActivity({
+          verb: `moveu para ${status}`,
+          target: aud.codigo,
+          targetType: "Auditoria",
+          refId: id,
+        });
+      }
+    },
+    [auditorias, updateAuditoria, logActivity],
+  );
+
   const addApontamento = useCallback(
     (input: Partial<Apontamento> & { auditoriaId: string; requisito: string; tipo: Apontamento["tipo"] }): Apontamento => {
       const codigo = input.codigo ?? nextCode("APT");
@@ -566,6 +588,8 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
     updatePlano,
     updatePlanoStatus,
     addAuditoria,
+    updateAuditoria,
+    updateAuditoriaStatus,
     addApontamento,
     addRisco,
     addSwotItem,
