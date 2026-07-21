@@ -713,11 +713,21 @@ export function NovaAuditoriaWizard() {
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      {dia.blocos.map((b, bi) => (
-                        <div
-                          key={b.id}
-                          className="grid gap-2 rounded-lg border border-border bg-card p-3 md:grid-cols-[140px_1fr_1fr_1.5fr_auto] md:items-center"
-                        >
+                       {dia.blocos.map((b, bi) => {
+                         const conflict = blocosConflito.has(b.id);
+                         return (
+                         <div
+                           key={b.id}
+                           className={cn(
+                             "grid gap-2 rounded-lg border bg-card p-3 md:grid-cols-[140px_1fr_1fr_1.5fr_auto] md:items-center",
+                             conflict ? "border-[color:var(--warning)] ring-1 ring-[color:var(--warning)]/60" : "border-border",
+                           )}
+                         >
+                           {conflict && (
+                             <div className="col-span-full flex items-center gap-1 text-[10px] font-semibold text-[color:var(--severity-high)]">
+                               <AlertTriangle className="h-3 w-3" /> Sobreposição de horário para este auditor
+                             </div>
+                           )}
                           <Input
                             value={b.horario}
                             onChange={(e) => {
@@ -819,8 +829,9 @@ export function NovaAuditoriaWizard() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
-                        </div>
-                      ))}
+                         </div>
+                         );
+                       })}
                     </div>
                   </div>
                 ))}
