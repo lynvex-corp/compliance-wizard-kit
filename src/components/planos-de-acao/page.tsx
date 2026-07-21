@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import {
   Plus,
@@ -66,9 +67,16 @@ import {
   Legend,
 } from "recharts";
 import { Link } from "@tanstack/react-router";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import {
-  mockPlanos,
   planoStatusClasses,
   pdcaClasses,
   planosPorMes,
@@ -78,6 +86,7 @@ import {
   type PlanoStatus,
   type PlanoOrigemTipo,
 } from "@/lib/mock-data";
+import { useJawda } from "@/lib/jawda-store";
 
 const STATUSES: PlanoStatus[] = [
   "Planejado",
@@ -186,14 +195,40 @@ function OrigemBadge({ tipo }: { tipo: PlanoOrigemTipo }) {
   );
 }
 
-function KanbanCard({ p }: { p: PlanoAcao }) {
+function KanbanCard({
+  p,
+  onDragStart,
+  atrasado,
+}: {
+  p: PlanoAcao;
+  onDragStart: (id: string) => void;
+  atrasado: boolean;
+}) {
   return (
-    <div className="cursor-grab rounded-lg border border-border/80 bg-card p-3 shadow-sm transition-all hover:border-brand/40 hover:shadow-md">
+    <div
+      draggable
+      onDragStart={(e) => {
+        onDragStart(p.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      className={cn(
+        "cursor-grab rounded-lg border bg-card p-3 shadow-sm transition-all hover:border-brand/40 hover:shadow-md active:cursor-grabbing",
+        atrasado ? "border-[color:var(--severity-critical)]/60 ring-1 ring-[color:var(--severity-critical)]/30" : "border-border/80",
+      )}
+    >
       <div className="flex items-center justify-between">
         <span className="font-mono text-[11px] font-semibold text-brand">{p.codigo}</span>
         <Badge variant="outline" className={cn("rounded-md border px-1.5 text-[10px]", pdcaClasses[p.pdca])}>{p.pdca}</Badge>
       </div>
       <p className="mt-2 line-clamp-2 text-sm text-foreground">{p.descricao}</p>
+      {atrasado && (
+        <div className="mt-1 text-[10px] font-semibold text-[color:var(--severity-critical)]">Prazo vencido</div>
+      )}
+      {p.eficaciaAprovadaPrimeira === false && (
+        <div className="mt-1 inline-flex rounded border border-[color:var(--severity-critical)]/40 bg-[color:var(--severity-critical)]/10 px-1.5 py-0.5 text-[9px] font-semibold text-[color:var(--severity-critical)]">
+          Reprovado na 1ª avaliação
+        </div>
+      )}
       <div className="mt-3">
         <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground">
           <span>Progresso</span>
@@ -212,7 +247,7 @@ function KanbanCard({ p }: { p: PlanoAcao }) {
 }
 
 export function PlanosDeAcaoPage() {
-  const [items] = useState<PlanoAcao[]>(mockPlanos);
+  const { planosDeAcao: items, updatePlano, updatePlanoStatus } = useJawda();
   const [busca, setBusca] = useState("");
   const [origem, setOrigem] = useState("all");
   const [status, setStatus] = useState("all");
@@ -220,6 +255,49 @@ export function PlanosDeAcaoPage() {
   const [departamento, setDepartamento] = useState("all");
   const [periodo, setPeriodo] = useState("all");
   const [somenteAtrasados, setSomenteAtrasados] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [evalTarget, setEvalTarget] = useState<PlanoAcao | null>(null);
+  const [evalJustif, setEvalJustif] = useState("");
+
+  const isAtrasado = (p: PlanoAcao) =>
+    p.status !== "Concluído" && p.status !== "Cancelado" && new Date(p.prazo).getTime() < new Date(planoBaseDate).getTime();
+
+  const handleDrop = (target: PlanoStatus) => {
+    if (!draggingId) return;
+    const plano = items.find((p) => p.id === draggingId);
+    setDraggingId(null);
+    if (!plano || plano.status === target) return;
+    if (target === "Em Avaliação") {
+      updatePlanoStatus(plano.id, target);
+      setEvalTarget({ ...plano, status: target });
+      setEvalJustif("");
+      return;
+    }
+    updatePlanoStatus(plano.id, target);
+    toast.success(`${plano.codigo} movido para ${target}.`);
+  };
+
+  const confirmarEficacia = (aprovado: boolean) => {
+    if (!evalTarget) return;
+    if (aprovado) {
+      updatePlano(evalTarget.id, {
+        eficaciaAprovadaPrimeira: true,
+        status: "Concluído",
+        percentual: 100,
+        concluidoNoPrazo: new Date(evalTarget.prazo).getTime() >= new Date(planoBaseDate).getTime(),
+      });
+      toast.success(`${evalTarget.codigo} aprovado — plano concluído.`);
+    } else {
+      updatePlano(evalTarget.id, {
+        eficaciaAprovadaPrimeira: false,
+        status: "Em Execução",
+      });
+      toast.warning(`${evalTarget.codigo} reprovado — retornou para Em Execução.`, {
+        description: evalJustif || "Sem justificativa informada.",
+      });
+    }
+    setEvalTarget(null);
+  };
 
   const responsaveis = useMemo(
     () => Array.from(new Set(items.map((i) => i.responsavel.nome))).sort(),
@@ -365,11 +443,15 @@ export function PlanosDeAcaoPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" className="rounded-lg border-brand/30 text-brand hover:bg-brand-soft">
+              <Button asChild variant="outline" className="rounded-lg border-brand/30 text-brand hover:bg-brand-soft">
+                <Link to="/planos-de-acao/novo">
                 <FilePlus2 className="mr-1 h-4 w-4" /> Plano em branco (avulso)
+                </Link>
               </Button>
-              <Button className="rounded-lg bg-brand text-brand-foreground hover:bg-brand/90">
+              <Button asChild className="rounded-lg bg-brand text-brand-foreground hover:bg-brand/90">
+                <Link to="/planos-de-acao/novo">
                 <Plus className="mr-1 h-4 w-4" /> Novo Plano de Ação
+                </Link>
               </Button>
             </div>
           </div>
