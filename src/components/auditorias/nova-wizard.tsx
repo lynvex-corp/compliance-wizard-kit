@@ -626,6 +626,28 @@ export function NovaAuditoriaWizard() {
         {/* Step 3 */}
         {step === 3 && (
           <div className="space-y-4">
+            <Card className="rounded-xl border-brand/30 bg-brand-soft/30">
+              <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-brand" />
+                  <div>
+                    <div className="text-sm font-semibold text-brand">Montar plano de auditoria com IA</div>
+                    <div className="text-xs text-muted-foreground">
+                      A partir das normas, escopo e carga em dias, a IA propõe a agenda distribuindo processos por dia com itens da norma vinculados.
+                    </div>
+                  </div>
+                </div>
+                <Button className="bg-brand hover:bg-brand/90" onClick={montarComIA} disabled={iaLoading}>
+                  {iaLoading ? (<><Loader2 className="mr-1.5 h-4 w-4 animate-spin" />IA analisando…</>) : (<><Sparkles className="mr-1.5 h-4 w-4" />Gerar agenda</>)}
+                </Button>
+              </CardContent>
+            </Card>
+            {iaNota && (
+              <div className="flex items-start gap-2 rounded-lg border border-brand/30 bg-brand-soft/40 p-3 text-xs text-foreground/80">
+                <Sparkles className="mt-0.5 h-3.5 w-3.5 text-brand" />
+                <div><span className="font-semibold text-brand">Nota da IA:</span> {iaNota}</div>
+              </div>
+            )}
             <Card className="rounded-xl">
               <CardHeader>
                 <CardTitle className="text-base">Locais do sistema de gestão</CardTitle>
