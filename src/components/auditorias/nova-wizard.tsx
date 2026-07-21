@@ -437,7 +437,7 @@ export function NovaAuditoriaWizard() {
     const aud = addAuditoria({
       tipo,
       normas: normasSel,
-      evento,
+      evento: evento as "Certificação" | "Monitoração 12 meses" | "Monitoração 24 meses" | "Recertificação" | "Auditoria Interna Ciclo 2026",
       escopo,
       status: "Programada",
       mesInicio: new Date(dataInicio).getMonth() + 1,
