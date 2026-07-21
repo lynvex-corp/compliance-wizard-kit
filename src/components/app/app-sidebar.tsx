@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   AlertTriangle,
@@ -142,6 +142,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
 
   const activeGroupIdx = useMemo(() => {
     return navGroups.findIndex((g) => g.items.some((it) => isItemActive(pathname, it.to)));
@@ -194,7 +195,11 @@ export function AppSidebar() {
                     <>
                       <SidebarMenuItem>
                         <SidebarMenuButton
-                          onClick={() => setOpenIdx(open ? -1 : idx)}
+                          onClick={() => {
+                            setOpenIdx(idx);
+                            const first = group.items[0];
+                            if (first) navigate({ to: first.to });
+                          }}
                           className={cn(
                             "h-9 rounded-lg text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:bg-brand-soft/40",
                             hasActive && "text-brand",
@@ -203,8 +208,13 @@ export function AppSidebar() {
                           <GroupIcon className="h-[16px] w-[16px]" />
                           <span className="truncate">{group.label}</span>
                           <ChevronDown
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              setOpenIdx(open ? -1 : idx);
+                            }}
                             className={cn(
-                              "ml-auto h-4 w-4 transition-transform",
+                              "ml-auto h-4 w-4 shrink-0 cursor-pointer rounded transition-transform hover:bg-brand-soft",
                               open && "rotate-180",
                             )}
                           />
