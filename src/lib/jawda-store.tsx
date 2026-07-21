@@ -96,6 +96,20 @@ export interface ParteInteressada {
   requisitos: string;
 }
 
+export interface EscopoRevisao {
+  rev: string; // "00", "01"
+  data: string; // ISO
+  texto: string;
+  autor: string;
+}
+
+export interface Exclusao {
+  id: string;
+  requisito: string;
+  descricao: string;
+  justificativa: string;
+}
+
 export interface Documento {
   id: string;
   codigo: string;
@@ -145,6 +159,9 @@ interface JawdaState {
   colaboradores: Colaborador[];
   notificacoes: AppNotification[];
   logAtividades: Activity[];
+  escopoTexto: string;
+  escopoRevisoes: EscopoRevisao[];
+  exclusoes: Exclusao[];
 }
 
 interface JawdaContextValue extends JawdaState {
@@ -165,6 +182,18 @@ interface JawdaContextValue extends JawdaState {
   addApontamento: (a: Partial<Apontamento> & { auditoriaId: string; requisito: string; tipo: Apontamento["tipo"] }) => Apontamento;
   addRisco: (r: Partial<Risco> & { descricao: string }) => Risco;
   addSwotItem: (item: Omit<SwotItem, "id">) => SwotItem;
+  updateSwotItem: (id: string, patch: Partial<SwotItem>) => void;
+  removeSwotItem: (id: string) => void;
+  moveSwotItem: (id: string, quadrante: SwotItem["quadrante"]) => void;
+
+  addParte: (p: Omit<ParteInteressada, "id">) => ParteInteressada;
+  updateParte: (id: string, patch: Partial<ParteInteressada>) => void;
+  removeParte: (id: string) => void;
+
+  updateEscopoTexto: (novoTexto: string) => void;
+  addExclusao: (e: Omit<Exclusao, "id">) => Exclusao;
+  updateExclusao: (id: string, patch: Partial<Exclusao>) => void;
+  removeExclusao: (id: string) => void;
 
   kpis: {
     conformidade: number;
