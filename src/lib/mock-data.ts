@@ -285,7 +285,8 @@ export type PlanoOrigemTipo =
   | "Risco/Oportunidade"
   | "Análise Crítica"
   | "Reclamação de Cliente"
-  | "Melhoria Contínua";
+  | "Melhoria Contínua"
+  | "Estratégia";
 
 export type PDCA = "Plan" | "Do" | "Check" | "Act";
 
