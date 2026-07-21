@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/app/placeholder-page";
+import { UsuariosPage } from "@/components/usuarios/page";
 
 export const Route = createFileRoute("/usuarios")({
-  component: () => (
-    <PlaceholderPage title="Usuários e Permissões" description="Gestão de acessos e papéis." />
-  ),
+  component: UsuariosPage,
 });
