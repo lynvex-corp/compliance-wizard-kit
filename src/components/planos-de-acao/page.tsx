@@ -884,6 +884,40 @@ export function PlanosDeAcaoPage() {
             </TabsContent>
           </Tabs>
         </div>
+        <Dialog open={!!evalTarget} onOpenChange={(o) => !o && setEvalTarget(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Verificação de Eficácia</DialogTitle>
+              <DialogDescription>
+                {evalTarget?.codigo} · {evalTarget?.descricao.slice(0, 90)}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <Label className="text-xs">Justificativa / observações</Label>
+              <textarea
+                value={evalJustif}
+                onChange={(e) => setEvalJustif(e.target.value)}
+                className="min-h-[100px] w-full rounded-md border border-border bg-background p-2 text-sm"
+                placeholder="Descreva a evidência que sustenta a decisão…"
+              />
+            </div>
+            <DialogFooter className="gap-2 sm:justify-between">
+              <Button
+                variant="outline"
+                className="border-[color:var(--severity-critical)]/40 text-[color:var(--severity-critical)] hover:bg-[color:var(--severity-critical)]/10"
+                onClick={() => confirmarEficacia(false)}
+              >
+                Reprovar
+              </Button>
+              <Button
+                className="bg-[color:var(--success)] text-white hover:bg-[color:var(--success)]/90"
+                onClick={() => confirmarEficacia(true)}
+              >
+                Aprovar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </TooltipProvider>
     </AppShell>
   );
