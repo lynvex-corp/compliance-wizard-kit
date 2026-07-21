@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   CalendarDays,
@@ -33,11 +34,11 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   auditoriasKPIs,
-  mockAuditorias,
   auditoriaStatusClasses,
   normasDisponiveis,
   type Auditoria,
 } from "@/lib/mock-data";
+import { useJawda } from "@/lib/jawda-store";
 import { cn } from "@/lib/utils";
 
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -128,19 +129,32 @@ function AuditCard({ a }: { a: Auditoria }) {
 
 export function AuditoriasPage() {
   const navigate = useNavigate();
+  const { auditorias, updateAuditoriaStatus } = useJawda();
   const [ano, setAno] = useState("2026");
   const [tipo, setTipo] = useState("all");
   const [norma, setNorma] = useState("all");
   const [status, setStatus] = useState("all");
 
   const filtered = useMemo(() => {
-    return mockAuditorias.filter((a) => {
+    return auditorias.filter((a) => {
       if (tipo !== "all" && a.tipo !== tipo) return false;
       if (norma !== "all" && !a.normas.includes(norma)) return false;
       if (status !== "all" && a.status !== status) return false;
       return true;
     });
-  }, [tipo, norma, status]);
+  }, [auditorias, tipo, norma, status]);
+
+  const liveKpis = useMemo(() => {
+    const total = auditorias.length;
+    return {
+      totalAno: total || auditoriasKPIs.totalAno,
+      realizadas: auditorias.filter((a) => a.status === "Concluída").length || auditoriasKPIs.realizadas,
+      programadas: auditorias.filter((a) => a.status === "Programada").length,
+      emAndamento: auditorias.filter((a) => a.status === "Em andamento").length,
+      apontamentosAbertos: auditoriasKPIs.apontamentosAbertos,
+      taxaConformidade: auditoriasKPIs.taxaConformidade,
+    };
+  }, [auditorias]);
 
   const porMes = useMemo(() => {
     const map = new Map<number, Auditoria[]>();
@@ -173,19 +187,19 @@ export function AuditoriasPage() {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <KPI label="Auditorias no ano" value={auditoriasKPIs.totalAno} icon={CalendarDays} />
-          <KPI label="Realizadas" value={auditoriasKPIs.realizadas} icon={CheckCircle2} tone="success" />
-          <KPI label="Programadas" value={auditoriasKPIs.programadas} icon={Clock} />
-          <KPI label="Em andamento" value={auditoriasKPIs.emAndamento} icon={Play} tone="brand" />
+          <KPI label="Auditorias no ano" value={liveKpis.totalAno} icon={CalendarDays} />
+          <KPI label="Realizadas" value={liveKpis.realizadas} icon={CheckCircle2} tone="success" />
+          <KPI label="Programadas" value={liveKpis.programadas} icon={Clock} />
+          <KPI label="Em andamento" value={liveKpis.emAndamento} icon={Play} tone="brand" />
           <KPI
             label="Apontamentos abertos"
-            value={auditoriasKPIs.apontamentosAbertos}
+            value={liveKpis.apontamentosAbertos}
             icon={AlertTriangle}
             tone="warning"
           />
           <KPI
             label="Taxa de conformidade"
-            value={`${auditoriasKPIs.taxaConformidade}%`}
+            value={`${liveKpis.taxaConformidade}%`}
             icon={Target}
             tone="success"
           />
@@ -297,6 +311,7 @@ export function AuditoriasPage() {
                       <TableHead>Auditor Líder</TableHead>
                       <TableHead>Apontamentos</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -363,6 +378,33 @@ export function AuditoriasPage() {
                           >
                             {a.status}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          {a.status === "Programada" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                updateAuditoriaStatus(a.id, "Em andamento");
+                                toast.success(`${a.codigo} iniciada.`);
+                              }}
+                            >
+                              <Play className="mr-1 h-3 w-3" /> Iniciar
+                            </Button>
+                          )}
+                          {a.status === "Em andamento" && (
+                            <Button
+                              size="sm"
+                              className="h-7 bg-[color:var(--success)] text-white text-xs hover:bg-[color:var(--success)]/90"
+                              onClick={() => {
+                                updateAuditoriaStatus(a.id, "Concluída");
+                                toast.success(`${a.codigo} concluída.`);
+                              }}
+                            >
+                              <CheckCircle2 className="mr-1 h-3 w-3" /> Concluir
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
