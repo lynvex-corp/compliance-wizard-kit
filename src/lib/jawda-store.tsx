@@ -214,6 +214,48 @@ const JawdaContext = createContext<JawdaContextValue | null>(null);
 
 const NOW_ISO = new Date("2026-07-15T14:30:00Z").toISOString();
 
+/* ============================================================
+ * Seeds de Estratégia (SWOT / Partes / Escopo)
+ * ============================================================ */
+
+const seedSwot: SwotItem[] = [
+  { id: "swot-s1", quadrante: "F", texto: "Equipe técnica certificada (12 engenheiros PMP/Lean)" },
+  { id: "swot-s2", quadrante: "F", texto: "Marca reconhecida — 22 anos de mercado" },
+  { id: "swot-s3", quadrante: "F", texto: "Certificação ISO 9001 ativa desde 2011" },
+  { id: "swot-w1", quadrante: "W", texto: "Turnover de 28% no chão de fábrica" },
+  { id: "swot-w2", quadrante: "W", texto: "ERP e MES sem integração — dupla digitação" },
+  { id: "swot-w3", quadrante: "W", texto: "Baixa maturidade digital em processos operacionais" },
+  { id: "swot-o1", quadrante: "O", texto: "Expansão para mercado sul (SC/RS) com demanda mapeada" },
+  { id: "swot-o2", quadrante: "O", texto: "Linha de crédito verde BNDES para modernização" },
+  { id: "swot-o3", quadrante: "O", texto: "Parceria de P&D com UFMG" },
+  { id: "swot-t1", quadrante: "T", texto: "Nova RDC 658/2022 amplia exigências até 2027" },
+  { id: "swot-t2", quadrante: "T", texto: "Concorrente asiático com preço 18% abaixo" },
+  { id: "swot-t3", quadrante: "T", texto: "Escassez regional de soldadores e operadores" },
+];
+
+const seedPartes: ParteInteressada[] = [
+  { id: "pi-1", nome: "Clientes Corporativos (Top 20)", categoria: "Cliente", influencia: 5, interesse: 5, necessidades: "Prazo, qualidade e rastreabilidade", requisitos: "ISO 9001, SLA ≤ 5 dias" },
+  { id: "pi-2", nome: "Colaboradores diretos", categoria: "Colaborador", influencia: 4, interesse: 5, necessidades: "Ambiente seguro e desenvolvimento", requisitos: "NR-05, NR-35, plano de carreira" },
+  { id: "pi-3", nome: "Fornecedores críticos (Classe A)", categoria: "Fornecedor", influencia: 4, interesse: 3, necessidades: "Previsibilidade de compra e pagamento", requisitos: "Homologação + auditoria anual" },
+  { id: "pi-4", nome: "ANVISA", categoria: "Órgão regulador", influencia: 5, interesse: 3, necessidades: "Conformidade sanitária plena", requisitos: "RDC 658/2022 — BPF" },
+  { id: "pi-5", nome: "Comunidade do entorno", categoria: "Comunidade", influencia: 2, interesse: 4, necessidades: "Baixo impacto ambiental e ruído", requisitos: "Licenciamento IBAMA" },
+  { id: "pi-6", nome: "Acionistas / Board", categoria: "Acionista", influencia: 5, interesse: 4, necessidades: "Retorno financeiro sustentável", requisitos: "Relatórios trimestrais + compliance" },
+];
+
+const ESCOPO_INICIAL =
+  "O Sistema de Gestão Integrada da Indústria Nova Aurora Ltda. abrange as atividades de recebimento, fabricação, envase, controle de qualidade, armazenagem e expedição de produtos alimentícios e farmacêuticos nas unidades da Matriz (Betim/MG) e Filial SP (Guarulhos/SP), contemplando todos os processos de suporte relacionados — suprimentos, engenharia, manutenção, recursos humanos, segurança do trabalho e meio ambiente.";
+
+const seedRevisoes: EscopoRevisao[] = [
+  { rev: "05", data: "2025-08-14T10:00:00Z", texto: "Inclusão da Filial SP no escopo operacional.", autor: "Ana Ribeiro" },
+  { rev: "06", data: "2026-01-22T10:00:00Z", texto: "Filial RS adicionada como centro de distribuição.", autor: "Rafael Costa" },
+  { rev: "07", data: "2026-03-12T10:00:00Z", texto: ESCOPO_INICIAL, autor: "Ana Ribeiro" },
+];
+
+const seedExclusoes: Exclusao[] = [
+  { id: "exc-1", requisito: "ISO 9001 · 8.3", descricao: "Projeto e desenvolvimento de produtos", justificativa: "A organização atua exclusivamente na fabricação sob especificação do cliente, não realizando projeto próprio." },
+  { id: "exc-2", requisito: "ISO 9001 · 7.1.5.2", descricao: "Rastreabilidade de medição", justificativa: "Aplicável apenas a instrumentos críticos — em revisão pela metrologia." },
+];
+
 function seedNotifications(state: Pick<JawdaState, "planosDeAcao" | "naoConformidades" | "auditorias">): AppNotification[] {
   const notifs: AppNotification[] = [];
   state.planosDeAcao
