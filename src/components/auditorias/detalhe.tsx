@@ -936,7 +936,7 @@ function ApontamentoCard({
   function gerarPA() {
     const p = addPlano({
       descricao: `Tratativa do apontamento Nº ${a.numero} — ${a.descricao}`,
-      origemTipo: "Auditoria",
+      origemTipo: "Auditoria Interna",
       vinculadoCodigo: auditoriaCodigo,
       vinculadoLink: `/auditorias/${auditoriaCodigo}`,
     });
