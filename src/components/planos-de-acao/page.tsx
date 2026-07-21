@@ -765,7 +765,15 @@ export function PlanosDeAcaoPage() {
                 {KANBAN_STATUSES.map((s) => {
                   const cards = filtered.filter((p) => p.status === s);
                   return (
-                    <div key={s} className="rounded-xl border border-border/70 bg-muted/40 p-3">
+                    <div
+                      key={s}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                      }}
+                      onDrop={() => handleDrop(s)}
+                      className="rounded-xl border border-border/70 bg-muted/40 p-3 transition-colors hover:bg-brand-soft/40"
+                    >
                       <div className="mb-3 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className={cn("h-2 w-2 rounded-full", planoStatusClasses[s].dot)} />
@@ -774,7 +782,14 @@ export function PlanosDeAcaoPage() {
                         <Badge variant="outline" className="rounded-md border-border bg-background text-[10px] text-muted-foreground">{cards.length}</Badge>
                       </div>
                       <div className="space-y-2">
-                        {cards.map((p) => (<KanbanCard key={p.id} p={p} />))}
+                        {cards.map((p) => (
+                          <KanbanCard
+                            key={p.id}
+                            p={p}
+                            atrasado={isAtrasado(p)}
+                            onDragStart={setDraggingId}
+                          />
+                        ))}
                         {cards.length === 0 && <div className="rounded-lg border border-dashed border-border/70 py-6 text-center text-xs text-muted-foreground">Sem planos nesta coluna</div>}
                       </div>
                     </div>
