@@ -32,7 +32,7 @@ interface IARec {
 export function AnaliseCenarioPage() {
   const {
     swotItens, addSwotItem, updateSwotItem, removeSwotItem, moveSwotItem,
-    addPlano, updateSwotItem: patchSwot,
+    addPlano,
   } = useJawda();
   const [dragId, setDragId] = useState<string | null>(null);
   const [editing, setEditing] = useState<SwotItem | null>(null);
@@ -57,7 +57,7 @@ export function AnaliseCenarioPage() {
       pdca: "Plan",
       status: "Planejado",
     });
-    patchSwot(it.id, { planoVinculado: plano.codigo });
+    updateSwotItem(it.id, { planoVinculado: plano.codigo });
     toast.success("Plano de ação gerado", { description: `Vínculo criado: ${plano.codigo}` });
   };
 
