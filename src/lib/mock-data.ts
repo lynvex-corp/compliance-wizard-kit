@@ -937,6 +937,7 @@ export interface Auditoria {
   dataInicio: string;
   dataFim: string;
   auditorLider: { nome: string; iniciais: string };
+  equipe?: { nome: string }[];
   locais: string[];
   apontamentos: { opm: number; ncSimples: number; ncModerada: number; ncCritica: number };
 }

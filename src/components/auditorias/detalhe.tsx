@@ -287,6 +287,11 @@ export function AuditoriaDetailPage() {
   const [checklist, setChecklist] = useState<CheckSection[]>(initialChecklist);
   const [apontamentos, setApontamentos] = useState<Apontamento[]>(seedApontamentos);
   const [tab, setTab] = useState("checklist");
+  const [orientacoes, setOrientacoes] = useState<Record<string, string>>({});
+
+  function updateOrientacao(itemId: string, texto: string) {
+    setOrientacoes((prev) => ({ ...prev, [itemId]: texto }));
+  }
 
   const allPerguntas = useMemo(
     () => checklist.flatMap((s) => s.itens.flatMap((it) => it.perguntas)),
@@ -360,6 +365,18 @@ export function AuditoriaDetailPage() {
     setApontamentos, auditoria,
   };
 
+  // Auditoria Externa = casca leve: a execução ocorre no sistema da certificadora.
+  if (auditoria.tipo === "Externa") {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-[1100px] space-y-5">
+          <Header auditoria={auditoria} progresso={progresso} onGoTab={setTab} externa />
+          <AuditoriaExternaPanel auditoria={auditoria} />
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell>
       <TooltipProvider>
@@ -382,7 +399,12 @@ export function AuditoriaDetailPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="checklist" className="mt-4">
-              <ChecklistTab {...shared} onGoTab={setTab} />
+              <ChecklistTab
+                {...shared}
+                onGoTab={setTab}
+                orientacoes={orientacoes}
+                updateOrientacao={updateOrientacao}
+              />
             </TabsContent>
             <TabsContent value="apontamentos" className="mt-4">
               <ApontamentosTab {...shared} />
@@ -398,11 +420,12 @@ export function AuditoriaDetailPage() {
 }
 
 function Header({
-  auditoria, progresso, onGoTab,
+  auditoria, progresso, onGoTab, externa = false,
 }: {
   auditoria: ReturnType<typeof useJawda>["auditorias"][number];
   progresso: number;
   onGoTab: (t: string) => void;
+  externa?: boolean;
 }) {
   return (
     <div>
@@ -434,6 +457,11 @@ function Header({
           <Badge variant="outline" className="border-brand/40 bg-brand-soft text-brand">
             {auditoria.status}
           </Badge>
+          {externa ? (
+            <span className="text-[11px] text-muted-foreground">
+              Registro externo — executada pela certificadora
+            </span>
+          ) : (
           <button
             onClick={() => onGoTab("checklist")}
             className="text-[11px] text-muted-foreground hover:text-brand"
@@ -441,8 +469,116 @@ function Header({
           >
             Checklist {progresso}% concluído
           </button>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ============================================================
+// AUDITORIA EXTERNA — casca leve (datas, auditores, escopo, relatório)
+// ============================================================
+function AuditoriaExternaPanel({
+  auditoria,
+}: {
+  auditoria: ReturnType<typeof useJawda>["auditorias"][number];
+}) {
+  const [relatorios, setRelatorios] = useState<FileMeta[]>([]);
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const fs = Array.from(e.target.files ?? []);
+    if (!fs.length) return;
+    setRelatorios((prev) => [
+      ...prev,
+      ...fs.map((f) => ({ id: `${Date.now()}-${f.name}`, name: f.name, size: f.size })),
+    ]);
+    toast.success("Relatório da certificadora anexado");
+    e.target.value = "";
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-start gap-2 rounded-xl border border-brand/30 bg-brand-soft/40 p-4 text-sm">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <p className="text-muted-foreground">
+          Auditorias externas são conduzidas no sistema da própria certificadora. Aqui a Jáwda
+          mantém apenas o registro programado — datas, auditores, escopo e o relatório recebido.
+          Não há plano detalhado, checklist ou apontamentos internos.
+        </p>
+      </div>
+
+      <Card className="rounded-xl">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Registro da auditoria externa</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div>
+            <div className="text-[11px] uppercase text-muted-foreground">Certificadora</div>
+            <div className="text-sm text-foreground">{auditoria.certificadora ?? "—"}</div>
+          </div>
+          <div>
+            <div className="text-[11px] uppercase text-muted-foreground">Evento</div>
+            <div className="text-sm text-foreground">{auditoria.evento}</div>
+          </div>
+          <div>
+            <div className="text-[11px] uppercase text-muted-foreground">Datas programadas</div>
+            <div className="text-sm text-foreground">
+              {new Date(auditoria.dataInicio).toLocaleDateString("pt-BR")} —{" "}
+              {new Date(auditoria.dataFim).toLocaleDateString("pt-BR")}
+            </div>
+          </div>
+          <div>
+            <div className="text-[11px] uppercase text-muted-foreground">Auditores</div>
+            <div className="text-sm text-foreground">
+              {auditoria.auditorLider.nome}
+              {auditoria.equipe?.length ? ` · ${auditoria.equipe.map((e) => e.nome).join(" · ")}` : ""}
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <div className="text-[11px] uppercase text-muted-foreground">Escopo</div>
+            <div className="text-sm text-foreground">{auditoria.escopo}</div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-xl">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Relatório da certificadora</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Anexe o relatório emitido pela certificadora para arquivamento e rastreabilidade.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {relatorios.length > 0 && (
+            <div className="grid gap-1.5 sm:grid-cols-2">
+              {relatorios.map((f) => (
+                <div key={f.id} className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2 py-1.5 text-xs">
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded bg-brand-soft text-brand">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium text-foreground">{f.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{(f.size / 1024).toFixed(1)} KB</div>
+                  </div>
+                  <button
+                    onClick={() => setRelatorios((prev) => prev.filter((x) => x.id !== f.id))}
+                    className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <label className="inline-flex cursor-pointer">
+            <input type="file" multiple className="hidden" onChange={handleFile} />
+            <span className="inline-flex h-9 items-center gap-1.5 rounded-md bg-brand px-3 text-sm font-medium text-white hover:bg-brand/90">
+              <Paperclip className="h-4 w-4" /> Anexar relatório
+            </span>
+          </label>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -454,6 +590,7 @@ interface FileMeta { id: string; name: string; size: number }
 
 function ChecklistTab({
   checklist, allPerguntas, preenchidas, progresso, handleClassif, updatePergunta, onGoTab,
+  orientacoes, updateOrientacao,
 }: {
   checklist: CheckSection[];
   allPerguntas: CheckPergunta[];
@@ -462,6 +599,8 @@ function ChecklistTab({
   handleClassif: (p: CheckPergunta, itemNumero: string, c: Exclude<Classif, null>) => void;
   updatePergunta: (id: string, patch: Partial<CheckPergunta>) => void;
   onGoTab: (t: string) => void;
+  orientacoes: Record<string, string>;
+  updateOrientacao: (itemId: string, texto: string) => void;
 }) {
   const flatItems = useMemo(() => checklist.flatMap((s) => s.itens), [checklist]);
   const [selectedItem, setSelectedItem] = useState<string>("4.3");
@@ -568,6 +707,22 @@ function ChecklistTab({
             </div>
           </div>
 
+          {/* Orientação ao auditor — conteúdo por requisito */}
+          <Card className="rounded-xl border-brand/30 bg-brand-soft/25">
+            <CardContent className="space-y-2 p-4">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-brand">
+                <Info className="h-3.5 w-3.5" />
+                Orientação de auditoria · requisito {selecionado.numero}
+              </div>
+              <Textarea
+                value={orientacoes[selecionado.id] ?? ""}
+                onChange={(e) => updateOrientacao(selecionado.id, e.target.value)}
+                placeholder="Direcionamento para quem vai auditar este requisito: o que perguntar, quais documentos solicitar, onde amostrar. (Conteúdo a ser preenchido pela equipe da qualidade.)"
+                className="min-h-[80px] resize-none bg-card text-sm"
+              />
+            </CardContent>
+          </Card>
+
           {selecionado.perguntas.map((p) => (
             <PerguntaCard
               key={p.id}
@@ -601,6 +756,9 @@ function PerguntaCard({
   const isNC = classif === "NCS" || classif === "NCM" || classif === "NCC";
   const exigeDoc = pergunta.hint === "exige documento/registro";
   const alerta = classif === "C" && exigeDoc && !localNota.trim() && files.length === 0;
+  const faltaClassif = !classif;
+  const faltaNota = !localNota.trim();
+  const pendente = faltaClassif || faltaNota;
 
   useEffect(() => { setLocalNota(pergunta.nota); }, [pergunta.id, pergunta.nota]);
 
@@ -642,6 +800,17 @@ function PerguntaCard({
           <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <p className="text-sm font-medium leading-relaxed text-foreground">{pergunta.texto}</p>
         </div>
+
+        {pendente && (
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-[color:var(--severity-critical)]">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Preenchimento obrigatório pendente:
+            {faltaClassif ? " classificação" : ""}
+            {faltaClassif && faltaNota ? " e" : ""}
+            {faltaNota ? " anotações/evidência descrita" : ""}
+            <span className="text-muted-foreground">— apenas o anexo é opcional.</span>
+          </div>
+        )}
 
         {/* Classificação */}
         <div className="flex flex-wrap gap-1.5">
@@ -693,7 +862,9 @@ function PerguntaCard({
         {/* Anotações */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label className="text-xs font-medium text-foreground">Anotações e evidências</label>
+            <label className="text-xs font-medium text-foreground">
+              Anotações e evidências <span className="text-[color:var(--severity-critical)]">*</span>
+            </label>
             <div className="flex items-center gap-2">
               {savedAt && (
                 <span className="inline-flex items-center gap-1 text-[11px] text-[color:var(--success)]">
@@ -710,7 +881,10 @@ function PerguntaCard({
             onChange={(e) => setLocalNota(e.target.value)}
             onBlur={commitNota}
             placeholder="Registre a evidência observada, documento verificado, entrevistado…"
-            className="min-h-[76px] resize-none"
+            className={cn(
+              "min-h-[76px] resize-none",
+              faltaNota && "border-[color:var(--severity-critical)]/50",
+            )}
           />
 
           {/* Evidências */}
@@ -741,7 +915,7 @@ function PerguntaCard({
             <label className="inline-flex cursor-pointer">
               <input type="file" multiple className="hidden" onChange={handleFile} />
               <span className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-3 text-xs font-medium hover:bg-muted/60">
-                <Paperclip className="h-3.5 w-3.5" /> Anexar evidência
+                <Paperclip className="h-3.5 w-3.5" /> Anexar evidência (opcional)
               </span>
             </label>
             <Button

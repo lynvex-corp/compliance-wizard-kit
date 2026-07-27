@@ -47,12 +47,13 @@ import { JawdaLogo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 import { useJawda } from "@/lib/jawda-store";
 
-const STEPS = [
-  { id: 1, label: "Dados gerais", icon: ClipboardList },
-  { id: 2, label: "Equipe auditora", icon: Users },
-  { id: 3, label: "Locais e agenda", icon: MapPin },
-  { id: 4, label: "Revisão e emissão", icon: FileText },
+const STEPS_INTERNA = [
+  { id: 1, label: "Programação", icon: ClipboardList },
+  { id: 2, label: "Plano de Auditoria", icon: MapPin },
+  { id: 3, label: "Relatório e emissão", icon: FileText },
 ];
+
+const STEPS_EXTERNA = [{ id: 1, label: "Registro da auditoria externa", icon: ClipboardList }];
 
 const EVENTOS = [
   "Certificação",
@@ -72,10 +73,10 @@ type Bloco = {
 
 type Dia = { data: string; blocos: Bloco[] };
 
-function Stepper({ current }: { current: number }) {
+function Stepper({ current, steps }: { current: number; steps: typeof STEPS_INTERNA }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {STEPS.map((s, i) => {
+      {steps.map((s, i) => {
         const Icon = s.icon;
         const done = current > s.id;
         const active = current === s.id;
@@ -93,7 +94,7 @@ function Stepper({ current }: { current: number }) {
               <span className="hidden font-medium sm:inline">{s.label}</span>
               <span className="sm:hidden">{s.id}</span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             )}
           </div>
@@ -228,9 +229,16 @@ export function NovaAuditoriaWizard() {
   const [step, setStep] = useState(1);
 
   // Step 1
-  const [tipo, setTipo] = useState<"Interna" | "Externa">("Externa");
+  const [tipo, setTipo] = useState<"Interna" | "Externa">("Interna");
+  const [certificadora, setCertificadora] = useState("BRTÜV");
+  const [auditorLider, setAuditorLider] = useState("u8");
+  const [auditores, setAuditores] = useState<string[]>(["u1"]);
+  const [equipeAmpliada, setEquipeAmpliada] = useState(false);
+  const [auditoresExternos, setAuditoresExternos] = useState("Equipe da certificadora — a confirmar");
+  const [relatorioExterno, setRelatorioExterno] = useState<string[]>([]);
+  const [logoCliente, setLogoCliente] = useState<string | null>(null);
   const [normasSel, setNormasSel] = useState<string[]>(["ISO 9001", "ISO 14001"]);
-  const [evento, setEvento] = useState<string>("Monitoração 12 meses");
+  const [evento, setEvento] = useState<string>("Interna");
   const [escopo, setEscopo] = useState(
     "Sistema de Gestão da Qualidade e Meio Ambiente — Sede e obras ativas",
   );
@@ -434,6 +442,7 @@ export function NovaAuditoriaWizard() {
       toast.error("Existem sobreposições de horário do mesmo auditor. Ajuste antes de emitir.");
       return;
     }
+    const lider = usuariosMock.find((u) => u.id === auditorLider);
     const aud = addAuditoria({
       tipo,
       normas: normasSel,
@@ -445,14 +454,32 @@ export function NovaAuditoriaWizard() {
       dataInicio,
       dataFim,
       locais: locaisSelecionados,
+      ...(tipo === "Externa"
+        ? { certificadora }
+        : lider
+          ? {
+              auditorLider: { nome: lider.nome, iniciais: lider.iniciais },
+              equipe: auditores
+                .map((id) => usuariosMock.find((u) => u.id === id))
+                .filter(Boolean)
+                .map((u) => ({ nome: u!.nome })),
+            }
+          : {}),
     });
-    toast.success("Plano de Auditoria emitido", {
-      description: `${aud.codigo} · ${normasSel.join(" · ")} — ${evento}. Aguardando ciência do auditor líder.`,
-    });
+    toast.success(
+      tipo === "Externa" ? "Auditoria externa programada" : "Plano de Auditoria emitido",
+      {
+        description:
+          tipo === "Externa"
+            ? `${aud.codigo} · ${certificadora} — registro externo criado.`
+            : `${aud.codigo} · ${normasSel.join(" · ")} — ${evento}. Aguardando ciência do auditor líder.`,
+      },
+    );
     setTimeout(() => navigate({ to: "/auditorias" }), 700);
   };
 
-  const canNext = step < 4;
+  const steps = tipo === "Interna" ? STEPS_INTERNA : STEPS_EXTERNA;
+  const canNext = step < steps.length;
   const canPrev = step > 1;
 
   return (
@@ -467,7 +494,7 @@ export function NovaAuditoriaWizard() {
               / Nova
             </div>
             <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight text-foreground">
-              Nova Auditoria
+              Programar Nova Auditoria
             </h1>
           </div>
           <Button variant="outline" asChild className="shrink-0">
@@ -477,7 +504,7 @@ export function NovaAuditoriaWizard() {
 
         <Card className="rounded-xl">
           <CardContent className="p-4">
-            <Stepper current={step} />
+            <Stepper current={step} steps={steps} />
           </CardContent>
         </Card>
 
@@ -495,14 +522,19 @@ export function NovaAuditoriaWizard() {
                     <ChipToggle
                       label="Interna"
                       active={tipo === "Interna"}
-                      onClick={() => setTipo("Interna")}
+                      onClick={() => { setTipo("Interna"); setStep(1); }}
                     />
                     <ChipToggle
                       label="Externa"
                       active={tipo === "Externa"}
-                      onClick={() => setTipo("Externa")}
+                      onClick={() => { setTipo("Externa"); setStep(1); }}
                     />
                   </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {tipo === "Interna"
+                      ? "Interna: programação, plano detalhado, checklist e apontamentos na Jáwda."
+                      : "Externa: registro leve — a execução acontece no sistema da certificadora."}
+                  </p>
                 </div>
                 <div>
                   <Label>Evento</Label>
@@ -587,44 +619,151 @@ export function NovaAuditoriaWizard() {
                   />
                 </div>
               </div>
+
+              {tipo === "Interna" ? (
+                <>
+                  <div className="rounded-xl border border-border bg-muted/20 p-4">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-brand" />
+                      <span className="text-sm font-semibold text-foreground">Equipe auditora</span>
+                      <span className="text-xs text-muted-foreground">
+                        (auditoria interna: líder + auditor bastam)
+                      </span>
+                    </div>
+                    <div className="mt-3 grid gap-4 md:grid-cols-2">
+                      <div>
+                        <Label className="text-xs">Auditor Líder</Label>
+                        <Select value={auditorLider} onValueChange={setAuditorLider}>
+                          <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                          <SelectContent>
+                            {usuariosMock.map((u) => (
+                              <SelectItem key={u.id} value={u.id}>{u.nome} · {u.cargo}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Auditor(es)</Label>
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          {auditores.map((id) => {
+                            const u = usuariosMock.find((x) => x.id === id);
+                            if (!u) return null;
+                            return (
+                              <span key={id} className="flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2">
+                                <span className="grid h-6 w-6 place-items-center rounded-full bg-brand text-[10px] font-semibold text-white">
+                                  {u.iniciais}
+                                </span>
+                                <span className="text-xs">{u.nome}</span>
+                                <button type="button" onClick={() => setAuditores(auditores.filter((x) => x !== id))}>
+                                  <Trash2 className="h-3 w-3 text-muted-foreground" />
+                                </button>
+                              </span>
+                            );
+                          })}
+                          <Select value="" onValueChange={(v) => v && setAuditores([...auditores, v])}>
+                            <SelectTrigger className="h-8 w-[180px] text-xs">
+                              <SelectValue placeholder="+ Adicionar auditor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {usuariosMock.filter((u) => !auditores.includes(u.id) && u.id !== auditorLider).map((u) => (
+                                <SelectItem key={u.id} value={u.id}>{u.nome} · {u.cargo}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    <label className="mt-4 flex cursor-pointer items-center justify-between rounded-lg border border-border bg-card px-3 py-2">
+                      <span className="text-xs text-muted-foreground">
+                        Preciso de equipe ampliada (especialista, trainee, observadores)
+                      </span>
+                      <Switch checked={equipeAmpliada} onCheckedChange={(v) => setEquipeAmpliada(Boolean(v))} />
+                    </label>
+                    {equipeAmpliada && (
+                      <div className="mt-3 grid gap-3 md:grid-cols-3">
+                        <EquipeCard papel="Especialista" descricao="Suporte técnico em requisitos específicos." multi />
+                        <EquipeCard papel="Trainee" descricao="Auditor em formação — sob supervisão." multi />
+                        <EquipeCard papel="Observadores" descricao="Acompanham sem intervir." multi />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Locais auditados</Label>
+                    <div className="mt-2 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+                      {locaisAuditaveis.map((l) => (
+                        <label key={l} className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm">
+                          <span className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            {l}
+                          </span>
+                          <Switch
+                            checked={locais[l] ?? false}
+                            onCheckedChange={(v) => setLocais({ ...locais, [l]: Boolean(v) })}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-4 rounded-xl border border-brand/30 bg-brand-soft/25 p-4">
+                  <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                    A auditoria externa é executada no sistema da certificadora. Aqui registramos
+                    apenas datas, auditores, escopo e o relatório recebido — sem plano detalhado,
+                    checklist ou apontamentos.
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>Certificadora</Label>
+                      <Input value={certificadora} onChange={(e) => setCertificadora(e.target.value)} className="mt-2 bg-card" />
+                    </div>
+                    <div>
+                      <Label>Auditores (informados pela certificadora)</Label>
+                      <Input value={auditoresExternos} onChange={(e) => setAuditoresExternos(e.target.value)} className="mt-2 bg-card" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Relatório da certificadora (opcional agora)</Label>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <label className="inline-flex cursor-pointer">
+                        <input
+                          type="file"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => {
+                            const fs = Array.from(e.target.files ?? []).map((f) => f.name);
+                            if (fs.length) {
+                              setRelatorioExterno((p) => [...p, ...fs]);
+                              toast.success("Relatório anexado ao registro");
+                            }
+                            e.target.value = "";
+                          }}
+                        />
+                        <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-medium hover:bg-muted/60">
+                          <FileDown className="h-4 w-4" /> Anexar relatório
+                        </span>
+                      </label>
+                      {relatorioExterno.map((n) => (
+                        <span key={n} className="rounded-full border border-border bg-card px-2 py-1 text-xs">{n}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button className="bg-brand hover:bg-brand/90" onClick={emitir}>
+                      <Check className="mr-1.5 h-4 w-4" /> Programar auditoria externa
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
 
-        {/* Step 2 */}
-        {step === 2 && (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <EquipeCard
-              papel="Auditor Líder"
-              descricao="Responsável pela condução da auditoria e emissão do relatório final."
-              defaultUser="u8"
-            />
-            <EquipeCard
-              papel="Auditores"
-              descricao="Equipe designada para as áreas técnicas."
-              defaultUser="u1"
-              multi
-            />
-            <EquipeCard
-              papel="Especialista"
-              descricao="Suporte técnico em requisitos específicos da norma."
-              multi
-            />
-            <EquipeCard
-              papel="Trainee"
-              descricao="Auditor em formação — participa sob supervisão."
-              multi
-            />
-            <EquipeCard
-              papel="Observadores"
-              descricao="Acompanham sem intervir (clientes, direção, terceiros)."
-              multi
-            />
-          </div>
-        )}
 
-        {/* Step 3 */}
-        {step === 3 && (
+        {/* Step 2 — Plano de Auditoria (somente interna) */}
+        {step === 2 && (
           <div className="space-y-4">
             <Card className="rounded-xl border-brand/30 bg-brand-soft/30">
               <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
@@ -648,33 +787,6 @@ export function NovaAuditoriaWizard() {
                 <div><span className="font-semibold text-brand">Nota da IA:</span> {iaNota}</div>
               </div>
             )}
-            <Card className="rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-base">Locais do sistema de gestão</CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Selecione quais locais serão auditados neste ciclo.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                  {locaisAuditaveis.map((l) => (
-                    <label
-                      key={l}
-                      className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                    >
-                      <span className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        {l}
-                      </span>
-                      <Switch
-                        checked={locais[l] ?? false}
-                        onCheckedChange={(v) => setLocais({ ...locais, [l]: Boolean(v) })}
-                      />
-                    </label>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
             <Card className="rounded-xl">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -840,13 +952,48 @@ export function NovaAuditoriaWizard() {
           </div>
         )}
 
-        {/* Step 4 */}
-        {step === 4 && (
+        {/* Step 3 — Relatório e emissão */}
+        {step === 3 && (
           <Card className="rounded-xl">
             <CardContent className="space-y-6 p-6">
+              {tipo === "Interna" && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/30 bg-brand-soft/25 p-4">
+                  <div className="text-xs text-muted-foreground">
+                    <div className="text-sm font-semibold text-brand">Co-branding do relatório</div>
+                    A auditoria interna é do próprio cliente — o relatório sai com o logo Jáwda e o
+                    logo do cliente lado a lado.
+                  </div>
+                  <label className="inline-flex cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          setLogoCliente(URL.createObjectURL(f));
+                          toast.success("Logo do cliente aplicado ao relatório");
+                        }
+                        e.target.value = "";
+                      }}
+                    />
+                    <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-medium hover:bg-muted/60">
+                      <FileDown className="h-4 w-4" /> Enviar logo do cliente
+                    </span>
+                  </label>
+                </div>
+              )}
               <div className="rounded-xl border border-border bg-card p-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
-                  <JawdaLogo size={28} />
+                  <div className="flex items-center gap-3">
+                    <JawdaLogo size={28} />
+                    {logoCliente && (
+                      <>
+                        <span className="h-6 w-px bg-border" />
+                        <img src={logoCliente} alt="Logo do cliente" className="h-7 object-contain" />
+                      </>
+                    )}
+                  </div>
                   <div className="text-right text-xs text-muted-foreground">
                     <div className="font-semibold text-foreground">Plano de Auditoria</div>
                     <div>Emissão: {new Date().toLocaleDateString("pt-BR")}</div>
@@ -982,13 +1129,13 @@ export function NovaAuditoriaWizard() {
               </div>
 
               <div className="flex flex-wrap justify-end gap-2">
-                <Button variant="outline">
+                <Button variant="outline" onClick={emitir}>
                   <FileDown className="mr-1.5 h-4 w-4" />
-                  Exportar PDF
+                  Emitir apenas o plano
                 </Button>
                 <Button className="bg-brand hover:bg-brand/90" onClick={emitir}>
                   <Check className="mr-1.5 h-4 w-4" />
-                  Emitir Plano de Auditoria
+                  Emitir plano + relatório
                 </Button>
               </div>
             </CardContent>
