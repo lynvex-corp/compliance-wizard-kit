@@ -144,7 +144,7 @@ function trilhaBase(nome: string, autor: string): TrilhaEvento[] {
   ];
 }
 
-type Seed = Partial<Kpi> & { nome: string; valores: number[] };
+type Seed = Partial<Kpi> & { nome: string; valores: number[]; analises?: Record<number, string> };
 
 const seeds: Seed[] = [
   { nome: "Satisfação do Cliente", objetivoId: "obj-1", processo: "Comercial", meta: 8.5, unidade: "nota", polaridade: "maior_melhor", formula: "Média das notas da pesquisa de satisfação", valores: [7.9, 8.1, 8.3, 8.6, 8.8, 9.0], responsavelMedicao: "Beatriz Souza", fonte: "manual" },
@@ -155,7 +155,7 @@ const seeds: Seed[] = [
   { nome: "Horas de Treinamento por Colaborador", objetivoId: "obj-4", processo: "RH & SST", meta: 12, unidade: "h", polaridade: "maior_melhor", formula: "Horas totais ÷ nº de colaboradores", valores: [13, 12.5, 12.2, 11.6, 11.3, 11.1], responsavelMedicao: "Paula Andrade", fonte: "manual" },
   { nome: "Tempo Médio de Tratativa de NC", objetivoId: "obj-5", processo: "Qualidade", meta: 20, unidade: "dias", polaridade: "menor_melhor", formula: "Média de dias entre abertura e encerramento", valores: [17, 18, 19, 20, 21, 21], responsavelMedicao: "Ana Ribeiro", fonte: "derivado" },
 
-  { nome: "Índice de Retrabalho", objetivoId: "obj-2", processo: "Produção", meta: 3, unidade: "%", polaridade: "menor_melhor", formula: "(Peças retrabalhadas ÷ produzidas) × 100", valores: [4.1, 4.5, 5.0, 5.4, 5.9, 6.2], responsavelMedicao: "Carlos Menezes", fonte: "manual", analises: { 5: "Aumento concentrado na linha 2 após troca de matriz; causa raiz em análise via NC_AI_014_2026." } as never },
+  { nome: "Índice de Retrabalho", objetivoId: "obj-2", processo: "Produção", meta: 3, unidade: "%", polaridade: "menor_melhor", formula: "(Peças retrabalhadas ÷ produzidas) × 100", valores: [4.1, 4.5, 5.0, 5.4, 5.9, 6.2], responsavelMedicao: "Carlos Menezes", fonte: "manual", analises: { 5: "Aumento concentrado na linha 2 após troca de matriz; causa raiz em análise via NC_AI_014_2026." } },
   { nome: "NCs Abertas no Mês", objetivoId: "obj-5", processo: "Qualidade", meta: 6, unidade: "un", polaridade: "menor_melhor", formula: "Contagem de NCs abertas no período", valores: [7, 8, 9, 10, 11, 12], responsavelMedicao: "Ana Ribeiro", fonte: "derivado" },
   { nome: "Absenteísmo", objetivoId: "obj-4", processo: "RH & SST", meta: 2.5, unidade: "%", polaridade: "menor_melhor", formula: "(Horas de ausência ÷ horas previstas) × 100", valores: [3.0, 3.2, 3.5, 3.8, 4.0, 4.3], responsavelMedicao: "Paula Andrade", fonte: "manual" },
 
@@ -166,7 +166,7 @@ const seeds: Seed[] = [
 
 export const mockKpis: Kpi[] = seeds.map((s, i) => {
   const fonte = (s.fonte ?? "manual") as FonteDados;
-  const analises = (s as { analises?: Record<number, string> }).analises ?? {};
+  const analises = s.analises ?? {};
   return {
     id: `kpi-${i + 1}`,
     codigo: kpiCodigo(fonte, i + 1),
