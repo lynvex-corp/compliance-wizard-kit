@@ -211,6 +211,44 @@ export const slaPorGravidade: Record<Severity, { horas: number; label: string; e
   Crítica: { horas: 24, label: "24 horas", escalonamento: "Diretoria e Comitê da Qualidade" },
 };
 
+/** Orientação de classificação — conteúdo base, personalizável por cliente */
+export interface GuiaGravidade {
+  definicao: string;
+  exemplo: string;
+  acao: string;
+}
+
+export const guiaGravidadePadrao: Record<Severity, GuiaGravidade> = {
+  Baixa: {
+    definicao:
+      "Falha isolada ou pontual que não compromete o sistema de gestão, o processo principal ou a qualidade final.",
+    exemplo:
+      "Campo de formulário preenchido incorretamente ou pequeno atraso administrativo sem impacto no cliente.",
+    acao: "Correção simples e imediata, sem investigação profunda de causa raiz.",
+  },
+  Média: {
+    definicao:
+      "Desvio que indica perda de controle parcial de uma etapa, mas que ainda não gerou produto defeituoso ou dano externo.",
+    exemplo:
+      "Equipamento operando próximo do limite de tolerância, ou falta de assinatura em verificação de rotina.",
+    acao: "Intervenção planejada para ajustar o processo antes que evolua para dano real.",
+  },
+  Alta: {
+    definicao:
+      "Falha sistêmica ou grave que já afeta a qualidade, gera retrabalho expressivo ou descumpre regras contratuais e normativas importantes.",
+    exemplo:
+      "Lote inteiro liberado fora das especificações, ou violação de procedimento operacional essencial.",
+    acao: "Bloqueio imediato do item ou processo e abertura obrigatória de plano de ação corretiva.",
+  },
+  Crítica: {
+    definicao:
+      "Desvio com potencial imediato de causar acidentes graves, danos ambientais irreversíveis, risco à vida ou fraude regulatória.",
+    exemplo:
+      "Falha em sistema de segurança de máquina pesada ou contaminação biológica em produto de saúde.",
+    acao: "Paralisação total e imediata, envolvimento da alta gestão, resposta emergencial.",
+  },
+};
+
 export const kpis = {
   conformidade: 87,
   ncsAbertas: 24,
