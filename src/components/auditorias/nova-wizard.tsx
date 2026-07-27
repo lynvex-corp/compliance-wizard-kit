@@ -619,6 +619,144 @@ export function NovaAuditoriaWizard() {
                   />
                 </div>
               </div>
+
+              {tipo === "Interna" ? (
+                <>
+                  <div className="rounded-xl border border-border bg-muted/20 p-4">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-brand" />
+                      <span className="text-sm font-semibold text-foreground">Equipe auditora</span>
+                      <span className="text-xs text-muted-foreground">
+                        (auditoria interna: líder + auditor bastam)
+                      </span>
+                    </div>
+                    <div className="mt-3 grid gap-4 md:grid-cols-2">
+                      <div>
+                        <Label className="text-xs">Auditor Líder</Label>
+                        <Select value={auditorLider} onValueChange={setAuditorLider}>
+                          <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                          <SelectContent>
+                            {usuariosMock.map((u) => (
+                              <SelectItem key={u.id} value={u.id}>{u.nome} · {u.cargo}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Auditor(es)</Label>
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          {auditores.map((id) => {
+                            const u = usuariosMock.find((x) => x.id === id);
+                            if (!u) return null;
+                            return (
+                              <span key={id} className="flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2">
+                                <span className="grid h-6 w-6 place-items-center rounded-full bg-brand text-[10px] font-semibold text-white">
+                                  {u.iniciais}
+                                </span>
+                                <span className="text-xs">{u.nome}</span>
+                                <button type="button" onClick={() => setAuditores(auditores.filter((x) => x !== id))}>
+                                  <Trash2 className="h-3 w-3 text-muted-foreground" />
+                                </button>
+                              </span>
+                            );
+                          })}
+                          <Select value="" onValueChange={(v) => v && setAuditores([...auditores, v])}>
+                            <SelectTrigger className="h-8 w-[180px] text-xs">
+                              <SelectValue placeholder="+ Adicionar auditor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {usuariosMock.filter((u) => !auditores.includes(u.id) && u.id !== auditorLider).map((u) => (
+                                <SelectItem key={u.id} value={u.id}>{u.nome} · {u.cargo}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    <label className="mt-4 flex cursor-pointer items-center justify-between rounded-lg border border-border bg-card px-3 py-2">
+                      <span className="text-xs text-muted-foreground">
+                        Preciso de equipe ampliada (especialista, trainee, observadores)
+                      </span>
+                      <Switch checked={equipeAmpliada} onCheckedChange={(v) => setEquipeAmpliada(Boolean(v))} />
+                    </label>
+                    {equipeAmpliada && (
+                      <div className="mt-3 grid gap-3 md:grid-cols-3">
+                        <EquipeCard papel="Especialista" descricao="Suporte técnico em requisitos específicos." multi />
+                        <EquipeCard papel="Trainee" descricao="Auditor em formação — sob supervisão." multi />
+                        <EquipeCard papel="Observadores" descricao="Acompanham sem intervir." multi />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Locais auditados</Label>
+                    <div className="mt-2 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+                      {locaisAuditaveis.map((l) => (
+                        <label key={l} className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm">
+                          <span className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            {l}
+                          </span>
+                          <Switch
+                            checked={locais[l] ?? false}
+                            onCheckedChange={(v) => setLocais({ ...locais, [l]: Boolean(v) })}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-4 rounded-xl border border-brand/30 bg-brand-soft/25 p-4">
+                  <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                    A auditoria externa é executada no sistema da certificadora. Aqui registramos
+                    apenas datas, auditores, escopo e o relatório recebido — sem plano detalhado,
+                    checklist ou apontamentos.
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>Certificadora</Label>
+                      <Input value={certificadora} onChange={(e) => setCertificadora(e.target.value)} className="mt-2 bg-card" />
+                    </div>
+                    <div>
+                      <Label>Auditores (informados pela certificadora)</Label>
+                      <Input value={auditoresExternos} onChange={(e) => setAuditoresExternos(e.target.value)} className="mt-2 bg-card" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Relatório da certificadora (opcional agora)</Label>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <label className="inline-flex cursor-pointer">
+                        <input
+                          type="file"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => {
+                            const fs = Array.from(e.target.files ?? []).map((f) => f.name);
+                            if (fs.length) {
+                              setRelatorioExterno((p) => [...p, ...fs]);
+                              toast.success("Relatório anexado ao registro");
+                            }
+                            e.target.value = "";
+                          }}
+                        />
+                        <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-medium hover:bg-muted/60">
+                          <FileDown className="h-4 w-4" /> Anexar relatório
+                        </span>
+                      </label>
+                      {relatorioExterno.map((n) => (
+                        <span key={n} className="rounded-full border border-border bg-card px-2 py-1 text-xs">{n}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button className="bg-brand hover:bg-brand/90" onClick={emitir}>
+                      <Check className="mr-1.5 h-4 w-4" /> Programar auditoria externa
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
