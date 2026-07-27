@@ -9,13 +9,77 @@ export type NCStatus =
   | "Cancelada";
 
 export type Origem =
-  | "Auditoria interna"
-  | "Auditoria externa"
-  | "Rotina do processo"
-  | "Comunicação"
-  | "Cliente"
+  | "Auditoria Interna"
+  | "Auditoria Externa"
+  | "Rotina do Processo"
   | "Documental"
-  | "Outros";
+  | "Reclamação de Cliente"
+  | "Análise Crítica pela Direção"
+  | "Incidente / Acidente"
+  | "Fornecedor"
+  | "Indicador";
+
+/** Sigla usada na composição do código da NC: NC_[ORIGEM]_[Nº]_[ANO] */
+export const origemSiglas: Record<Origem, string> = {
+  "Auditoria Interna": "AI",
+  "Auditoria Externa": "AE",
+  "Rotina do Processo": "RP",
+  Documental: "DO",
+  "Reclamação de Cliente": "RC",
+  "Análise Crítica pela Direção": "AC",
+  "Incidente / Acidente": "IN",
+  Fornecedor: "FO",
+  Indicador: "ID",
+};
+
+export const origensNC = Object.keys(origemSiglas) as Origem[];
+
+/** Prefixo do código — configurável pelo cliente */
+export const PREFIXO_NC_PADRAO = "NC";
+
+export function ncCodigo(
+  origem: Origem,
+  seq: number,
+  ano: number,
+  prefixo: string = PREFIXO_NC_PADRAO,
+) {
+  return `${prefixo}_${origemSiglas[origem]}_${String(seq).padStart(3, "0")}_${ano}`;
+}
+
+export function origemClasses(origem: Origem) {
+  switch (origem) {
+    case "Auditoria Interna":
+      return "bg-brand-soft text-brand border-brand/25";
+    case "Auditoria Externa":
+      return "bg-[color:var(--severity-critical)]/12 text-[color:var(--severity-critical)] border-[color:var(--severity-critical)]/25";
+    case "Rotina do Processo":
+      return "bg-muted text-muted-foreground border-border";
+    case "Documental":
+      return "bg-[color:var(--warning)]/18 text-[color:var(--severity-high)] border-[color:var(--warning)]/35";
+    case "Reclamação de Cliente":
+      return "bg-[color:var(--severity-high)]/12 text-[color:var(--severity-high)] border-[color:var(--severity-high)]/25";
+    case "Análise Crítica pela Direção":
+      return "bg-[color:var(--severity-medium)]/12 text-[color:var(--severity-medium)] border-[color:var(--severity-medium)]/25";
+    case "Incidente / Acidente":
+      return "bg-[color:var(--severity-critical)]/12 text-[color:var(--severity-critical)] border-[color:var(--severity-critical)]/25";
+    case "Fornecedor":
+      return "bg-[color:var(--success)]/12 text-[color:var(--success)] border-[color:var(--success)]/25";
+    case "Indicador":
+      return "bg-brand-soft text-brand border-brand/25";
+  }
+}
+
+/** Setores de ocorrência da NC */
+export const setoresOcorrencia = [
+  "Operação",
+  "Planejamento",
+  "Projeto",
+  "Administrativo",
+  "Financeiro",
+  "RH",
+  "Qualidade",
+] as const;
+export type SetorOcorrencia = (typeof setoresOcorrencia)[number];
 
 export interface NC {
   id: string;
@@ -30,6 +94,7 @@ export interface NC {
   reincidente: boolean;
   criadoEm: string;
   local: string;
+  setorOcorrencia?: string;
 }
 
 const nomes = [
@@ -70,12 +135,15 @@ const descricoes = [
 ];
 
 const origens: Origem[] = [
-  "Auditoria interna",
-  "Cliente",
-  "Rotina do processo",
-  "Auditoria externa",
+  "Auditoria Interna",
+  "Reclamação de Cliente",
+  "Rotina do Processo",
+  "Auditoria Externa",
   "Documental",
-  "Comunicação",
+  "Incidente / Acidente",
+  "Fornecedor",
+  "Indicador",
+  "Análise Crítica pela Direção",
 ];
 const gravidades: Severity[] = ["Baixa", "Média", "Alta", "Crítica"];
 const statuses: NCStatus[] = [
@@ -97,11 +165,12 @@ export const mockNCs: NC[] = descricoes.map((desc, i) => {
   const prazo = new Date(BASE_DATE.getTime() + daysOffset * 86400000);
   const slaStatus: NC["slaStatus"] =
     daysOffset < 0 ? "vencido" : daysOffset <= 2 ? "proximo" : "ok";
+  const origem = pick(origens, i);
   return {
     id: `nc-${i + 1}`,
-    codigo: `NC-2026-${String(i + 1).padStart(6, "0")}`,
+    codigo: ncCodigo(origem, i + 1, 2026),
     descricao: desc,
-    origem: pick(origens, i),
+    origem,
     gravidade: pick(gravidades, i * 3),
     responsavel: { nome: nome as string, iniciais: iniciais as string },
     status: pick(statuses, i * 2),
@@ -110,6 +179,7 @@ export const mockNCs: NC[] = descricoes.map((desc, i) => {
     reincidente: i % 5 === 0,
     criadoEm: new Date(BASE_DATE.getTime() - i * 86400000 * 2).toISOString(),
     local: pick(locais, i),
+    setorOcorrencia: pick([...setoresOcorrencia], i * 2),
   };
 });
 
