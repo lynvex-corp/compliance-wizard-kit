@@ -136,34 +136,62 @@ function KpiCard({
   value,
   hint,
   icon: Icon,
-  tone,
+  active,
+  onClick,
 }: {
   label: string;
   value: string | number;
   hint?: string;
   icon: typeof AlertTriangle;
-  tone: "default" | "info" | "warning" | "success" | "danger";
+  active?: boolean;
+  onClick?: () => void;
 }) {
-  const toneMap = {
-    default: "text-muted-foreground bg-muted",
-    info: "text-brand bg-brand-soft",
-    warning: "text-[color:var(--severity-high)] bg-[color:var(--severity-high)]/10",
-    success: "text-[color:var(--success)] bg-[color:var(--success)]/10",
-    danger: "text-[color:var(--severity-critical)] bg-[color:var(--severity-critical)]/10",
-  } as const;
   return (
-    <Card className="rounded-xl border-border/80 shadow-sm">
+    <Card
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className={cn(
+        "rounded-xl border-border/80 shadow-sm transition-all",
+        onClick && "cursor-pointer hover:border-[color:var(--danger-deep)]/50 hover:shadow-md",
+        active &&
+          "border-[color:var(--danger-deep)] bg-[color:var(--danger-deep-soft)] ring-2 ring-[color:var(--danger-deep)]/25",
+      )}
+    >
       <CardContent className="flex items-start justify-between p-5">
         <div>
-          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div
+            className={cn(
+              "text-xs font-medium uppercase tracking-wider",
+              active ? "text-[color:var(--danger-deep)]" : "text-muted-foreground",
+            )}
+          >
             {label}
           </div>
-          <div className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
+          <div
+            className={cn(
+              "mt-2 text-3xl font-semibold tracking-tight",
+              active ? "text-[color:var(--danger-deep)]" : "text-foreground",
+            )}
+          >
             {value}
           </div>
           {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
         </div>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${toneMap[tone]}`}>
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-lg",
+            active
+              ? "bg-[color:var(--danger-deep)] text-white"
+              : "bg-[color:var(--danger-deep)]/10 text-[color:var(--danger-deep)]",
+          )}
+        >
           <Icon className="h-5 w-5" />
         </div>
       </CardContent>
