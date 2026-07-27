@@ -5,10 +5,13 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
-  Users,
-  CalendarClock,
+  ShieldAlert,
   Sparkles,
   Loader2,
+  Plus,
+  Trash2,
+  Settings2,
+  Link2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app/app-shell";
@@ -17,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -26,13 +30,18 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useJawda } from "@/lib/jawda-store";
-import type { PlanoOrigemTipo } from "@/lib/mock-data";
+import {
+  usuariosMock,
+  PRAZO_CONTINGENCIA_DIAS_UTEIS_PADRAO,
+  addDiasUteis,
+  type PlanoOrigemTipo,
+} from "@/lib/mock-data";
+import { Route as NovoPlanoRoute } from "@/routes/planos-de-acao.novo";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
   { id: 1, label: "Origem e contexto", icon: ClipboardList },
   { id: 2, label: "Ações (5W2H)", icon: Sparkles },
-  { id: 3, label: "Prazos e responsáveis", icon: CalendarClock },
 ];
 
 const ORIGENS: PlanoOrigemTipo[] = [
@@ -46,6 +55,43 @@ const ORIGENS: PlanoOrigemTipo[] = [
 ];
 
 const DEPARTAMENTOS = ["Qualidade", "Produção", "Suprimentos", "Manutenção", "RH", "Comercial", "TI"];
+
+type AcaoCorretiva = {
+  oque: string;
+  porque: string;
+  onde: string;
+  responsavelId: string;
+  departamento: string;
+  prazo: string; // yyyy-mm-dd
+  como: string;
+  quanto: string;
+};
+
+function novaAcao(): AcaoCorretiva {
+  return {
+    oque: "",
+    porque: "",
+    onde: "",
+    responsavelId: "",
+    departamento: "Qualidade",
+    prazo: "",
+    como: "",
+    quanto: "",
+  };
+}
+
+function isoEmDias(dias: number) {
+  return new Date(Date.now() + dias * 86400000).toISOString().slice(0, 10);
+}
+
+function iniciaisDe(nome: string) {
+  return nome
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
 function Stepper({ current }: { current: number }) {
   return (
@@ -77,101 +123,80 @@ function Stepper({ current }: { current: number }) {
 
 type IAProposta = {
   contencao: string;
-  acoes: Array<{
-    oque: string;
-    onde: string;
-    quem: string;
-    quando: string;
-    como: string;
-    quanto: string;
-    porque: string;
-  }>;
-  resultado: string;
-  prazoSugerido: number; // dias
+  acoes: AcaoCorretiva[];
 };
 
 function gerarPropostaIA(problema: string): IAProposta {
   const criticidade = /crític|urgent|paral/i.test(problema) ? 15 : /moder|risco/i.test(problema) ? 30 : 45;
   const foco = problema.trim().slice(0, 60) || "processo identificado";
+  const resp = (i: number) => usuariosMock[i % usuariosMock.length]?.id ?? "";
   return {
-    contencao: `Isolar imediatamente ${foco.toLowerCase()} e comunicar equipe responsável. Aplicar inspeção 100% até estabilização.`,
+    contencao: `Isolar imediatamente ${foco.toLowerCase()} e comunicar a equipe responsável. Aplicar inspeção 100% até a estabilização.`,
     acoes: [
       {
         oque: `Revisar procedimento operacional associado a ${foco.toLowerCase()}`,
-        onde: "Área impactada",
-        quem: "Coordenador de processo",
-        quando: `+${Math.round(criticidade / 3)} dias`,
-        como: "Reunião técnica + análise de causa raiz (5 Porquês)",
-        quanto: "R$ 0",
         porque: "Eliminar a causa raiz e evitar reincidência",
+        onde: "Área impactada",
+        responsavelId: resp(0),
+        departamento: "Qualidade",
+        prazo: isoEmDias(Math.round(criticidade / 3)),
+        como: "Reunião técnica + revisão da análise de causa raiz",
+        quanto: "0",
       },
       {
         oque: "Atualizar POP e checklist de conferência",
-        onde: "Gestão Documental",
-        quem: "Analista da Qualidade",
-        quando: `+${Math.round(criticidade / 2)} dias`,
-        como: "Redação e aprovação via workflow documental",
-        quanto: "R$ 0",
         porque: "Formalizar a nova prática",
+        onde: "Gestão Documental",
+        responsavelId: resp(1),
+        departamento: "Qualidade",
+        prazo: isoEmDias(Math.round(criticidade / 2)),
+        como: "Redação e aprovação via workflow documental",
+        quanto: "0",
       },
       {
         oque: "Treinamento dos operadores dos 3 turnos",
-        onde: "Sala de treinamento + campo",
-        quem: "Líder de área",
-        quando: `+${criticidade - 5} dias`,
-        como: "Treinamento presencial com avaliação de eficácia",
-        quanto: "R$ 800",
         porque: "Garantir aderência ao novo procedimento",
-      },
-      {
-        oque: "Auditoria de conformidade pós-implementação",
-        onde: "Área impactada",
-        quem: "Qualidade",
-        quando: `+${criticidade} dias`,
-        como: "Checklist e amostragem por 7 dias consecutivos",
-        quanto: "R$ 0",
-        porque: "Verificar eficácia da ação e liberar encerramento",
+        onde: "Sala de treinamento + campo",
+        responsavelId: resp(2),
+        departamento: "Produção",
+        prazo: isoEmDias(Math.max(criticidade - 5, 5)),
+        como: "Treinamento presencial com avaliação de eficácia",
+        quanto: "800",
       },
     ],
-    resultado: "Eliminar reincidência nos próximos 60 dias com aprovação na 1ª avaliação de eficácia.",
-    prazoSugerido: criticidade,
   };
 }
 
 export function NovoPlanoWizard() {
   const navigate = useNavigate();
   const { addPlano } = useJawda();
-  const [step, setStep] = useState(1);
+  const search = NovoPlanoRoute.useSearch();
 
-  // Step 1
-  const [origem, setOrigem] = useState<PlanoOrigemTipo>("Não Conformidade");
-  const [vinculado, setVinculado] = useState("");
-  const [problema, setProblema] = useState("");
+  const veioDeNC = Boolean(search.problema || search.vinculado);
 
-  // Step 2 — IA + 5W2H fields
+  const [step, setStep] = useState(veioDeNC ? 2 : 1);
+
+  // Step 1 — contexto
+  const [origem, setOrigem] = useState<PlanoOrigemTipo>(
+    (search.origem as PlanoOrigemTipo) ?? "Não Conformidade",
+  );
+  const [vinculado, setVinculado] = useState(search.vinculado ?? "");
+  const [problema, setProblema] = useState(search.problema ?? "");
+
+  // Contingência
+  const [usarContingencia, setUsarContingencia] = useState(false);
   const [contencao, setContencao] = useState("");
-  const [acoes, setAcoes] = useState<IAProposta["acoes"]>([
-    { oque: "", onde: "", quem: "", quando: "", como: "", quanto: "", porque: "" },
-  ]);
-  const [resultado, setResultado] = useState("");
+  const [contResponsavelId, setContResponsavelId] = useState("");
+  const [prazoContDias, setPrazoContDias] = useState(PRAZO_CONTINGENCIA_DIAS_UTEIS_PADRAO);
+
+  // Ações corretivas
+  const [acoes, setAcoes] = useState<AcaoCorretiva[]>([novaAcao()]);
   const [iaLoading, setIaLoading] = useState(false);
   const [iaProposta, setIaProposta] = useState<IAProposta | null>(null);
 
-  // Step 3
-  const [responsavelNome, setResponsavelNome] = useState("Beatriz Souza");
-  const [departamento, setDepartamento] = useState("Qualidade");
-  const [prazoDias, setPrazoDias] = useState(30);
-  const [custo, setCusto] = useState(0);
-
-  const iniciais = useMemo(
-    () =>
-      responsavelNome
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((s) => s[0]?.toUpperCase() ?? "")
-        .join(""),
-    [responsavelNome],
+  const prazoContingencia = useMemo(
+    () => addDiasUteis(new Date(), prazoContDias),
+    [prazoContDias],
   );
 
   const gerarComIA = () => {
@@ -181,61 +206,87 @@ export function NovoPlanoWizard() {
     }
     setIaLoading(true);
     setTimeout(() => {
-      const p = gerarPropostaIA(problema);
-      setIaProposta(p);
+      setIaProposta(gerarPropostaIA(problema));
       setIaLoading(false);
-    }, 1800);
+    }, 1500);
   };
 
   const aplicarTudo = () => {
     if (!iaProposta) return;
+    setUsarContingencia(true);
     setContencao(iaProposta.contencao);
     setAcoes(iaProposta.acoes);
-    setResultado(iaProposta.resultado);
-    setPrazoDias(iaProposta.prazoSugerido);
-    toast.success("Proposta aplicada — revise antes de concluir.");
     setIaProposta(null);
+    toast.success("Proposta aplicada — revise antes de concluir.");
   };
 
-  const aplicarSoAcoes = () => {
-    if (!iaProposta) return;
-    setAcoes(iaProposta.acoes);
-    toast.success("Ações aplicadas ao formulário.");
-    setIaProposta(null);
-  };
+  const updateAcao = (i: number, field: keyof AcaoCorretiva, value: string) =>
+    setAcoes((a) => a.map((x, idx) => (idx === i ? { ...x, [field]: value } : x)));
+  const addAcao = () => setAcoes((a) => [...a, novaAcao()]);
+  const removeAcao = (i: number) => setAcoes((a) => a.filter((_, idx) => idx !== i));
+
+  const acaoIncompleta = (a: AcaoCorretiva) =>
+    !a.oque.trim() ||
+    !a.porque.trim() ||
+    !a.onde.trim() ||
+    !a.responsavelId ||
+    !a.prazo ||
+    !a.como.trim() ||
+    !a.quanto.trim();
 
   const concluir = () => {
-    const descricao = acoes[0]?.oque || problema || "Plano de ação sem título";
-    const prazoIso = new Date(Date.now() + prazoDias * 86400000).toISOString();
-    addPlano({
-      descricao,
-      origemTipo: origem,
-      vinculadoCodigo: vinculado || null,
-      responsavel: { nome: responsavelNome, iniciais, departamento },
-      pdca: "Plan",
-      status: "Planejado",
-      prazo: prazoIso,
-      custo,
-      percentual: 0,
-      marcos: [
-        new Date(Date.now() + (prazoDias / 3) * 86400000).toISOString(),
-        new Date(Date.now() + (prazoDias / 1.5) * 86400000).toISOString(),
-        prazoIso,
-      ],
+    if (usarContingencia && (!contencao.trim() || !contResponsavelId)) {
+      toast.error("Preencha a descrição e o responsável da ação de contingência.");
+      return;
+    }
+    if (acoes.some(acaoIncompleta)) {
+      toast.error("Todos os campos das ações corretivas são obrigatórios.");
+      return;
+    }
+
+    if (usarContingencia) {
+      const respCont = usuariosMock.find((u) => u.id === contResponsavelId);
+      addPlano({
+        descricao: `[Contingência] ${contencao.trim()}`,
+        origemTipo: origem,
+        vinculadoCodigo: vinculado || null,
+        responsavel: {
+          nome: respCont?.nome ?? "Responsável",
+          iniciais: iniciaisDe(respCont?.nome ?? "RE"),
+          departamento: respCont?.cargo ?? "Qualidade",
+        },
+        pdca: "Do",
+        status: "Em Execução",
+        prazo: prazoContingencia.toISOString(),
+        custo: 0,
+      });
+    }
+
+    acoes.forEach((a) => {
+      const resp = usuariosMock.find((u) => u.id === a.responsavelId);
+      addPlano({
+        descricao: a.oque.trim(),
+        origemTipo: origem,
+        vinculadoCodigo: vinculado || null,
+        responsavel: {
+          nome: resp?.nome ?? "Responsável",
+          iniciais: iniciaisDe(resp?.nome ?? "RE"),
+          departamento: a.departamento,
+        },
+        pdca: "Plan",
+        status: "Planejado",
+        prazo: new Date(`${a.prazo}T12:00:00`).toISOString(),
+        custo: Number(a.quanto.replace(/[^\d.,-]/g, "").replace(",", ".")) || 0,
+        percentual: 0,
+        marcos: [new Date(`${a.prazo}T12:00:00`).toISOString()],
+      });
     });
-    toast.success("Plano de ação criado com sucesso.");
+
+    toast.success(
+      `${acoes.length} ação(ões) corretiva(s)${usarContingencia ? " + contingência" : ""} cadastrada(s).`,
+    );
     setTimeout(() => navigate({ to: "/planos-de-acao" }), 500);
   };
-
-  const canPrev = step > 1;
-  const canNext = step < 3;
-
-  const updateAcao = (i: number, field: keyof IAProposta["acoes"][number], value: string) => {
-    setAcoes((a) => a.map((x, idx) => (idx === i ? { ...x, [field]: value } : x)));
-  };
-  const addAcao = () =>
-    setAcoes([...acoes, { oque: "", onde: "", quem: "", quando: "", como: "", quanto: "", porque: "" }]);
-  const removeAcao = (i: number) => setAcoes(acoes.filter((_, idx) => idx !== i));
 
   return (
     <AppShell>
@@ -257,6 +308,19 @@ export function NovoPlanoWizard() {
             <Stepper current={step} />
           </CardContent>
         </Card>
+
+        {veioDeNC && step === 2 && (
+          <Card className="rounded-xl border-brand/30 bg-brand-soft/30">
+            <CardContent className="flex flex-wrap items-center gap-3 p-4 text-sm">
+              <Link2 className="h-4 w-4 text-brand" />
+              <span className="font-medium text-brand">Originado de {vinculado || "não conformidade"}</span>
+              <span className="text-muted-foreground">Causa raiz: {problema || "—"}</span>
+              <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setStep(1)}>
+                Editar contexto
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {step === 1 && (
           <Card className="rounded-xl">
@@ -280,21 +344,18 @@ export function NovoPlanoWizard() {
                     className="mt-2"
                     value={vinculado}
                     onChange={(e) => setVinculado(e.target.value)}
-                    placeholder="Ex.: NC-2026-014"
+                    placeholder="Ex.: NC_AI_014_2026"
                   />
                 </div>
               </div>
               <div>
-                <Label>Descrição do problema / oportunidade</Label>
+                <Label>Problema / causa raiz</Label>
                 <Textarea
-                  className="mt-2 min-h-[120px]"
+                  className="mt-2 min-h-[110px]"
                   value={problema}
                   onChange={(e) => setProblema(e.target.value)}
-                  placeholder="Descreva o cenário — pode colar a descrição da NC de origem."
+                  placeholder="Descreva o problema — quando o plano vem de uma NC, a causa raiz já chega preenchida."
                 />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  A IA usará esta descrição para propor uma estrutura 5W2H completa.
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -302,14 +363,75 @@ export function NovoPlanoWizard() {
 
         {step === 2 && (
           <div className="space-y-4">
+            {/* Contingência */}
+            <Card className="rounded-xl border-[color:var(--severity-high)]/30 bg-[color:var(--severity-high)]/5">
+              <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <ShieldAlert className="h-4 w-4 text-[color:var(--severity-high)]" />
+                  Ação de Contingência (imediata)
+                  <Badge variant="outline" className="border-border/60 text-[10px] font-normal text-muted-foreground">
+                    opcional
+                  </Badge>
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Usar contingência</span>
+                  <Switch checked={usarContingencia} onCheckedChange={setUsarContingencia} />
+                </div>
+              </CardHeader>
+              {usarContingencia && (
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>O que será feito imediatamente</Label>
+                    <Textarea
+                      className="mt-2 min-h-[80px]"
+                      value={contencao}
+                      onChange={(e) => setContencao(e.target.value)}
+                      placeholder="Ação de curto prazo para estancar o problema."
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>Responsável</Label>
+                      <Select value={contResponsavelId} onValueChange={setContResponsavelId}>
+                        <SelectTrigger className="mt-2"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          {usuariosMock.map((u) => (<SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="flex items-center gap-1.5">
+                        <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        Prazo governado (dias úteis)
+                      </Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        className="mt-2"
+                        value={prazoContDias}
+                        onChange={(e) => setPrazoContDias(Math.max(1, Number(e.target.value) || 1))}
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Padrão de configuração geral: {PRAZO_CONTINGENCIA_DIAS_UTEIS_PADRAO} dias úteis · vence em{" "}
+                        <span className="font-medium text-foreground">
+                          {prazoContingencia.toLocaleDateString("pt-BR")}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* IA */}
             <Card className="rounded-xl border-brand/30 bg-brand-soft/30">
               <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-brand" />
                   <div>
-                    <div className="text-sm font-semibold text-brand">Gerar plano com IA</div>
+                    <div className="text-sm font-semibold text-brand">Gerar ações com IA</div>
                     <div className="text-xs text-muted-foreground">
-                      Contenção imediata + ações corretivas 5W2H a partir da descrição do problema.
+                      Contingência + ações corretivas 5W2H a partir da causa raiz.
                     </div>
                   </div>
                 </div>
@@ -324,141 +446,123 @@ export function NovoPlanoWizard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Sparkles className="h-4 w-4 text-brand" /> Proposta da IA
-                    <Badge variant="outline" className="ml-1 border-brand/30 bg-brand-soft text-brand">
-                      prazo sugerido: {iaProposta.prazoSugerido} dias
-                    </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="rounded-lg border border-border p-3">
-                    <div className="text-[10px] font-semibold uppercase text-muted-foreground">Contenção imediata</div>
-                    <div className="mt-1 text-sm">{iaProposta.contencao}</div>
+                  <div className="rounded-lg border border-border p-3 text-sm">
+                    <div className="text-[10px] font-semibold uppercase text-muted-foreground">Contingência</div>
+                    <div className="mt-1">{iaProposta.contencao}</div>
                   </div>
-                  <div className="space-y-2">
-                    {iaProposta.acoes.map((a, i) => (
-                      <div key={i} className="rounded-lg border border-border p-3 text-xs">
-                        <div className="mb-1 font-semibold text-brand">Ação {i + 1}: {a.oque}</div>
-                        <div className="grid gap-1 text-muted-foreground sm:grid-cols-2">
-                          <div>Onde: {a.onde}</div>
-                          <div>Quem: {a.quem}</div>
-                          <div>Quando: {a.quando}</div>
-                          <div>Quanto: {a.quanto}</div>
-                          <div className="sm:col-span-2">Como: {a.como}</div>
-                          <div className="sm:col-span-2">Por quê: {a.porque}</div>
-                        </div>
+                  {iaProposta.acoes.map((a, i) => (
+                    <div key={i} className="rounded-lg border border-border p-3 text-xs">
+                      <div className="mb-1 font-semibold text-brand">Ação {i + 1}: {a.oque}</div>
+                      <div className="grid gap-1 text-muted-foreground sm:grid-cols-2">
+                        <div>Onde: {a.onde}</div>
+                        <div>Quem: {usuariosMock.find((u) => u.id === a.responsavelId)?.nome ?? "—"}</div>
+                        <div>Quando: {a.prazo}</div>
+                        <div>Quanto: R$ {a.quanto}</div>
+                        <div className="sm:col-span-2">Como: {a.como}</div>
+                        <div className="sm:col-span-2">Por quê: {a.porque}</div>
                       </div>
-                    ))}
-                  </div>
-                  <div className="rounded-lg border border-[color:var(--success)]/30 bg-[color:var(--success)]/10 p-3 text-sm text-[color:var(--success)]">
-                    <span className="font-semibold">Resultado esperado:</span> {iaProposta.resultado}
-                  </div>
+                    </div>
+                  ))}
                   <div className="flex flex-wrap justify-end gap-2">
                     <Button variant="ghost" onClick={() => setIaProposta(null)}>Descartar</Button>
-                    <Button variant="outline" onClick={aplicarSoAcoes}>Aplicar apenas as ações</Button>
                     <Button className="bg-brand hover:bg-brand/90" onClick={aplicarTudo}>Aplicar tudo</Button>
                   </div>
                 </CardContent>
               </Card>
             )}
 
+            {/* Ações corretivas */}
             <Card className="rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-base">Contenção imediata</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  className="min-h-[80px]"
-                  value={contencao}
-                  onChange={(e) => setContencao(e.target.value)}
-                  placeholder="Ação de curto prazo para estancar o problema."
-                />
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-xl">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">Ações corretivas (5W2H)</CardTitle>
-                <Button variant="outline" size="sm" onClick={addAcao}>+ Ação</Button>
+              <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base">Ações Corretivas (5W2H)</CardTitle>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Cada linha vira um item acompanhável no módulo de Planos de Ação. Todos os campos são obrigatórios.
+                  </p>
+                </div>
+                <Badge variant="outline" className="border-border/60 text-[10px] text-muted-foreground">
+                  {acoes.length} ação(ões)
+                </Badge>
               </CardHeader>
               <CardContent className="space-y-3">
                 {acoes.map((a, i) => (
                   <div key={i} className="rounded-xl border border-border bg-muted/20 p-3">
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-brand">Ação {i + 1}</span>
+                      <span className="text-xs font-semibold text-brand">Ação corretiva {i + 1}</span>
                       {acoes.length > 1 && (
-                        <Button variant="ghost" size="sm" onClick={() => removeAcao(i)}>Remover</Button>
+                        <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => removeAcao(i)}>
+                          <Trash2 className="h-3.5 w-3.5" /> Remover
+                        </Button>
                       )}
                     </div>
-                    <div className="grid gap-2 md:grid-cols-2">
-                      <div><Label className="text-xs">O quê (What)</Label><Input value={a.oque} onChange={(e) => updateAcao(i, "oque", e.target.value)} /></div>
-                      <div><Label className="text-xs">Onde (Where)</Label><Input value={a.onde} onChange={(e) => updateAcao(i, "onde", e.target.value)} /></div>
-                      <div><Label className="text-xs">Quem (Who)</Label><Input value={a.quem} onChange={(e) => updateAcao(i, "quem", e.target.value)} /></div>
-                      <div><Label className="text-xs">Quando (When)</Label><Input value={a.quando} onChange={(e) => updateAcao(i, "quando", e.target.value)} /></div>
-                      <div><Label className="text-xs">Como (How)</Label><Input value={a.como} onChange={(e) => updateAcao(i, "como", e.target.value)} /></div>
-                      <div><Label className="text-xs">Quanto (How much)</Label><Input value={a.quanto} onChange={(e) => updateAcao(i, "quanto", e.target.value)} /></div>
-                      <div className="md:col-span-2"><Label className="text-xs">Por quê (Why)</Label><Input value={a.porque} onChange={(e) => updateAcao(i, "porque", e.target.value)} /></div>
+                    <div className="grid gap-3 md:grid-cols-12">
+                      <div className="md:col-span-6">
+                        <Label className="text-xs">O quê (What) *</Label>
+                        <Input className="mt-1.5" value={a.oque} onChange={(e) => updateAcao(i, "oque", e.target.value)} />
+                      </div>
+                      <div className="md:col-span-6">
+                        <Label className="text-xs">Por quê (Why) *</Label>
+                        <Input className="mt-1.5" value={a.porque} onChange={(e) => updateAcao(i, "porque", e.target.value)} />
+                      </div>
+                      <div className="md:col-span-4">
+                        <Label className="text-xs">Onde (Where) *</Label>
+                        <Input className="mt-1.5" value={a.onde} onChange={(e) => updateAcao(i, "onde", e.target.value)} />
+                      </div>
+                      <div className="md:col-span-4">
+                        <Label className="text-xs">Quem — responsável pela tratativa (Who) *</Label>
+                        <Select value={a.responsavelId} onValueChange={(v) => updateAcao(i, "responsavelId", v)}>
+                          <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                          <SelectContent>
+                            {usuariosMock.map((u) => (<SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="md:col-span-4">
+                        <Label className="text-xs">Departamento *</Label>
+                        <Select value={a.departamento} onValueChange={(v) => updateAcao(i, "departamento", v)}>
+                          <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {DEPARTAMENTOS.map((d) => (<SelectItem key={d} value={d}>{d}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="md:col-span-3">
+                        <Label className="text-xs">Quando — prazo (When) *</Label>
+                        <Input type="date" className="mt-1.5" value={a.prazo} onChange={(e) => updateAcao(i, "prazo", e.target.value)} />
+                      </div>
+                      <div className="md:col-span-6">
+                        <Label className="text-xs">Como (How) *</Label>
+                        <Input className="mt-1.5" value={a.como} onChange={(e) => updateAcao(i, "como", e.target.value)} />
+                      </div>
+                      <div className="md:col-span-3">
+                        <Label className="text-xs">Quanto — R$ (How much) *</Label>
+                        <Input className="mt-1.5" value={a.quanto} onChange={(e) => updateAcao(i, "quanto", e.target.value)} placeholder="0" />
+                      </div>
                     </div>
                   </div>
                 ))}
-                <div>
-                  <Label>Resultado esperado</Label>
-                  <Textarea className="mt-2 min-h-[70px]" value={resultado} onChange={(e) => setResultado(e.target.value)} />
-                </div>
+                <Button variant="outline" className="w-full gap-1.5 rounded-lg border-dashed" onClick={addAcao}>
+                  <Plus className="h-4 w-4" /> Adicionar ação
+                </Button>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {step === 3 && (
-          <Card className="rounded-xl">
-            <CardHeader>
-              <CardTitle className="text-base">Prazos e responsáveis</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label>Responsável</Label>
-                  <Input className="mt-2" value={responsavelNome} onChange={(e) => setResponsavelNome(e.target.value)} />
-                </div>
-                <div>
-                  <Label>Departamento</Label>
-                  <Select value={departamento} onValueChange={setDepartamento}>
-                    <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {DEPARTAMENTOS.map((d) => (<SelectItem key={d} value={d}>{d}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Prazo (dias a partir de hoje)</Label>
-                  <Input type="number" min={1} className="mt-2" value={prazoDias} onChange={(e) => setPrazoDias(Number(e.target.value))} />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Vencimento: {new Date(Date.now() + prazoDias * 86400000).toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
-                <div>
-                  <Label>Custo estimado (R$)</Label>
-                  <Input type="number" min={0} className="mt-2" value={custo} onChange={(e) => setCusto(Number(e.target.value))} />
-                </div>
-              </div>
-              <div className="rounded-lg border border-brand/20 bg-brand-soft/30 p-3 text-xs text-foreground/80">
-                <span className="font-semibold text-brand">Pronto para criar:</span> {acoes.length} ação(ões) 5W2H, contenção imediata {contencao ? "definida" : "não preenchida"}, responsável {responsavelNome}.
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         <div className="flex items-center justify-between">
-          <Button variant="outline" disabled={!canPrev} onClick={() => setStep(step - 1)}>
+          <Button variant="outline" disabled={step === 1} onClick={() => setStep(1)}>
             <ChevronLeft className="mr-1 h-4 w-4" /> Voltar
           </Button>
-          {canNext ? (
-            <Button className="bg-brand hover:bg-brand/90" onClick={() => setStep(step + 1)}>
+          {step === 1 ? (
+            <Button className="bg-brand hover:bg-brand/90" onClick={() => setStep(2)}>
               Avançar <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
             <Button className="bg-brand hover:bg-brand/90" onClick={concluir}>
-              <Check className="mr-1 h-4 w-4" /> Criar plano de ação
+              <Check className="mr-1 h-4 w-4" /> Cadastrar ações no plano
             </Button>
           )}
         </div>

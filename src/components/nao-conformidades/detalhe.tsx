@@ -332,6 +332,32 @@ export function NCDetailPage() {
                 </CardContent>
               </Card>
             )}
+            {!planoVinculado && (
+              <Card className="rounded-xl border-brand/20 bg-brand-soft/20 shadow-sm">
+                <CardContent className="space-y-3 p-5">
+                  <div className="flex items-center gap-2">
+                    <ListChecks className="h-4 w-4 text-brand" />
+                    <h3 className="text-sm font-semibold text-foreground">Plano de Ação</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Nenhum plano vinculado. Ao criar, a origem e a causa raiz desta NC já vão preenchidas
+                    direto na etapa 5W2H.
+                  </p>
+                  <Button asChild size="sm" className="w-full gap-1 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90">
+                    <Link
+                      to="/planos-de-acao/novo"
+                      search={{
+                        origem: "Não Conformidade",
+                        vinculado: nc.codigo,
+                        problema: nc.descricao,
+                      }}
+                    >
+                      Criar plano de ação <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
             <Card className="rounded-xl border-border/80 shadow-sm">
               <CardContent className="space-y-4 p-5">
                 <h3 className="text-sm font-semibold text-foreground">Informações</h3>

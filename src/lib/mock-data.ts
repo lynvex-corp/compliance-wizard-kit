@@ -1101,3 +1101,17 @@ export const locaisAuditaveis = [
 ];
 
 export const normasDisponiveis = ["ISO 9001", "ISO 14001", "ISO 45001", "ISO 27001", "ISO 50001"];
+
+// ===== Configuração geral — prazos governados =====
+export const PRAZO_CONTINGENCIA_DIAS_UTEIS_PADRAO = 2;
+
+export function addDiasUteis(base: Date, dias: number) {
+  const d = new Date(base);
+  let restantes = dias;
+  while (restantes > 0) {
+    d.setDate(d.getDate() + 1);
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) restantes -= 1;
+  }
+  return d;
+}
