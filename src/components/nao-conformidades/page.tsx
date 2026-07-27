@@ -249,6 +249,7 @@ export function NaoConformidadesPage() {
   const [setor, setSetor] = useState<string>("all");
   const [gravidade, setGravidade] = useState<string>("all");
   const [reincidente, setReincidente] = useState(false);
+  const [kpiFilter, setKpiFilter] = useState<KpiFilter | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<NCStatus | null>(null);
 
@@ -276,6 +277,16 @@ export function NaoConformidadesPage() {
     const vencidas = filtered.filter((nc) => nc.slaStatus === "vencido").length;
     return { total: filtered.length, abertas, andamento, encerradas, vencidas };
   }, [filtered]);
+
+  // Filtro estilo BI aplicado pelos cards de KPI + ordenação (mais recente primeiro)
+  const visible = useMemo(() => {
+    const base = kpiFilter ? filtered.filter((nc) => matchesKpi(nc, kpiFilter)) : filtered;
+    return [...base].sort(
+      (a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime(),
+    );
+  }, [filtered, kpiFilter]);
+
+  const toggleKpi = (f: KpiFilter) => setKpiFilter((cur) => (cur === f ? null : f));
 
   function handleDrop(status: NCStatus) {
     if (!draggingId) return;
@@ -315,11 +326,42 @@ export function NaoConformidadesPage() {
 
           {/* KPIs */}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <KpiCard label="Total no período" value={kpis.total} icon={FolderOpen} tone="default" />
-            <KpiCard label="Abertas" value={kpis.abertas} icon={AlertTriangle} tone="info" />
-            <KpiCard label="Em andamento" value={kpis.andamento} icon={Activity} tone="warning" />
-            <KpiCard label="Encerradas" value={kpis.encerradas} icon={CheckCircle2} tone="success" />
-            <KpiCard label="Vencidas (SLA)" value={kpis.vencidas} icon={Clock} tone="danger" />
+            <KpiCard
+              label="Total de Não Conformidades"
+              value={kpis.total}
+              icon={FolderOpen}
+              hint={kpiFilter ? "Clique para limpar o filtro" : undefined}
+              active={kpiFilter === null}
+              onClick={() => setKpiFilter(null)}
+            />
+            <KpiCard
+              label="Abertas"
+              value={kpis.abertas}
+              icon={AlertTriangle}
+              active={kpiFilter === "abertas"}
+              onClick={() => toggleKpi("abertas")}
+            />
+            <KpiCard
+              label="Em andamento"
+              value={kpis.andamento}
+              icon={Activity}
+              active={kpiFilter === "andamento"}
+              onClick={() => toggleKpi("andamento")}
+            />
+            <KpiCard
+              label="Encerradas"
+              value={kpis.encerradas}
+              icon={CheckCircle2}
+              active={kpiFilter === "encerradas"}
+              onClick={() => toggleKpi("encerradas")}
+            />
+            <KpiCard
+              label="Vencidas"
+              value={kpis.vencidas}
+              icon={Clock}
+              active={kpiFilter === "vencidas"}
+              onClick={() => toggleKpi("vencidas")}
+            />
           </div>
 
           {/* Filtros */}
