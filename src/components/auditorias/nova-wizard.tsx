@@ -229,9 +229,16 @@ export function NovaAuditoriaWizard() {
   const [step, setStep] = useState(1);
 
   // Step 1
-  const [tipo, setTipo] = useState<"Interna" | "Externa">("Externa");
+  const [tipo, setTipo] = useState<"Interna" | "Externa">("Interna");
+  const [certificadora, setCertificadora] = useState("BRTÜV");
+  const [auditorLider, setAuditorLider] = useState("u8");
+  const [auditores, setAuditores] = useState<string[]>(["u1"]);
+  const [equipeAmpliada, setEquipeAmpliada] = useState(false);
+  const [auditoresExternos, setAuditoresExternos] = useState("Equipe da certificadora — a confirmar");
+  const [relatorioExterno, setRelatorioExterno] = useState<string[]>([]);
+  const [logoCliente, setLogoCliente] = useState<string | null>(null);
   const [normasSel, setNormasSel] = useState<string[]>(["ISO 9001", "ISO 14001"]);
-  const [evento, setEvento] = useState<string>("Monitoração 12 meses");
+  const [evento, setEvento] = useState<string>("Interna");
   const [escopo, setEscopo] = useState(
     "Sistema de Gestão da Qualidade e Meio Ambiente — Sede e obras ativas",
   );
