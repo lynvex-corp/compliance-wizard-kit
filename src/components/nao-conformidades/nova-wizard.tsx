@@ -60,7 +60,14 @@ import {
   requisitosNormativos,
   slaPorGravidade,
   severityClasses,
+  origensNC,
+  origemSiglas,
+  ncCodigo,
+  setoresOcorrencia,
+  guiaGravidadePadrao,
+  PREFIXO_NC_PADRAO,
   type Severity,
+  type Origem,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -74,17 +81,29 @@ const STEPS = [
 
 const CATEGORIAS = ["Qualidade", "Segurança", "Meio Ambiente", "Regulatório", "Financeiro"];
 const LOCAIS = ["Produção", "Administrativo", "Serviço", "Outros"];
-const ORIGENS = [
-  "Auditoria interna",
-  "Auditoria externa",
-  "Rotina do processo",
-  "Comunicação",
-  "Cliente",
-  "Documental",
-  "Outros",
+const ORIGENS: Origem[] = origensNC;
+
+const NC_SEQ = 42;
+const NC_ANO = 2026;
+
+const PORQUE_GUIA = [
+  "descreva o porquê que relaciona o sintoma",
+  "descreva o porquê que relaciona a causa direta",
+  "descreva o porquê que relaciona a origem do processo",
+  "descreva o porquê que relaciona a falha sistêmica",
+  "descreva o porquê que relaciona a causa raiz",
 ];
 
-const NEW_CODE = "NC-2026-000042";
+/** Monta a pergunta encadeada: a resposta anterior vira a pergunta seguinte */
+function perguntaPorque(i: number, respostaAnterior: string, problema: string) {
+  const base = i === 0 ? problema.trim() : respostaAnterior.trim();
+  const limpo = base
+    .replace(/^porque\s+/i, "")
+    .replace(/[.]+$/, "")
+    .trim();
+  if (!limpo) return `${i + 1}º Por quê`;
+  return `Por que ${limpo.charAt(0).toLowerCase()}${limpo.slice(1)}?`;
+}
 
 interface Evidence {
   id: string;
@@ -147,12 +166,17 @@ function SeverityCard({
   sev,
   selected,
   onSelect,
+  guia,
+  onGuiaChange,
 }: {
   sev: Severity;
   selected: boolean;
   onSelect: () => void;
+  guia: { definicao: string; exemplo: string; acao: string };
+  onGuiaChange: (patch: Partial<{ definicao: string; exemplo: string; acao: string }>) => void;
 }) {
   const sla = slaPorGravidade[sev];
+  const [editando, setEditando] = useState(false);
   const dotColor: Record<Severity, string> = {
     Baixa: "bg-[color:var(--severity-low)]",
     Média: "bg-[color:var(--severity-medium)]",
@@ -160,26 +184,73 @@ function SeverityCard({
     Crítica: "bg-[color:var(--severity-critical)]",
   };
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <div
       className={cn(
-        "group flex flex-col items-start gap-2 rounded-xl border bg-card p-4 text-left transition-all",
+        "group flex flex-col gap-2 rounded-xl border bg-card p-4 text-left transition-all",
         selected
           ? "border-brand ring-2 ring-brand/20 shadow-sm"
           : "border-border/80 hover:border-brand/40 hover:shadow-sm",
       )}
     >
-      <div className="flex w-full items-center justify-between">
+      <button type="button" onClick={onSelect} className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2">
           <span className={cn("h-2.5 w-2.5 rounded-full", dotColor[sev])} />
           <span className="text-sm font-semibold">{sev}</span>
         </div>
         {selected && <Check className="h-4 w-4 text-brand" />}
-      </div>
-      <div className="text-xs text-muted-foreground">SLA</div>
-      <div className="text-sm font-medium text-foreground">{sla.label}</div>
-    </button>
+      </button>
+      <button type="button" onClick={onSelect} className="text-left">
+        <div className="text-xs text-muted-foreground">Prazo para tratativa</div>
+        <div className="text-sm font-medium text-foreground">{sla.label}</div>
+      </button>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 w-fit gap-1.5 rounded-lg px-2 text-xs text-brand hover:bg-brand-soft"
+          >
+            <Info className="h-3.5 w-3.5" /> Orientação
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-80 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold">Gravidade {sev}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 rounded-lg px-2 text-xs text-brand"
+              onClick={() => setEditando((v) => !v)}
+            >
+              {editando ? "Concluir" : "Personalizar"}
+            </Button>
+          </div>
+          {([
+            ["definicao", "Definição"],
+            ["exemplo", "Exemplo"],
+            ["acao", "Ação"],
+          ] as const).map(([key, label]) => (
+            <div key={key} className="space-y-1">
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                {label}
+              </Label>
+              {editando ? (
+                <Textarea
+                  rows={3}
+                  value={guia[key]}
+                  onChange={(e) => onGuiaChange({ [key]: e.target.value })}
+                  className="rounded-lg text-xs"
+                />
+              ) : (
+                <p className="text-xs leading-relaxed text-muted-foreground">{guia[key]}</p>
+              )}
+            </div>
+          ))}
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
@@ -226,7 +297,9 @@ export function NovaNCWizard() {
   // Step 1
   const [dataOcorrencia, setDataOcorrencia] = useState<Date | undefined>(new Date("2026-07-14"));
   const [local, setLocal] = useState<string>();
-  const [origem, setOrigem] = useState<string>();
+  const [origem, setOrigem] = useState<Origem>();
+  const [prefixo, setPrefixo] = useState(PREFIXO_NC_PADRAO);
+  const [setorOcorrencia, setSetorOcorrencia] = useState<string>();
   const [tipoNC, setTipoNC] = useState<"Real" | "Potencial">("Real");
   const [tipoAcao, setTipoAcao] = useState<"Corretiva" | "Preventiva">("Corretiva");
   const [descricao, setDescricao] = useState("");
@@ -242,12 +315,13 @@ export function NovaNCWizard() {
   // Step 2
   const [gravidade, setGravidade] = useState<Severity | undefined>();
   const [categoria, setCategoria] = useState<string>();
-  const [responsavel, setResponsavel] = useState<string>();
-  const [aprovador, setAprovador] = useState<string>();
+  const [guias, setGuias] = useState(guiaGravidadePadrao);
 
   // Step 3
-  const [causaTool, setCausaTool] = useState<"5porques" | "ishikawa" | "pareto" | "fmea">("5porques");
+  const [causaTool, setCausaTool] = useState<"5porques" | "ishikawa">("5porques");
   const [porques, setPorques] = useState<string[]>(["", "", "", "", ""]);
+  const [problemaEfeito, setProblemaEfeito] = useState("");
+  const [ameacaFraqueza, setAmeacaFraqueza] = useState<"sim" | "nao" | undefined>();
   const ISHI_CATS = ["Método", "Mão de obra", "Material", "Máquina", "Meio ambiente", "Medição"] as const;
   const [ishikawa, setIshikawa] = useState<Record<string, string[]>>(
     Object.fromEntries(ISHI_CATS.map((c) => [c, [] as string[]])),
@@ -256,6 +330,7 @@ export function NovaNCWizard() {
     Object.fromEntries(ISHI_CATS.map((c) => [c, ""])),
   );
   const [causaRaiz, setCausaRaiz] = useState("");
+  const [causaRaizEditada, setCausaRaizEditada] = useState(false);
   const [revisarRiscos, setRevisarRiscos] = useState(false);
 
   // Step 4
@@ -333,6 +408,23 @@ export function NovaNCWizard() {
 
   const proximoPorqueHabilitado = (i: number) => i === 0 || porques[i - 1].trim().length > 0;
 
+  const codigoNC = useMemo(
+    () =>
+      origem
+        ? ncCodigo(origem, NC_SEQ, NC_ANO, prefixo || PREFIXO_NC_PADRAO)
+        : `${prefixo || PREFIXO_NC_PADRAO}_[ORIGEM]_${String(NC_SEQ).padStart(3, "0")}_${NC_ANO}`,
+    [origem, prefixo],
+  );
+
+  function setPorque(i: number, valor: string) {
+    setPorques((prev) => {
+      const next = [...prev];
+      next[i] = valor;
+      return next;
+    });
+    if (i === 4 && !causaRaizEditada) setCausaRaiz(valor);
+  }
+
   function addIshikawaTag(cat: string) {
     const val = ishInputs[cat]?.trim();
     if (!val) return;
@@ -377,7 +469,7 @@ export function NovaNCWizard() {
     setCompleted((prev) => new Set(prev).add(5));
     setFinalizado(true);
     toast.success("Não conformidade encerrada", {
-      description: `${NEW_CODE} concluída com sucesso.`,
+      description: `${codigoNC} concluída com sucesso.`,
     });
   }
   function goPrev() {
@@ -409,7 +501,7 @@ export function NovaNCWizard() {
           </div>
           <div className="flex items-center gap-2 rounded-lg border border-border/70 bg-card px-3 py-1.5">
             <span className="text-xs text-muted-foreground">Código</span>
-            <span className="font-mono text-sm font-semibold text-brand">{NEW_CODE}</span>
+            <span className="font-mono text-sm font-semibold text-brand">{codigoNC}</span>
           </div>
         </div>
 
@@ -434,7 +526,20 @@ export function NovaNCWizard() {
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>Código da NC</Label>
-                  <Input readOnly value={NEW_CODE} className="h-10 rounded-lg bg-muted font-mono text-sm text-brand" />
+                  <Input readOnly value={codigoNC} className="h-10 rounded-lg bg-muted font-mono text-sm text-brand" />
+                  <div className="flex items-center gap-2 pt-1">
+                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Prefixo
+                    </Label>
+                    <Input
+                      value={prefixo}
+                      onChange={(e) => setPrefixo(e.target.value.toUpperCase().slice(0, 6))}
+                      className="h-8 w-24 rounded-lg font-mono text-xs"
+                    />
+                    <span className="text-[11px] text-muted-foreground">
+                      Formato: prefixo_origem_nº_ano {origem && `(origem ${origemSiglas[origem]})`}
+                    </span>
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Data da ocorrência</Label>
@@ -478,12 +583,33 @@ export function NovaNCWizard() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Origem da NC</Label>
-                  <Select value={origem} onValueChange={setOrigem}>
+                  <Select value={origem} onValueChange={(v) => setOrigem(v as Origem)}>
                     <SelectTrigger className="h-10 rounded-lg">
                       <SelectValue placeholder="Selecione a origem" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ORIGENS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                      {ORIGENS.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          <span className="font-mono text-[11px] font-semibold text-brand">
+                            {origemSiglas[o]}
+                          </span>{" "}
+                          — {o}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Setor de Ocorrência</Label>
+                  <Select value={setorOcorrencia} onValueChange={setSetorOcorrencia}>
+                    <SelectTrigger className="h-10 rounded-lg">
+                      <SelectValue placeholder="Selecione o setor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {setoresOcorrencia.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -744,7 +870,7 @@ export function NovaNCWizard() {
               <div>
                 <h2 className="text-base font-semibold text-foreground">2. Classificação</h2>
                 <p className="text-sm text-muted-foreground">
-                  Defina gravidade, categoria e responsáveis. O SLA é calculado automaticamente.
+                  Defina gravidade e categoria. O prazo para tratativa é calculado automaticamente.
                 </p>
               </div>
 
@@ -752,7 +878,16 @@ export function NovaNCWizard() {
                 <Label>Gravidade</Label>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   {(["Baixa", "Média", "Alta", "Crítica"] as Severity[]).map((s) => (
-                    <SeverityCard key={s} sev={s} selected={gravidade === s} onSelect={() => setGravidade(s)} />
+                    <SeverityCard
+                      key={s}
+                      sev={s}
+                      selected={gravidade === s}
+                      onSelect={() => setGravidade(s)}
+                      guia={guias[s]}
+                      onGuiaChange={(patch) =>
+                        setGuias((prev) => ({ ...prev, [s]: { ...prev[s], ...patch } }))
+                      }
+                    />
                   ))}
                 </div>
               </div>
@@ -772,7 +907,9 @@ export function NovaNCWizard() {
                       </div>
                       <div className="grid gap-3 sm:grid-cols-3">
                         <div>
-                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Prazo</div>
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            Prazo para tratativa
+                          </div>
                           <div className="text-sm font-semibold text-foreground">
                             {slaPorGravidade[gravidade].label}
                           </div>
@@ -780,7 +917,7 @@ export function NovaNCWizard() {
                         <div>
                           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Vencimento</div>
                           <div className="text-sm font-semibold text-foreground">
-                            {format(prazoFinal, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            {format(prazoFinal, "dd/MM/yyyy", { locale: ptBR })}
                           </div>
                         </div>
                         <div>
@@ -791,6 +928,9 @@ export function NovaNCWizard() {
                             <ShieldAlert className="h-3.5 w-3.5 text-[color:var(--severity-high)]" />
                             {slaPorGravidade[gravidade].escalonamento}
                           </div>
+                          <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                            Em caso de vencimento do prazo, será enviado um alerta à pessoa designada.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -812,13 +952,9 @@ export function NovaNCWizard() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Responsável pela tratativa</Label>
-                  <UserPicker value={responsavel} onChange={setResponsavel} placeholder="Selecione o responsável" />
-                </div>
-                <div className="space-y-1.5 md:col-span-2">
-                  <Label>Aprovador da classificação</Label>
-                  <UserPicker value={aprovador} onChange={setAprovador} placeholder="Selecione o aprovador" />
+                <div className="flex items-start gap-2 rounded-xl border border-border/80 bg-muted/30 p-3 text-xs text-muted-foreground">
+                  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  O responsável pela tratativa é definido no módulo de Plano de Ação.
                 </div>
               </div>
             </CardContent>
@@ -850,8 +986,6 @@ export function NovaNCWizard() {
                 {[
                   { v: "5porques", l: "5 Porquês" },
                   { v: "ishikawa", l: "Ishikawa" },
-                  { v: "pareto", l: "Pareto" },
-                  { v: "fmea", l: "FMEA" },
                 ].map((t) => (
                   <ToggleGroupItem
                     key={t.v}
@@ -870,6 +1004,7 @@ export function NovaNCWizard() {
                     {porques.map((val, i) => {
                       const enabled = proximoPorqueHabilitado(i);
                       const filled = val.trim().length > 0;
+                      const anterior = i === 0 ? descricao.trim() : porques[i - 1].trim();
                       return (
                         <div key={i} className="relative">
                           <div
@@ -888,18 +1023,24 @@ export function NovaNCWizard() {
                             <Label className={cn(!enabled && "text-muted-foreground")}>
                               {`${i + 1}º Por quê`}
                             </Label>
+                            <p className="text-xs italic text-muted-foreground">
+                              {anterior
+                                ? `Por que ${anterior.replace(/\.$/, "")}?`
+                                : "Preencha a etapa anterior para encadear a pergunta."}
+                            </p>
                             <Textarea
                               rows={2}
                               disabled={!enabled}
                               value={val}
-                              onChange={(e) => {
-                                const next = [...porques];
-                                next[i] = e.target.value;
-                                setPorques(next);
-                              }}
+                              onChange={(e) => setPorque(i, e.target.value)}
                               placeholder={enabled ? "Descreva por quê…" : "Preencha o passo anterior para liberar"}
                               className="rounded-lg"
                             />
+                            {i === 4 && filled && (
+                              <p className="text-[11px] font-medium text-brand">
+                                Esta resposta foi consolidada como Causa Raiz.
+                              </p>
+                            )}
                           </div>
                         </div>
                       );
@@ -909,14 +1050,25 @@ export function NovaNCWizard() {
               )}
 
               {causaTool === "ishikawa" && (
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-4">
+                  <div className="space-y-1.5 rounded-xl border border-brand/20 bg-brand-soft/30 p-4">
+                    <Label>Problema / Efeito (cabeça do peixe)</Label>
+                    <Textarea
+                      rows={2}
+                      value={problemaEfeito}
+                      onChange={(e) => setProblemaEfeito(e.target.value)}
+                      placeholder="Descreva o efeito indesejado a ser analisado…"
+                      className="rounded-lg bg-background"
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {ISHI_CATS.map((cat) => (
-                    <div key={cat} className="rounded-xl border border-border/80 bg-muted/20 p-3">
-                      <div className="mb-2 flex items-center justify-between">
+                    <div key={cat} className="min-h-[190px] rounded-xl border border-border/80 bg-muted/20 p-4">
+                      <div className="mb-3 flex items-center justify-between">
                         <span className="text-sm font-semibold text-foreground">{cat}</span>
                         <span className="text-[10px] text-muted-foreground">{ishikawa[cat].length} causa(s)</span>
                       </div>
-                      <div className="mb-2 flex flex-wrap gap-1.5 min-h-[28px]">
+                      <div className="mb-3 flex min-h-[64px] flex-wrap gap-1.5">
                         {ishikawa[cat].map((tag, i) => (
                           <span
                             key={i}
@@ -945,15 +1097,7 @@ export function NovaNCWizard() {
                       </div>
                     </div>
                   ))}
-                </div>
-              )}
-
-              {(causaTool === "pareto" || causaTool === "fmea") && (
-                <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border/80 bg-muted/20 py-12 text-center">
-                  <Info className="h-6 w-6 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Ferramenta {causaTool === "pareto" ? "Pareto" : "FMEA"} disponível em breve neste protótipo.
-                  </p>
+                  </div>
                 </div>
               )}
 
@@ -964,10 +1108,41 @@ export function NovaNCWizard() {
                 <Textarea
                   rows={4}
                   value={causaRaiz}
-                  onChange={(e) => setCausaRaiz(e.target.value)}
+                  onChange={(e) => { setCausaRaizEditada(true); setCausaRaiz(e.target.value); }}
                   placeholder="Consolide a causa raiz com base na ferramenta escolhida…"
                   className="rounded-lg"
                 />
+              </div>
+
+              <div className="space-y-3 rounded-xl border border-border/80 bg-muted/30 p-4">
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    Esta NC representa uma ameaça ou fraqueza para a organização?
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Aproveitamento estratégico — alimenta a análise SWOT (item 4.1 / 6.1).
+                  </div>
+                </div>
+                <ToggleGroup
+                  type="single"
+                  value={ameacaFraqueza}
+                  onValueChange={(v) => v && setAmeacaFraqueza(v as "sim" | "nao")}
+                  className="flex gap-2"
+                >
+                  <ToggleGroupItem value="sim" className="h-9 rounded-lg border border-border px-5 data-[state=on]:border-brand data-[state=on]:bg-brand-soft data-[state=on]:text-brand">
+                    Sim
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="nao" className="h-9 rounded-lg border border-border px-5 data-[state=on]:border-brand data-[state=on]:bg-brand-soft data-[state=on]:text-brand">
+                    Não
+                  </ToggleGroupItem>
+                </ToggleGroup>
+                {ameacaFraqueza === "sim" && (
+                  <div className="flex items-start gap-2 rounded-lg border border-brand/30 bg-brand-soft/50 p-3 text-xs text-brand">
+                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    Esta não conformidade será enviada para a Análise de Cenário (SWOT) como
+                    fraqueza ou ameaça, mantendo o vínculo com o registro.
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/30 p-4">
@@ -1206,10 +1381,10 @@ export function NovaNCWizard() {
               <div className="w-full max-w-lg rounded-xl border border-border/80 bg-card p-4 text-left">
                 <div className="mb-3 text-xs uppercase tracking-wider text-muted-foreground">Resumo</div>
                 <dl className="grid gap-2 text-sm">
-                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Código</dt><dd className="font-mono font-semibold text-brand">{NEW_CODE}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Código</dt><dd className="font-mono font-semibold text-brand">{codigoNC}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Gravidade</dt><dd className="font-medium">{gravidade ?? "—"}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Categoria</dt><dd className="font-medium">{categoria ?? "—"}</dd></div>
-                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Responsável</dt><dd className="font-medium">{usuariosMock.find((u) => u.id === responsavel)?.nome ?? "—"}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Setor</dt><dd className="font-medium">{setorOcorrencia ?? "—"}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Resultado</dt><dd className="font-medium capitalize">{resultado ?? "—"}</dd></div>
                 </dl>
               </div>

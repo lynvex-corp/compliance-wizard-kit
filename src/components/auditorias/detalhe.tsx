@@ -926,7 +926,7 @@ function ApontamentoCard({
   function gerarNC() {
     const nc = addNC({
       descricao: a.descricao,
-      origem: "Auditoria interna",
+      origem: "Auditoria Interna",
       gravidade: a.tipo === "NCC" ? "Crítica" : a.tipo === "NCM" ? "Alta" : a.tipo === "NCS" ? "Média" : "Baixa",
       local: a.local,
     });

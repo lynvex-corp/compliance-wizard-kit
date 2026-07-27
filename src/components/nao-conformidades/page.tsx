@@ -44,6 +44,8 @@ import {
   mockNCs,
   severityClasses,
   statusClasses,
+  origensNC,
+  origemClasses,
   type NC,
   type NCStatus,
   type Severity,
@@ -60,15 +62,29 @@ const KANBAN_STATUSES: NCStatus[] = [
   "Encerrada",
 ];
 
-const ORIGENS: Origem[] = [
-  "Auditoria interna",
-  "Auditoria externa",
-  "Rotina do processo",
-  "Comunicação",
-  "Cliente",
-  "Documental",
-  "Outros",
+const ORIGENS: Origem[] = origensNC;
+
+type KpiFilter = "abertas" | "andamento" | "encerradas" | "vencidas";
+
+const EM_ANDAMENTO: NCStatus[] = [
+  "Em Classificação",
+  "Em Análise",
+  "Plano em Execução",
+  "Em Avaliação",
 ];
+
+function matchesKpi(nc: NC, f: KpiFilter) {
+  switch (f) {
+    case "abertas":
+      return nc.status !== "Encerrada" && nc.status !== "Cancelada";
+    case "andamento":
+      return EM_ANDAMENTO.includes(nc.status);
+    case "encerradas":
+      return nc.status === "Encerrada";
+    case "vencidas":
+      return nc.slaStatus === "vencido";
+  }
+}
 
 const GRAVIDADES: Severity[] = ["Baixa", "Média", "Alta", "Crítica"];
 
@@ -120,34 +136,62 @@ function KpiCard({
   value,
   hint,
   icon: Icon,
-  tone,
+  active,
+  onClick,
 }: {
   label: string;
   value: string | number;
   hint?: string;
   icon: typeof AlertTriangle;
-  tone: "default" | "info" | "warning" | "success" | "danger";
+  active?: boolean;
+  onClick?: () => void;
 }) {
-  const toneMap = {
-    default: "text-muted-foreground bg-muted",
-    info: "text-brand bg-brand-soft",
-    warning: "text-[color:var(--severity-high)] bg-[color:var(--severity-high)]/10",
-    success: "text-[color:var(--success)] bg-[color:var(--success)]/10",
-    danger: "text-[color:var(--severity-critical)] bg-[color:var(--severity-critical)]/10",
-  } as const;
   return (
-    <Card className="rounded-xl border-border/80 shadow-sm">
+    <Card
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className={cn(
+        "rounded-xl border-border/80 shadow-sm transition-all",
+        onClick && "cursor-pointer hover:border-[color:var(--danger-deep)]/50 hover:shadow-md",
+        active &&
+          "border-[color:var(--danger-deep)] bg-[color:var(--danger-deep-soft)] ring-2 ring-[color:var(--danger-deep)]/25",
+      )}
+    >
       <CardContent className="flex items-start justify-between p-5">
         <div>
-          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div
+            className={cn(
+              "text-xs font-medium uppercase tracking-wider",
+              active ? "text-[color:var(--danger-deep)]" : "text-muted-foreground",
+            )}
+          >
             {label}
           </div>
-          <div className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
+          <div
+            className={cn(
+              "mt-2 text-3xl font-semibold tracking-tight",
+              active ? "text-[color:var(--danger-deep)]" : "text-foreground",
+            )}
+          >
             {value}
           </div>
           {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
         </div>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${toneMap[tone]}`}>
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-lg",
+            active
+              ? "bg-[color:var(--danger-deep)] text-white"
+              : "bg-[color:var(--danger-deep)]/10 text-[color:var(--danger-deep)]",
+          )}
+        >
           <Icon className="h-5 w-5" />
         </div>
       </CardContent>
@@ -205,6 +249,7 @@ export function NaoConformidadesPage() {
   const [setor, setSetor] = useState<string>("all");
   const [gravidade, setGravidade] = useState<string>("all");
   const [reincidente, setReincidente] = useState(false);
+  const [kpiFilter, setKpiFilter] = useState<KpiFilter | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<NCStatus | null>(null);
 
@@ -232,6 +277,16 @@ export function NaoConformidadesPage() {
     const vencidas = filtered.filter((nc) => nc.slaStatus === "vencido").length;
     return { total: filtered.length, abertas, andamento, encerradas, vencidas };
   }, [filtered]);
+
+  // Filtro estilo BI aplicado pelos cards de KPI + ordenação (mais recente primeiro)
+  const visible = useMemo(() => {
+    const base = kpiFilter ? filtered.filter((nc) => matchesKpi(nc, kpiFilter)) : filtered;
+    return [...base].sort(
+      (a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime(),
+    );
+  }, [filtered, kpiFilter]);
+
+  const toggleKpi = (f: KpiFilter) => setKpiFilter((cur) => (cur === f ? null : f));
 
   function handleDrop(status: NCStatus) {
     if (!draggingId) return;
@@ -271,11 +326,42 @@ export function NaoConformidadesPage() {
 
           {/* KPIs */}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <KpiCard label="Total no período" value={kpis.total} icon={FolderOpen} tone="default" />
-            <KpiCard label="Abertas" value={kpis.abertas} icon={AlertTriangle} tone="info" />
-            <KpiCard label="Em andamento" value={kpis.andamento} icon={Activity} tone="warning" />
-            <KpiCard label="Encerradas" value={kpis.encerradas} icon={CheckCircle2} tone="success" />
-            <KpiCard label="Vencidas (SLA)" value={kpis.vencidas} icon={Clock} tone="danger" />
+            <KpiCard
+              label="Total de Não Conformidades"
+              value={kpis.total}
+              icon={FolderOpen}
+              hint={kpiFilter ? "Clique para limpar o filtro" : undefined}
+              active={kpiFilter === null}
+              onClick={() => setKpiFilter(null)}
+            />
+            <KpiCard
+              label="Abertas"
+              value={kpis.abertas}
+              icon={AlertTriangle}
+              active={kpiFilter === "abertas"}
+              onClick={() => toggleKpi("abertas")}
+            />
+            <KpiCard
+              label="Em andamento"
+              value={kpis.andamento}
+              icon={Activity}
+              active={kpiFilter === "andamento"}
+              onClick={() => toggleKpi("andamento")}
+            />
+            <KpiCard
+              label="Encerradas"
+              value={kpis.encerradas}
+              icon={CheckCircle2}
+              active={kpiFilter === "encerradas"}
+              onClick={() => toggleKpi("encerradas")}
+            />
+            <KpiCard
+              label="Vencidas"
+              value={kpis.vencidas}
+              icon={Clock}
+              active={kpiFilter === "vencidas"}
+              onClick={() => toggleKpi("vencidas")}
+            />
           </div>
 
           {/* Filtros */}
@@ -350,7 +436,7 @@ export function NaoConformidadesPage() {
                     Somente reincidentes
                   </Label>
                   <span className="ml-auto text-xs text-muted-foreground">
-                    Mostrando {filtered.length} de {items.length} registros
+                    Mostrando {visible.length} de {items.length} registros
                   </span>
                 </div>
               </div>
@@ -374,6 +460,7 @@ export function NaoConformidadesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border/60 hover:bg-transparent">
+                        <TableHead className="pl-6">Detalhamento</TableHead>
                         <TableHead className="pl-6">Código</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Origem</TableHead>
@@ -381,12 +468,18 @@ export function NaoConformidadesPage() {
                         <TableHead>Responsável</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Prazo SLA</TableHead>
-                        <TableHead className="pr-6 text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filtered.map((nc) => (
+                      {visible.map((nc) => (
                         <TableRow key={nc.id} className="border-border/60 transition-colors hover:bg-brand-soft/30">
+                          <TableCell className="pl-6">
+                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-brand hover:bg-brand-soft">
+                              <Link to="/nao-conformidades/$id" params={{ id: nc.id }}>
+                                <Eye className="h-4 w-4" /> Ver
+                              </Link>
+                            </Button>
+                          </TableCell>
                           <TableCell className="pl-6 font-mono text-xs font-semibold text-brand">
                             <div className="flex items-center gap-1.5">
                               {nc.codigo}
@@ -401,7 +494,14 @@ export function NaoConformidadesPage() {
                             </div>
                           </TableCell>
                           <TableCell className="max-w-[340px] truncate text-sm">{nc.descricao}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{nc.origem}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={cn("rounded-md border font-normal", origemClasses(nc.origem))}
+                            >
+                              {nc.origem}
+                            </Badge>
+                          </TableCell>
                           <TableCell>
                             <Badge variant="outline" className={cn("rounded-md border", severityClasses(nc.gravidade))}>
                               {nc.gravidade}
@@ -423,16 +523,9 @@ export function NaoConformidadesPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>{slaBadge(nc)}</TableCell>
-                          <TableCell className="pr-6 text-right">
-                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-brand hover:bg-brand-soft">
-                              <Link to="/nao-conformidades/$id" params={{ id: nc.id }}>
-                                <Eye className="h-4 w-4" /> Ver
-                              </Link>
-                            </Button>
-                          </TableCell>
                         </TableRow>
                       ))}
-                      {filtered.length === 0 && (
+                      {visible.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
                             Nenhuma não conformidade encontrada com os filtros atuais.
@@ -448,7 +541,7 @@ export function NaoConformidadesPage() {
             <TabsContent value="kanban" className="mt-0">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 {KANBAN_STATUSES.map((status) => {
-                  const columnItems = filtered.filter((nc) => nc.status === status);
+                  const columnItems = visible.filter((nc) => nc.status === status);
                   const isOver = dragOver === status;
                   return (
                     <div
