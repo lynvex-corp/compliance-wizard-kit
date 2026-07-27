@@ -1384,7 +1384,7 @@ export function NovaNCWizard() {
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Código</dt><dd className="font-mono font-semibold text-brand">{codigoNC}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Gravidade</dt><dd className="font-medium">{gravidade ?? "—"}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Categoria</dt><dd className="font-medium">{categoria ?? "—"}</dd></div>
-                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Responsável</dt><dd className="font-medium">{usuariosMock.find((u) => u.id === responsavel)?.nome ?? "—"}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Setor</dt><dd className="font-medium">{setorOcorrencia ?? "—"}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Resultado</dt><dd className="font-medium capitalize">{resultado ?? "—"}</dd></div>
                 </dl>
               </div>
