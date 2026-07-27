@@ -60,7 +60,14 @@ import {
   requisitosNormativos,
   slaPorGravidade,
   severityClasses,
+  origensNC,
+  origemSiglas,
+  ncCodigo,
+  setoresOcorrencia,
+  guiaGravidadePadrao,
+  PREFIXO_NC_PADRAO,
   type Severity,
+  type Origem,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -74,17 +81,29 @@ const STEPS = [
 
 const CATEGORIAS = ["Qualidade", "Segurança", "Meio Ambiente", "Regulatório", "Financeiro"];
 const LOCAIS = ["Produção", "Administrativo", "Serviço", "Outros"];
-const ORIGENS = [
-  "Auditoria interna",
-  "Auditoria externa",
-  "Rotina do processo",
-  "Comunicação",
-  "Cliente",
-  "Documental",
-  "Outros",
+const ORIGENS: Origem[] = origensNC;
+
+const NC_SEQ = 42;
+const NC_ANO = 2026;
+
+const PORQUE_GUIA = [
+  "descreva o porquê que relaciona o sintoma",
+  "descreva o porquê que relaciona a causa direta",
+  "descreva o porquê que relaciona a origem do processo",
+  "descreva o porquê que relaciona a falha sistêmica",
+  "descreva o porquê que relaciona a causa raiz",
 ];
 
-const NEW_CODE = "NC-2026-000042";
+/** Monta a pergunta encadeada: a resposta anterior vira a pergunta seguinte */
+function perguntaPorque(i: number, respostaAnterior: string, problema: string) {
+  const base = i === 0 ? problema.trim() : respostaAnterior.trim();
+  const limpo = base
+    .replace(/^porque\s+/i, "")
+    .replace(/[.]+$/, "")
+    .trim();
+  if (!limpo) return `${i + 1}º Por quê`;
+  return `Por que ${limpo.charAt(0).toLowerCase()}${limpo.slice(1)}?`;
+}
 
 interface Evidence {
   id: string;
