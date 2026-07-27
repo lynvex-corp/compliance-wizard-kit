@@ -442,6 +442,7 @@ export function NovaAuditoriaWizard() {
       toast.error("Existem sobreposições de horário do mesmo auditor. Ajuste antes de emitir.");
       return;
     }
+    const lider = usuariosMock.find((u) => u.id === auditorLider);
     const aud = addAuditoria({
       tipo,
       normas: normasSel,
@@ -453,14 +454,32 @@ export function NovaAuditoriaWizard() {
       dataInicio,
       dataFim,
       locais: locaisSelecionados,
+      ...(tipo === "Externa"
+        ? { certificadora }
+        : lider
+          ? {
+              auditorLider: { nome: lider.nome, iniciais: lider.iniciais },
+              equipe: auditores
+                .map((id) => usuariosMock.find((u) => u.id === id))
+                .filter(Boolean)
+                .map((u) => ({ nome: u!.nome })),
+            }
+          : {}),
     });
-    toast.success("Plano de Auditoria emitido", {
-      description: `${aud.codigo} · ${normasSel.join(" · ")} — ${evento}. Aguardando ciência do auditor líder.`,
-    });
+    toast.success(
+      tipo === "Externa" ? "Auditoria externa programada" : "Plano de Auditoria emitido",
+      {
+        description:
+          tipo === "Externa"
+            ? `${aud.codigo} · ${certificadora} — registro externo criado.`
+            : `${aud.codigo} · ${normasSel.join(" · ")} — ${evento}. Aguardando ciência do auditor líder.`,
+      },
+    );
     setTimeout(() => navigate({ to: "/auditorias" }), 700);
   };
 
-  const canNext = step < 4;
+  const steps = tipo === "Interna" ? STEPS_INTERNA : STEPS_EXTERNA;
+  const canNext = step < steps.length;
   const canPrev = step > 1;
 
   return (
@@ -475,7 +494,7 @@ export function NovaAuditoriaWizard() {
               / Nova
             </div>
             <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight text-foreground">
-              Nova Auditoria
+              Programar Nova Auditoria
             </h1>
           </div>
           <Button variant="outline" asChild className="shrink-0">
@@ -485,7 +504,7 @@ export function NovaAuditoriaWizard() {
 
         <Card className="rounded-xl">
           <CardContent className="p-4">
-            <Stepper current={step} />
+            <Stepper current={step} steps={steps} />
           </CardContent>
         </Card>
 
