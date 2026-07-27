@@ -756,6 +756,9 @@ function PerguntaCard({
   const isNC = classif === "NCS" || classif === "NCM" || classif === "NCC";
   const exigeDoc = pergunta.hint === "exige documento/registro";
   const alerta = classif === "C" && exigeDoc && !localNota.trim() && files.length === 0;
+  const faltaClassif = !classif;
+  const faltaNota = !localNota.trim();
+  const pendente = faltaClassif || faltaNota;
 
   useEffect(() => { setLocalNota(pergunta.nota); }, [pergunta.id, pergunta.nota]);
 
@@ -797,6 +800,17 @@ function PerguntaCard({
           <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <p className="text-sm font-medium leading-relaxed text-foreground">{pergunta.texto}</p>
         </div>
+
+        {pendente && (
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-[color:var(--severity-critical)]">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Preenchimento obrigatório pendente:
+            {faltaClassif ? " classificação" : ""}
+            {faltaClassif && faltaNota ? " e" : ""}
+            {faltaNota ? " anotações/evidência descrita" : ""}
+            <span className="text-muted-foreground">— apenas o anexo é opcional.</span>
+          </div>
+        )}
 
         {/* Classificação */}
         <div className="flex flex-wrap gap-1.5">
@@ -848,7 +862,9 @@ function PerguntaCard({
         {/* Anotações */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label className="text-xs font-medium text-foreground">Anotações e evidências</label>
+            <label className="text-xs font-medium text-foreground">
+              Anotações e evidências <span className="text-[color:var(--severity-critical)]">*</span>
+            </label>
             <div className="flex items-center gap-2">
               {savedAt && (
                 <span className="inline-flex items-center gap-1 text-[11px] text-[color:var(--success)]">
@@ -865,7 +881,10 @@ function PerguntaCard({
             onChange={(e) => setLocalNota(e.target.value)}
             onBlur={commitNota}
             placeholder="Registre a evidência observada, documento verificado, entrevistado…"
-            className="min-h-[76px] resize-none"
+            className={cn(
+              "min-h-[76px] resize-none",
+              faltaNota && "border-[color:var(--severity-critical)]/50",
+            )}
           />
 
           {/* Evidências */}
@@ -896,7 +915,7 @@ function PerguntaCard({
             <label className="inline-flex cursor-pointer">
               <input type="file" multiple className="hidden" onChange={handleFile} />
               <span className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-3 text-xs font-medium hover:bg-muted/60">
-                <Paperclip className="h-3.5 w-3.5" /> Anexar evidência
+                <Paperclip className="h-3.5 w-3.5" /> Anexar evidência (opcional)
               </span>
             </label>
             <Button
