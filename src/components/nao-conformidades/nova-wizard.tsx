@@ -408,6 +408,23 @@ export function NovaNCWizard() {
 
   const proximoPorqueHabilitado = (i: number) => i === 0 || porques[i - 1].trim().length > 0;
 
+  const codigoNC = useMemo(
+    () =>
+      origem
+        ? ncCodigo(origem, NC_SEQ, NC_ANO, prefixo || PREFIXO_NC_PADRAO)
+        : `${prefixo || PREFIXO_NC_PADRAO}_[ORIGEM]_${String(NC_SEQ).padStart(3, "0")}_${NC_ANO}`,
+    [origem, prefixo],
+  );
+
+  function setPorque(i: number, valor: string) {
+    setPorques((prev) => {
+      const next = [...prev];
+      next[i] = valor;
+      return next;
+    });
+    if (i === 4 && !causaRaizEditada) setCausaRaiz(valor);
+  }
+
   function addIshikawaTag(cat: string) {
     const val = ishInputs[cat]?.trim();
     if (!val) return;
