@@ -590,6 +590,7 @@ interface FileMeta { id: string; name: string; size: number }
 
 function ChecklistTab({
   checklist, allPerguntas, preenchidas, progresso, handleClassif, updatePergunta, onGoTab,
+  orientacoes, updateOrientacao,
 }: {
   checklist: CheckSection[];
   allPerguntas: CheckPergunta[];
@@ -598,6 +599,8 @@ function ChecklistTab({
   handleClassif: (p: CheckPergunta, itemNumero: string, c: Exclude<Classif, null>) => void;
   updatePergunta: (id: string, patch: Partial<CheckPergunta>) => void;
   onGoTab: (t: string) => void;
+  orientacoes: Record<string, string>;
+  updateOrientacao: (itemId: string, texto: string) => void;
 }) {
   const flatItems = useMemo(() => checklist.flatMap((s) => s.itens), [checklist]);
   const [selectedItem, setSelectedItem] = useState<string>("4.3");
@@ -703,6 +706,22 @@ function ChecklistTab({
               </Button>
             </div>
           </div>
+
+          {/* Orientação ao auditor — conteúdo por requisito */}
+          <Card className="rounded-xl border-brand/30 bg-brand-soft/25">
+            <CardContent className="space-y-2 p-4">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-brand">
+                <Info className="h-3.5 w-3.5" />
+                Orientação de auditoria · requisito {selecionado.numero}
+              </div>
+              <Textarea
+                value={orientacoes[selecionado.id] ?? ""}
+                onChange={(e) => updateOrientacao(selecionado.id, e.target.value)}
+                placeholder="Direcionamento para quem vai auditar este requisito: o que perguntar, quais documentos solicitar, onde amostrar. (Conteúdo a ser preenchido pela equipe da qualidade.)"
+                className="min-h-[80px] resize-none bg-card text-sm"
+              />
+            </CardContent>
+          </Card>
 
           {selecionado.perguntas.map((p) => (
             <PerguntaCard
