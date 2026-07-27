@@ -143,7 +143,7 @@ export function IndicadorDetalhe({ id }: { id: string }) {
                           <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid var(--border)" }} />
-                          <ReferenceLine y={kpi.meta} stroke="var(--brand)" strokeDasharray="5 4" label={{ value: `Meta ${kpi.meta}`, fontSize: 10, fill: "var(--brand)", position: "right" }} />
+                          <ReferenceLine y={kpi.meta} stroke="var(--brand)" strokeDasharray="5 4" label={{ value: `Meta ${kpi.meta}${kpi.unidade}`, fontSize: 10, fill: "var(--brand)", position: "insideTopLeft" }} />
                           <Line type="monotone" dataKey="valor" stroke={semaforoCor[s]} strokeWidth={2.4} dot={{ r: 3 }} />
                         </LineChart>
                       </ResponsiveContainer>
