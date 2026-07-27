@@ -34,6 +34,7 @@ import { Route as AnaliseCenarioRouteImport } from './routes/analise-cenario'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlanosDeAcaoIndexRouteImport } from './routes/planos-de-acao.index'
 import { Route as NaoConformidadesIndexRouteImport } from './routes/nao-conformidades.index'
+import { Route as IndicadoresIndexRouteImport } from './routes/indicadores.index'
 import { Route as AuditoriasIndexRouteImport } from './routes/auditorias.index'
 import { Route as PlanosDeAcaoNovoRouteImport } from './routes/planos-de-acao.novo'
 import { Route as PlanosDeAcaoIdRouteImport } from './routes/planos-de-acao.$id'
@@ -168,6 +169,11 @@ const NaoConformidadesIndexRoute = NaoConformidadesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => NaoConformidadesRoute,
 } as any)
+const IndicadoresIndexRoute = IndicadoresIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => IndicadoresRoute,
+} as any)
 const AuditoriasIndexRoute = AuditoriasIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias/': typeof AuditoriasIndexRoute
+  '/indicadores/': typeof IndicadoresIndexRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
   '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
 }
@@ -255,7 +262,6 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
   '/escopo-sistema': typeof EscopoSistemaRoute
-  '/indicadores': typeof IndicadoresRouteWithChildren
   '/login': typeof LoginRoute
   '/mudancas-sg': typeof MudancasSgRoute
   '/partes-interessadas': typeof PartesInteressadasRoute
@@ -273,6 +279,7 @@ export interface FileRoutesByTo {
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias': typeof AuditoriasIndexRoute
+  '/indicadores': typeof IndicadoresIndexRoute
   '/nao-conformidades': typeof NaoConformidadesIndexRoute
   '/planos-de-acao': typeof PlanosDeAcaoIndexRoute
 }
@@ -309,6 +316,7 @@ export interface FileRoutesById {
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias/': typeof AuditoriasIndexRoute
+  '/indicadores/': typeof IndicadoresIndexRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
   '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
 }
@@ -346,6 +354,7 @@ export interface FileRouteTypes {
     | '/planos-de-acao/$id'
     | '/planos-de-acao/novo'
     | '/auditorias/'
+    | '/indicadores/'
     | '/nao-conformidades/'
     | '/planos-de-acao/'
   fileRoutesByTo: FileRoutesByTo
@@ -360,7 +369,6 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/documentos'
     | '/escopo-sistema'
-    | '/indicadores'
     | '/login'
     | '/mudancas-sg'
     | '/partes-interessadas'
@@ -378,6 +386,7 @@ export interface FileRouteTypes {
     | '/planos-de-acao/$id'
     | '/planos-de-acao/novo'
     | '/auditorias'
+    | '/indicadores'
     | '/nao-conformidades'
     | '/planos-de-acao'
   id:
@@ -413,6 +422,7 @@ export interface FileRouteTypes {
     | '/planos-de-acao/$id'
     | '/planos-de-acao/novo'
     | '/auditorias/'
+    | '/indicadores/'
     | '/nao-conformidades/'
     | '/planos-de-acao/'
   fileRoutesById: FileRoutesById
@@ -620,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NaoConformidadesIndexRouteImport
       parentRoute: typeof NaoConformidadesRoute
     }
+    '/indicadores/': {
+      id: '/indicadores/'
+      path: '/'
+      fullPath: '/indicadores/'
+      preLoaderRoute: typeof IndicadoresIndexRouteImport
+      parentRoute: typeof IndicadoresRoute
+    }
     '/auditorias/': {
       id: '/auditorias/'
       path: '/'
@@ -697,10 +714,12 @@ const AuditoriasRouteWithChildren = AuditoriasRoute._addFileChildren(
 
 interface IndicadoresRouteChildren {
   IndicadoresNovoRoute: typeof IndicadoresNovoRoute
+  IndicadoresIndexRoute: typeof IndicadoresIndexRoute
 }
 
 const IndicadoresRouteChildren: IndicadoresRouteChildren = {
   IndicadoresNovoRoute: IndicadoresNovoRoute,
+  IndicadoresIndexRoute: IndicadoresIndexRoute,
 }
 
 const IndicadoresRouteWithChildren = IndicadoresRoute._addFileChildren(
