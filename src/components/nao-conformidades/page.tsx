@@ -44,6 +44,8 @@ import {
   mockNCs,
   severityClasses,
   statusClasses,
+  origensNC,
+  origemClasses,
   type NC,
   type NCStatus,
   type Severity,
@@ -60,15 +62,29 @@ const KANBAN_STATUSES: NCStatus[] = [
   "Encerrada",
 ];
 
-const ORIGENS: Origem[] = [
-  "Auditoria interna",
-  "Auditoria externa",
-  "Rotina do processo",
-  "Comunicação",
-  "Cliente",
-  "Documental",
-  "Outros",
+const ORIGENS: Origem[] = origensNC;
+
+type KpiFilter = "abertas" | "andamento" | "encerradas" | "vencidas";
+
+const EM_ANDAMENTO: NCStatus[] = [
+  "Em Classificação",
+  "Em Análise",
+  "Plano em Execução",
+  "Em Avaliação",
 ];
+
+function matchesKpi(nc: NC, f: KpiFilter) {
+  switch (f) {
+    case "abertas":
+      return nc.status !== "Encerrada" && nc.status !== "Cancelada";
+    case "andamento":
+      return EM_ANDAMENTO.includes(nc.status);
+    case "encerradas":
+      return nc.status === "Encerrada";
+    case "vencidas":
+      return nc.slaStatus === "vencido";
+  }
+}
 
 const GRAVIDADES: Severity[] = ["Baixa", "Média", "Alta", "Crítica"];
 
