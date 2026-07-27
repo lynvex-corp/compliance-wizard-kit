@@ -1129,13 +1129,13 @@ export function NovaAuditoriaWizard() {
               </div>
 
               <div className="flex flex-wrap justify-end gap-2">
-                <Button variant="outline">
+                <Button variant="outline" onClick={emitir}>
                   <FileDown className="mr-1.5 h-4 w-4" />
-                  Exportar PDF
+                  Emitir apenas o plano
                 </Button>
                 <Button className="bg-brand hover:bg-brand/90" onClick={emitir}>
                   <Check className="mr-1.5 h-4 w-4" />
-                  Emitir Plano de Auditoria
+                  Emitir plano + relatório
                 </Button>
               </div>
             </CardContent>

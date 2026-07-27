@@ -180,7 +180,7 @@ export function AuditoriasPage() {
           <Button asChild className="shrink-0 bg-brand hover:bg-brand/90">
             <Link to="/auditorias/nova">
               <Plus className="mr-1.5 h-4 w-4" />
-              Nova Auditoria
+              Programar Nova Auditoria
             </Link>
           </Button>
         </header>
