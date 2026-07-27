@@ -47,12 +47,13 @@ import { JawdaLogo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 import { useJawda } from "@/lib/jawda-store";
 
-const STEPS = [
-  { id: 1, label: "Dados gerais", icon: ClipboardList },
-  { id: 2, label: "Equipe auditora", icon: Users },
-  { id: 3, label: "Locais e agenda", icon: MapPin },
-  { id: 4, label: "Revisão e emissão", icon: FileText },
+const STEPS_INTERNA = [
+  { id: 1, label: "Programação", icon: ClipboardList },
+  { id: 2, label: "Plano de Auditoria", icon: MapPin },
+  { id: 3, label: "Relatório e emissão", icon: FileText },
 ];
+
+const STEPS_EXTERNA = [{ id: 1, label: "Registro da auditoria externa", icon: ClipboardList }];
 
 const EVENTOS = [
   "Certificação",
@@ -72,10 +73,10 @@ type Bloco = {
 
 type Dia = { data: string; blocos: Bloco[] };
 
-function Stepper({ current }: { current: number }) {
+function Stepper({ current, steps }: { current: number; steps: typeof STEPS_INTERNA }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {STEPS.map((s, i) => {
+      {steps.map((s, i) => {
         const Icon = s.icon;
         const done = current > s.id;
         const active = current === s.id;
@@ -93,7 +94,7 @@ function Stepper({ current }: { current: number }) {
               <span className="hidden font-medium sm:inline">{s.label}</span>
               <span className="sm:hidden">{s.id}</span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             )}
           </div>
