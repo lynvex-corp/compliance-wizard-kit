@@ -436,7 +436,7 @@ export function NaoConformidadesPage() {
                     Somente reincidentes
                   </Label>
                   <span className="ml-auto text-xs text-muted-foreground">
-                    Mostrando {filtered.length} de {items.length} registros
+                    Mostrando {visible.length} de {items.length} registros
                   </span>
                 </div>
               </div>
@@ -460,6 +460,7 @@ export function NaoConformidadesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border/60 hover:bg-transparent">
+                        <TableHead className="pl-6">Detalhamento</TableHead>
                         <TableHead className="pl-6">Código</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Origem</TableHead>
@@ -467,12 +468,18 @@ export function NaoConformidadesPage() {
                         <TableHead>Responsável</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Prazo SLA</TableHead>
-                        <TableHead className="pr-6 text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filtered.map((nc) => (
+                      {visible.map((nc) => (
                         <TableRow key={nc.id} className="border-border/60 transition-colors hover:bg-brand-soft/30">
+                          <TableCell className="pl-6">
+                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-brand hover:bg-brand-soft">
+                              <Link to="/nao-conformidades/$id" params={{ id: nc.id }}>
+                                <Eye className="h-4 w-4" /> Ver
+                              </Link>
+                            </Button>
+                          </TableCell>
                           <TableCell className="pl-6 font-mono text-xs font-semibold text-brand">
                             <div className="flex items-center gap-1.5">
                               {nc.codigo}
@@ -487,7 +494,14 @@ export function NaoConformidadesPage() {
                             </div>
                           </TableCell>
                           <TableCell className="max-w-[340px] truncate text-sm">{nc.descricao}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{nc.origem}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={cn("rounded-md border font-normal", origemClasses(nc.origem))}
+                            >
+                              {nc.origem}
+                            </Badge>
+                          </TableCell>
                           <TableCell>
                             <Badge variant="outline" className={cn("rounded-md border", severityClasses(nc.gravidade))}>
                               {nc.gravidade}
@@ -509,16 +523,9 @@ export function NaoConformidadesPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>{slaBadge(nc)}</TableCell>
-                          <TableCell className="pr-6 text-right">
-                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-brand hover:bg-brand-soft">
-                              <Link to="/nao-conformidades/$id" params={{ id: nc.id }}>
-                                <Eye className="h-4 w-4" /> Ver
-                              </Link>
-                            </Button>
-                          </TableCell>
                         </TableRow>
                       ))}
-                      {filtered.length === 0 && (
+                      {visible.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
                             Nenhuma não conformidade encontrada com os filtros atuais.
@@ -534,7 +541,7 @@ export function NaoConformidadesPage() {
             <TabsContent value="kanban" className="mt-0">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 {KANBAN_STATUSES.map((status) => {
-                  const columnItems = filtered.filter((nc) => nc.status === status);
+                  const columnItems = visible.filter((nc) => nc.status === status);
                   const isOver = dragOver === status;
                   return (
                     <div
