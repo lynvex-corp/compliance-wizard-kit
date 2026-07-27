@@ -297,7 +297,9 @@ export function NovaNCWizard() {
   // Step 1
   const [dataOcorrencia, setDataOcorrencia] = useState<Date | undefined>(new Date("2026-07-14"));
   const [local, setLocal] = useState<string>();
-  const [origem, setOrigem] = useState<string>();
+  const [origem, setOrigem] = useState<Origem>();
+  const [prefixo, setPrefixo] = useState(PREFIXO_NC_PADRAO);
+  const [setorOcorrencia, setSetorOcorrencia] = useState<string>();
   const [tipoNC, setTipoNC] = useState<"Real" | "Potencial">("Real");
   const [tipoAcao, setTipoAcao] = useState<"Corretiva" | "Preventiva">("Corretiva");
   const [descricao, setDescricao] = useState("");
@@ -313,12 +315,13 @@ export function NovaNCWizard() {
   // Step 2
   const [gravidade, setGravidade] = useState<Severity | undefined>();
   const [categoria, setCategoria] = useState<string>();
-  const [responsavel, setResponsavel] = useState<string>();
-  const [aprovador, setAprovador] = useState<string>();
+  const [guias, setGuias] = useState(guiaGravidadePadrao);
 
   // Step 3
-  const [causaTool, setCausaTool] = useState<"5porques" | "ishikawa" | "pareto" | "fmea">("5porques");
+  const [causaTool, setCausaTool] = useState<"5porques" | "ishikawa">("5porques");
   const [porques, setPorques] = useState<string[]>(["", "", "", "", ""]);
+  const [problemaEfeito, setProblemaEfeito] = useState("");
+  const [ameacaFraqueza, setAmeacaFraqueza] = useState<"sim" | "nao" | undefined>();
   const ISHI_CATS = ["Método", "Mão de obra", "Material", "Máquina", "Meio ambiente", "Medição"] as const;
   const [ishikawa, setIshikawa] = useState<Record<string, string[]>>(
     Object.fromEntries(ISHI_CATS.map((c) => [c, [] as string[]])),
@@ -327,6 +330,7 @@ export function NovaNCWizard() {
     Object.fromEntries(ISHI_CATS.map((c) => [c, ""])),
   );
   const [causaRaiz, setCausaRaiz] = useState("");
+  const [causaRaizEditada, setCausaRaizEditada] = useState(false);
   const [revisarRiscos, setRevisarRiscos] = useState(false);
 
   // Step 4
