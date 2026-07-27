@@ -417,12 +417,19 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
 
   const addNC = useCallback(
     (input: Partial<NC> & { descricao: string }): NC => {
-      const codigo = input.codigo ?? nextCode("NC");
+      const origem: NC["origem"] = input.origem ?? "Rotina do Processo";
+      const ano = 2026;
+      const seq =
+        ncs.reduce((acc, n) => {
+          const m = n.codigo.match(new RegExp(`_(\\d+)_${ano}$`));
+          return m ? Math.max(acc, parseInt(m[1], 10)) : acc;
+        }, 0) + 1;
+      const codigo = input.codigo ?? ncCodigo(origem, seq, ano);
       const nc: NC = {
         id: `nc-${Date.now()}`,
         codigo,
         descricao: input.descricao,
-        origem: input.origem ?? "Rotina do processo",
+        origem,
         gravidade: input.gravidade ?? "Média",
         responsavel: input.responsavel ?? { nome: CURRENT_USER.nome, iniciais: CURRENT_USER.iniciais },
         status: input.status ?? "Em Classificação",
@@ -442,7 +449,7 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
       });
       return nc;
     },
-    [nextCode, logActivity, addNotification],
+    [ncs, logActivity, addNotification],
   );
 
   const addPlano = useCallback(
