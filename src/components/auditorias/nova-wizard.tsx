@@ -761,37 +761,6 @@ export function NovaAuditoriaWizard() {
           </Card>
         )}
 
-        {/* Step 2 */}
-        {step === 2 && (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <EquipeCard
-              papel="Auditor Líder"
-              descricao="Responsável pela condução da auditoria e emissão do relatório final."
-              defaultUser="u8"
-            />
-            <EquipeCard
-              papel="Auditores"
-              descricao="Equipe designada para as áreas técnicas."
-              defaultUser="u1"
-              multi
-            />
-            <EquipeCard
-              papel="Especialista"
-              descricao="Suporte técnico em requisitos específicos da norma."
-              multi
-            />
-            <EquipeCard
-              papel="Trainee"
-              descricao="Auditor em formação — participa sob supervisão."
-              multi
-            />
-            <EquipeCard
-              papel="Observadores"
-              descricao="Acompanham sem intervir (clientes, direção, terceiros)."
-              multi
-            />
-          </div>
-        )}
 
         {/* Step 3 */}
         {step === 3 && (
@@ -818,33 +787,6 @@ export function NovaAuditoriaWizard() {
                 <div><span className="font-semibold text-brand">Nota da IA:</span> {iaNota}</div>
               </div>
             )}
-            <Card className="rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-base">Locais do sistema de gestão</CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Selecione quais locais serão auditados neste ciclo.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                  {locaisAuditaveis.map((l) => (
-                    <label
-                      key={l}
-                      className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                    >
-                      <span className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        {l}
-                      </span>
-                      <Switch
-                        checked={locais[l] ?? false}
-                        onCheckedChange={(v) => setLocais({ ...locais, [l]: Boolean(v) })}
-                      />
-                    </label>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
             <Card className="rounded-xl">
               <CardHeader className="flex flex-row items-center justify-between">
