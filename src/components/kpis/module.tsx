@@ -40,7 +40,7 @@ export function IndicadoresModule() {
   const { kpis, objetivos, addObjetivo } = useKpis();
 
   const [tab, setTab] = useState("painel");
-  const [filtroCard, setFiltroCard] = useState<FiltroCard>("todos");
+  const [filtroCard, setFiltroCard] = useState<FiltroCard | null>(null);
   const [periodo, setPeriodo] = useState("mes");
   const [fProcesso, setFProcesso] = useState("all");
   const [fObjetivo, setFObjetivo] = useState("all");
@@ -83,7 +83,7 @@ export function IndicadoresModule() {
     .filter((k) => semaforo(k) === "vermelho")
     .reduce((acc, k) => acc + ciclosFora(k) * 30, 0);
 
-  const filtrados = base.filter((k) => filtroCard === "todos" || semaforo(k) === filtroCard);
+  const filtrados = base.filter((k) => !filtroCard || filtroCard === "todos" || semaforo(k) === filtroCard);
 
   const cards = [
     { key: "todos" as const, label: "Total de indicadores", valor: contagem.total, sub: "ativos no período", icon: Gauge, cor: "var(--brand)" },
@@ -181,7 +181,7 @@ export function IndicadoresModule() {
                 return (
                   <button
                     key={c.key}
-                    onClick={() => setFiltroCard(ativo ? "todos" : c.key)}
+                    onClick={() => setFiltroCard(ativo ? null : c.key)}
                     className={cn(
                       "rounded-2xl border p-4 text-left transition",
                       ativo ? "border-transparent bg-[color:var(--danger-deep)] text-white shadow-md" : "border-border/80 bg-card hover:-translate-y-0.5 hover:shadow-md",
