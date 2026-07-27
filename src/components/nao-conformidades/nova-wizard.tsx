@@ -527,6 +527,19 @@ export function NovaNCWizard() {
                 <div className="space-y-1.5">
                   <Label>Código da NC</Label>
                   <Input readOnly value={codigoNC} className="h-10 rounded-lg bg-muted font-mono text-sm text-brand" />
+                  <div className="flex items-center gap-2 pt-1">
+                    <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Prefixo
+                    </Label>
+                    <Input
+                      value={prefixo}
+                      onChange={(e) => setPrefixo(e.target.value.toUpperCase().slice(0, 6))}
+                      className="h-8 w-24 rounded-lg font-mono text-xs"
+                    />
+                    <span className="text-[11px] text-muted-foreground">
+                      Formato: prefixo_origem_nº_ano {origem && `(origem ${origemSiglas[origem]})`}
+                    </span>
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Data da ocorrência</Label>
@@ -570,12 +583,33 @@ export function NovaNCWizard() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Origem da NC</Label>
-                  <Select value={origem} onValueChange={setOrigem}>
+                  <Select value={origem} onValueChange={(v) => setOrigem(v as Origem)}>
                     <SelectTrigger className="h-10 rounded-lg">
                       <SelectValue placeholder="Selecione a origem" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ORIGENS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                      {ORIGENS.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          <span className="font-mono text-[11px] font-semibold text-brand">
+                            {origemSiglas[o]}
+                          </span>{" "}
+                          — {o}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Setor de Ocorrência</Label>
+                  <Select value={setorOcorrencia} onValueChange={setSetorOcorrencia}>
+                    <SelectTrigger className="h-10 rounded-lg">
+                      <SelectValue placeholder="Selecione o setor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {setoresOcorrencia.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
