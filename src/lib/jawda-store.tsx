@@ -11,6 +11,7 @@ import {
   mockPlanos,
   mockAuditorias,
   mockIndicadores,
+  ncCodigo,
   type NC,
   type PlanoAcao,
   type PlanoStatus,
