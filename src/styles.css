@@ -69,6 +69,8 @@
   --color-severity-critical: var(--severity-critical);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-danger-deep: var(--danger-deep);
+  --color-danger-deep-soft: var(--danger-deep-soft);
 }
 
 :root {
@@ -102,6 +104,8 @@
   --severity-medium: oklch(0.82 0.16 88);       /* amarelo */
   --severity-high: oklch(0.7 0.17 45);          /* laranja */
   --severity-critical: oklch(0.58 0.22 27);     /* vermelho */
+  --danger-deep: oklch(0.42 0.16 25);           /* vermelho-escuro */
+  --danger-deep-soft: oklch(0.95 0.03 25);
   --chart-1: oklch(0.4 0.11 258);
   --chart-2: oklch(0.6 0.14 200);
   --chart-3: oklch(0.7 0.17 45);
@@ -147,6 +151,8 @@
   --severity-medium: oklch(0.82 0.16 88);
   --severity-high: oklch(0.72 0.17 45);
   --severity-critical: oklch(0.62 0.22 27);
+  --danger-deep: oklch(0.62 0.18 25);
+  --danger-deep-soft: oklch(0.28 0.07 25);
   --chart-1: oklch(0.62 0.14 258);
   --chart-2: oklch(0.7 0.14 200);
   --chart-3: oklch(0.72 0.17 45);
