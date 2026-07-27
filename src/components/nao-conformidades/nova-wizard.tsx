@@ -469,7 +469,7 @@ export function NovaNCWizard() {
     setCompleted((prev) => new Set(prev).add(5));
     setFinalizado(true);
     toast.success("Não conformidade encerrada", {
-      description: `${NEW_CODE} concluída com sucesso.`,
+      description: `${codigoNC} concluída com sucesso.`,
     });
   }
   function goPrev() {
@@ -501,7 +501,7 @@ export function NovaNCWizard() {
           </div>
           <div className="flex items-center gap-2 rounded-lg border border-border/70 bg-card px-3 py-1.5">
             <span className="text-xs text-muted-foreground">Código</span>
-            <span className="font-mono text-sm font-semibold text-brand">{NEW_CODE}</span>
+            <span className="font-mono text-sm font-semibold text-brand">{codigoNC}</span>
           </div>
         </div>
 
@@ -526,7 +526,7 @@ export function NovaNCWizard() {
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>Código da NC</Label>
-                  <Input readOnly value={NEW_CODE} className="h-10 rounded-lg bg-muted font-mono text-sm text-brand" />
+                  <Input readOnly value={codigoNC} className="h-10 rounded-lg bg-muted font-mono text-sm text-brand" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Data da ocorrência</Label>
@@ -1298,7 +1298,7 @@ export function NovaNCWizard() {
               <div className="w-full max-w-lg rounded-xl border border-border/80 bg-card p-4 text-left">
                 <div className="mb-3 text-xs uppercase tracking-wider text-muted-foreground">Resumo</div>
                 <dl className="grid gap-2 text-sm">
-                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Código</dt><dd className="font-mono font-semibold text-brand">{NEW_CODE}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Código</dt><dd className="font-mono font-semibold text-brand">{codigoNC}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Gravidade</dt><dd className="font-medium">{gravidade ?? "—"}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Categoria</dt><dd className="font-medium">{categoria ?? "—"}</dd></div>
                   <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Responsável</dt><dd className="font-medium">{usuariosMock.find((u) => u.id === responsavel)?.nome ?? "—"}</dd></div>
