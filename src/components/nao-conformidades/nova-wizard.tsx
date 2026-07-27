@@ -870,7 +870,7 @@ export function NovaNCWizard() {
               <div>
                 <h2 className="text-base font-semibold text-foreground">2. Classificação</h2>
                 <p className="text-sm text-muted-foreground">
-                  Defina gravidade, categoria e responsáveis. O SLA é calculado automaticamente.
+                  Defina gravidade e categoria. O prazo para tratativa é calculado automaticamente.
                 </p>
               </div>
 
@@ -878,7 +878,16 @@ export function NovaNCWizard() {
                 <Label>Gravidade</Label>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   {(["Baixa", "Média", "Alta", "Crítica"] as Severity[]).map((s) => (
-                    <SeverityCard key={s} sev={s} selected={gravidade === s} onSelect={() => setGravidade(s)} />
+                    <SeverityCard
+                      key={s}
+                      sev={s}
+                      selected={gravidade === s}
+                      onSelect={() => setGravidade(s)}
+                      guia={guias[s]}
+                      onGuiaChange={(patch) =>
+                        setGuias((prev) => ({ ...prev, [s]: { ...prev[s], ...patch } }))
+                      }
+                    />
                   ))}
                 </div>
               </div>
@@ -898,7 +907,9 @@ export function NovaNCWizard() {
                       </div>
                       <div className="grid gap-3 sm:grid-cols-3">
                         <div>
-                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Prazo</div>
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            Prazo para tratativa
+                          </div>
                           <div className="text-sm font-semibold text-foreground">
                             {slaPorGravidade[gravidade].label}
                           </div>
@@ -906,7 +917,7 @@ export function NovaNCWizard() {
                         <div>
                           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Vencimento</div>
                           <div className="text-sm font-semibold text-foreground">
-                            {format(prazoFinal, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            {format(prazoFinal, "dd/MM/yyyy", { locale: ptBR })}
                           </div>
                         </div>
                         <div>
@@ -917,6 +928,9 @@ export function NovaNCWizard() {
                             <ShieldAlert className="h-3.5 w-3.5 text-[color:var(--severity-high)]" />
                             {slaPorGravidade[gravidade].escalonamento}
                           </div>
+                          <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                            Em caso de vencimento do prazo, será enviado um alerta à pessoa designada.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -938,13 +952,9 @@ export function NovaNCWizard() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Responsável pela tratativa</Label>
-                  <UserPicker value={responsavel} onChange={setResponsavel} placeholder="Selecione o responsável" />
-                </div>
-                <div className="space-y-1.5 md:col-span-2">
-                  <Label>Aprovador da classificação</Label>
-                  <UserPicker value={aprovador} onChange={setAprovador} placeholder="Selecione o aprovador" />
+                <div className="flex items-start gap-2 rounded-xl border border-border/80 bg-muted/30 p-3 text-xs text-muted-foreground">
+                  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  O responsável pela tratativa é definido no módulo de Plano de Ação.
                 </div>
               </div>
             </CardContent>
