@@ -166,12 +166,17 @@ function SeverityCard({
   sev,
   selected,
   onSelect,
+  guia,
+  onGuiaChange,
 }: {
   sev: Severity;
   selected: boolean;
   onSelect: () => void;
+  guia: { definicao: string; exemplo: string; acao: string };
+  onGuiaChange: (patch: Partial<{ definicao: string; exemplo: string; acao: string }>) => void;
 }) {
   const sla = slaPorGravidade[sev];
+  const [editando, setEditando] = useState(false);
   const dotColor: Record<Severity, string> = {
     Baixa: "bg-[color:var(--severity-low)]",
     Média: "bg-[color:var(--severity-medium)]",
@@ -179,26 +184,73 @@ function SeverityCard({
     Crítica: "bg-[color:var(--severity-critical)]",
   };
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <div
       className={cn(
-        "group flex flex-col items-start gap-2 rounded-xl border bg-card p-4 text-left transition-all",
+        "group flex flex-col gap-2 rounded-xl border bg-card p-4 text-left transition-all",
         selected
           ? "border-brand ring-2 ring-brand/20 shadow-sm"
           : "border-border/80 hover:border-brand/40 hover:shadow-sm",
       )}
     >
-      <div className="flex w-full items-center justify-between">
+      <button type="button" onClick={onSelect} className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2">
           <span className={cn("h-2.5 w-2.5 rounded-full", dotColor[sev])} />
           <span className="text-sm font-semibold">{sev}</span>
         </div>
         {selected && <Check className="h-4 w-4 text-brand" />}
-      </div>
-      <div className="text-xs text-muted-foreground">SLA</div>
-      <div className="text-sm font-medium text-foreground">{sla.label}</div>
-    </button>
+      </button>
+      <button type="button" onClick={onSelect} className="text-left">
+        <div className="text-xs text-muted-foreground">Prazo para tratativa</div>
+        <div className="text-sm font-medium text-foreground">{sla.label}</div>
+      </button>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 w-fit gap-1.5 rounded-lg px-2 text-xs text-brand hover:bg-brand-soft"
+          >
+            <Info className="h-3.5 w-3.5" /> Orientação
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-80 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold">Gravidade {sev}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 rounded-lg px-2 text-xs text-brand"
+              onClick={() => setEditando((v) => !v)}
+            >
+              {editando ? "Concluir" : "Personalizar"}
+            </Button>
+          </div>
+          {([
+            ["definicao", "Definição"],
+            ["exemplo", "Exemplo"],
+            ["acao", "Ação"],
+          ] as const).map(([key, label]) => (
+            <div key={key} className="space-y-1">
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                {label}
+              </Label>
+              {editando ? (
+                <Textarea
+                  rows={3}
+                  value={guia[key]}
+                  onChange={(e) => onGuiaChange({ [key]: e.target.value })}
+                  className="rounded-lg text-xs"
+                />
+              ) : (
+                <p className="text-xs leading-relaxed text-muted-foreground">{guia[key]}</p>
+              )}
+            </div>
+          ))}
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
