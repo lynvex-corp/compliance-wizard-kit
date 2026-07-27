@@ -34,12 +34,13 @@ import { Route as AnaliseCenarioRouteImport } from './routes/analise-cenario'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlanosDeAcaoIndexRouteImport } from './routes/planos-de-acao.index'
 import { Route as NaoConformidadesIndexRouteImport } from './routes/nao-conformidades.index'
+import { Route as IndicadoresIndexRouteImport } from './routes/indicadores.index'
 import { Route as AuditoriasIndexRouteImport } from './routes/auditorias.index'
 import { Route as PlanosDeAcaoNovoRouteImport } from './routes/planos-de-acao.novo'
 import { Route as PlanosDeAcaoIdRouteImport } from './routes/planos-de-acao.$id'
 import { Route as NaoConformidadesNovaRouteImport } from './routes/nao-conformidades.nova'
 import { Route as NaoConformidadesIdRouteImport } from './routes/nao-conformidades.$id'
-import { Route as IndicadoresNovoRouteImport } from './routes/indicadores.novo'
+import { Route as IndicadoresIdRouteImport } from './routes/indicadores.$id'
 import { Route as AuditoriasNovaRouteImport } from './routes/auditorias.nova'
 import { Route as AuditoriasIdRouteImport } from './routes/auditorias.$id'
 
@@ -168,6 +169,11 @@ const NaoConformidadesIndexRoute = NaoConformidadesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => NaoConformidadesRoute,
 } as any)
+const IndicadoresIndexRoute = IndicadoresIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => IndicadoresRoute,
+} as any)
 const AuditoriasIndexRoute = AuditoriasIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -193,9 +199,9 @@ const NaoConformidadesIdRoute = NaoConformidadesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => NaoConformidadesRoute,
 } as any)
-const IndicadoresNovoRoute = IndicadoresNovoRouteImport.update({
-  id: '/novo',
-  path: '/novo',
+const IndicadoresIdRoute = IndicadoresIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
   getParentRoute: () => IndicadoresRoute,
 } as any)
 const AuditoriasNovaRoute = AuditoriasNovaRouteImport.update({
@@ -235,12 +241,13 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof UsuariosRoute
   '/auditorias/$id': typeof AuditoriasIdRoute
   '/auditorias/nova': typeof AuditoriasNovaRoute
-  '/indicadores/novo': typeof IndicadoresNovoRoute
+  '/indicadores/$id': typeof IndicadoresIdRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias/': typeof AuditoriasIndexRoute
+  '/indicadores/': typeof IndicadoresIndexRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
   '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
 }
@@ -255,7 +262,6 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/documentos': typeof DocumentosRoute
   '/escopo-sistema': typeof EscopoSistemaRoute
-  '/indicadores': typeof IndicadoresRouteWithChildren
   '/login': typeof LoginRoute
   '/mudancas-sg': typeof MudancasSgRoute
   '/partes-interessadas': typeof PartesInteressadasRoute
@@ -267,12 +273,13 @@ export interface FileRoutesByTo {
   '/usuarios': typeof UsuariosRoute
   '/auditorias/$id': typeof AuditoriasIdRoute
   '/auditorias/nova': typeof AuditoriasNovaRoute
-  '/indicadores/novo': typeof IndicadoresNovoRoute
+  '/indicadores/$id': typeof IndicadoresIdRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias': typeof AuditoriasIndexRoute
+  '/indicadores': typeof IndicadoresIndexRoute
   '/nao-conformidades': typeof NaoConformidadesIndexRoute
   '/planos-de-acao': typeof PlanosDeAcaoIndexRoute
 }
@@ -303,12 +310,13 @@ export interface FileRoutesById {
   '/usuarios': typeof UsuariosRoute
   '/auditorias/$id': typeof AuditoriasIdRoute
   '/auditorias/nova': typeof AuditoriasNovaRoute
-  '/indicadores/novo': typeof IndicadoresNovoRoute
+  '/indicadores/$id': typeof IndicadoresIdRoute
   '/nao-conformidades/$id': typeof NaoConformidadesIdRoute
   '/nao-conformidades/nova': typeof NaoConformidadesNovaRoute
   '/planos-de-acao/$id': typeof PlanosDeAcaoIdRoute
   '/planos-de-acao/novo': typeof PlanosDeAcaoNovoRoute
   '/auditorias/': typeof AuditoriasIndexRoute
+  '/indicadores/': typeof IndicadoresIndexRoute
   '/nao-conformidades/': typeof NaoConformidadesIndexRoute
   '/planos-de-acao/': typeof PlanosDeAcaoIndexRoute
 }
@@ -340,12 +348,13 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/auditorias/$id'
     | '/auditorias/nova'
-    | '/indicadores/novo'
+    | '/indicadores/$id'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
     | '/planos-de-acao/novo'
     | '/auditorias/'
+    | '/indicadores/'
     | '/nao-conformidades/'
     | '/planos-de-acao/'
   fileRoutesByTo: FileRoutesByTo
@@ -360,7 +369,6 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/documentos'
     | '/escopo-sistema'
-    | '/indicadores'
     | '/login'
     | '/mudancas-sg'
     | '/partes-interessadas'
@@ -372,12 +380,13 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/auditorias/$id'
     | '/auditorias/nova'
-    | '/indicadores/novo'
+    | '/indicadores/$id'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
     | '/planos-de-acao/novo'
     | '/auditorias'
+    | '/indicadores'
     | '/nao-conformidades'
     | '/planos-de-acao'
   id:
@@ -407,12 +416,13 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/auditorias/$id'
     | '/auditorias/nova'
-    | '/indicadores/novo'
+    | '/indicadores/$id'
     | '/nao-conformidades/$id'
     | '/nao-conformidades/nova'
     | '/planos-de-acao/$id'
     | '/planos-de-acao/novo'
     | '/auditorias/'
+    | '/indicadores/'
     | '/nao-conformidades/'
     | '/planos-de-acao/'
   fileRoutesById: FileRoutesById
@@ -620,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NaoConformidadesIndexRouteImport
       parentRoute: typeof NaoConformidadesRoute
     }
+    '/indicadores/': {
+      id: '/indicadores/'
+      path: '/'
+      fullPath: '/indicadores/'
+      preLoaderRoute: typeof IndicadoresIndexRouteImport
+      parentRoute: typeof IndicadoresRoute
+    }
     '/auditorias/': {
       id: '/auditorias/'
       path: '/'
@@ -655,11 +672,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NaoConformidadesIdRouteImport
       parentRoute: typeof NaoConformidadesRoute
     }
-    '/indicadores/novo': {
-      id: '/indicadores/novo'
-      path: '/novo'
-      fullPath: '/indicadores/novo'
-      preLoaderRoute: typeof IndicadoresNovoRouteImport
+    '/indicadores/$id': {
+      id: '/indicadores/$id'
+      path: '/$id'
+      fullPath: '/indicadores/$id'
+      preLoaderRoute: typeof IndicadoresIdRouteImport
       parentRoute: typeof IndicadoresRoute
     }
     '/auditorias/nova': {
@@ -696,11 +713,13 @@ const AuditoriasRouteWithChildren = AuditoriasRoute._addFileChildren(
 )
 
 interface IndicadoresRouteChildren {
-  IndicadoresNovoRoute: typeof IndicadoresNovoRoute
+  IndicadoresIdRoute: typeof IndicadoresIdRoute
+  IndicadoresIndexRoute: typeof IndicadoresIndexRoute
 }
 
 const IndicadoresRouteChildren: IndicadoresRouteChildren = {
-  IndicadoresNovoRoute: IndicadoresNovoRoute,
+  IndicadoresIdRoute: IndicadoresIdRoute,
+  IndicadoresIndexRoute: IndicadoresIndexRoute,
 }
 
 const IndicadoresRouteWithChildren = IndicadoresRoute._addFileChildren(
