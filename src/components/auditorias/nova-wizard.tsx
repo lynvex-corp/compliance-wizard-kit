@@ -763,7 +763,7 @@ export function NovaAuditoriaWizard() {
 
 
         {/* Step 3 */}
-        {step === 3 && (
+        {step === 2 && (
           <div className="space-y-4">
             <Card className="rounded-xl border-brand/30 bg-brand-soft/30">
               <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
@@ -953,7 +953,7 @@ export function NovaAuditoriaWizard() {
         )}
 
         {/* Step 4 */}
-        {step === 4 && (
+        {step === 3 && (
           <Card className="rounded-xl">
             <CardContent className="space-y-6 p-6">
               <div className="rounded-xl border border-border bg-card p-6">
