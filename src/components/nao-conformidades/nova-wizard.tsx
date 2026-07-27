@@ -986,8 +986,6 @@ export function NovaNCWizard() {
                 {[
                   { v: "5porques", l: "5 Porquês" },
                   { v: "ishikawa", l: "Ishikawa" },
-                  { v: "pareto", l: "Pareto" },
-                  { v: "fmea", l: "FMEA" },
                 ].map((t) => (
                   <ToggleGroupItem
                     key={t.v}
@@ -1006,6 +1004,7 @@ export function NovaNCWizard() {
                     {porques.map((val, i) => {
                       const enabled = proximoPorqueHabilitado(i);
                       const filled = val.trim().length > 0;
+                      const anterior = i === 0 ? descricao.trim() : porques[i - 1].trim();
                       return (
                         <div key={i} className="relative">
                           <div
@@ -1024,18 +1023,24 @@ export function NovaNCWizard() {
                             <Label className={cn(!enabled && "text-muted-foreground")}>
                               {`${i + 1}º Por quê`}
                             </Label>
+                            <p className="text-xs italic text-muted-foreground">
+                              {anterior
+                                ? `Por que ${anterior.replace(/\.$/, "")}?`
+                                : "Preencha a etapa anterior para encadear a pergunta."}
+                            </p>
                             <Textarea
                               rows={2}
                               disabled={!enabled}
                               value={val}
-                              onChange={(e) => {
-                                const next = [...porques];
-                                next[i] = e.target.value;
-                                setPorques(next);
-                              }}
+                              onChange={(e) => setPorque(i, e.target.value)}
                               placeholder={enabled ? "Descreva por quê…" : "Preencha o passo anterior para liberar"}
                               className="rounded-lg"
                             />
+                            {i === 4 && filled && (
+                              <p className="text-[11px] font-medium text-brand">
+                                Esta resposta foi consolidada como Causa Raiz.
+                              </p>
+                            )}
                           </div>
                         </div>
                       );
@@ -1045,14 +1050,25 @@ export function NovaNCWizard() {
               )}
 
               {causaTool === "ishikawa" && (
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-4">
+                  <div className="space-y-1.5 rounded-xl border border-brand/20 bg-brand-soft/30 p-4">
+                    <Label>Problema / Efeito (cabeça do peixe)</Label>
+                    <Textarea
+                      rows={2}
+                      value={problemaEfeito}
+                      onChange={(e) => setProblemaEfeito(e.target.value)}
+                      placeholder="Descreva o efeito indesejado a ser analisado…"
+                      className="rounded-lg bg-background"
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {ISHI_CATS.map((cat) => (
-                    <div key={cat} className="rounded-xl border border-border/80 bg-muted/20 p-3">
-                      <div className="mb-2 flex items-center justify-between">
+                    <div key={cat} className="min-h-[190px] rounded-xl border border-border/80 bg-muted/20 p-4">
+                      <div className="mb-3 flex items-center justify-between">
                         <span className="text-sm font-semibold text-foreground">{cat}</span>
                         <span className="text-[10px] text-muted-foreground">{ishikawa[cat].length} causa(s)</span>
                       </div>
-                      <div className="mb-2 flex flex-wrap gap-1.5 min-h-[28px]">
+                      <div className="mb-3 flex min-h-[64px] flex-wrap gap-1.5">
                         {ishikawa[cat].map((tag, i) => (
                           <span
                             key={i}
@@ -1081,15 +1097,7 @@ export function NovaNCWizard() {
                       </div>
                     </div>
                   ))}
-                </div>
-              )}
-
-              {(causaTool === "pareto" || causaTool === "fmea") && (
-                <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border/80 bg-muted/20 py-12 text-center">
-                  <Info className="h-6 w-6 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Ferramenta {causaTool === "pareto" ? "Pareto" : "FMEA"} disponível em breve neste protótipo.
-                  </p>
+                  </div>
                 </div>
               )}
 
@@ -1100,10 +1108,41 @@ export function NovaNCWizard() {
                 <Textarea
                   rows={4}
                   value={causaRaiz}
-                  onChange={(e) => setCausaRaiz(e.target.value)}
+                  onChange={(e) => { setCausaRaizEditada(true); setCausaRaiz(e.target.value); }}
                   placeholder="Consolide a causa raiz com base na ferramenta escolhida…"
                   className="rounded-lg"
                 />
+              </div>
+
+              <div className="space-y-3 rounded-xl border border-border/80 bg-muted/30 p-4">
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    Esta NC representa uma ameaça ou fraqueza para a organização?
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Aproveitamento estratégico — alimenta a análise SWOT (item 4.1 / 6.1).
+                  </div>
+                </div>
+                <ToggleGroup
+                  type="single"
+                  value={ameacaFraqueza}
+                  onValueChange={(v) => v && setAmeacaFraqueza(v as "sim" | "nao")}
+                  className="flex gap-2"
+                >
+                  <ToggleGroupItem value="sim" className="h-9 rounded-lg border border-border px-5 data-[state=on]:border-brand data-[state=on]:bg-brand-soft data-[state=on]:text-brand">
+                    Sim
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="nao" className="h-9 rounded-lg border border-border px-5 data-[state=on]:border-brand data-[state=on]:bg-brand-soft data-[state=on]:text-brand">
+                    Não
+                  </ToggleGroupItem>
+                </ToggleGroup>
+                {ameacaFraqueza === "sim" && (
+                  <div className="flex items-start gap-2 rounded-lg border border-brand/30 bg-brand-soft/50 p-3 text-xs text-brand">
+                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    Esta não conformidade será enviada para a Análise de Cenário (SWOT) como
+                    fraqueza ou ameaça, mantendo o vínculo com o registro.
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/30 p-4">
