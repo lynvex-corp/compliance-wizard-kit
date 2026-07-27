@@ -762,7 +762,7 @@ export function NovaAuditoriaWizard() {
         )}
 
 
-        {/* Step 3 */}
+        {/* Step 2 — Plano de Auditoria (somente interna) */}
         {step === 2 && (
           <div className="space-y-4">
             <Card className="rounded-xl border-brand/30 bg-brand-soft/30">
@@ -952,13 +952,48 @@ export function NovaAuditoriaWizard() {
           </div>
         )}
 
-        {/* Step 4 */}
+        {/* Step 3 — Relatório e emissão */}
         {step === 3 && (
           <Card className="rounded-xl">
             <CardContent className="space-y-6 p-6">
+              {tipo === "Interna" && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/30 bg-brand-soft/25 p-4">
+                  <div className="text-xs text-muted-foreground">
+                    <div className="text-sm font-semibold text-brand">Co-branding do relatório</div>
+                    A auditoria interna é do próprio cliente — o relatório sai com o logo Jáwda e o
+                    logo do cliente lado a lado.
+                  </div>
+                  <label className="inline-flex cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          setLogoCliente(URL.createObjectURL(f));
+                          toast.success("Logo do cliente aplicado ao relatório");
+                        }
+                        e.target.value = "";
+                      }}
+                    />
+                    <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-medium hover:bg-muted/60">
+                      <FileDown className="h-4 w-4" /> Enviar logo do cliente
+                    </span>
+                  </label>
+                </div>
+              )}
               <div className="rounded-xl border border-border bg-card p-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
-                  <JawdaLogo size={28} />
+                  <div className="flex items-center gap-3">
+                    <JawdaLogo size={28} />
+                    {logoCliente && (
+                      <>
+                        <span className="h-6 w-px bg-border" />
+                        <img src={logoCliente} alt="Logo do cliente" className="h-7 object-contain" />
+                      </>
+                    )}
+                  </div>
                   <div className="text-right text-xs text-muted-foreground">
                     <div className="font-semibold text-foreground">Plano de Auditoria</div>
                     <div>Emissão: {new Date().toLocaleDateString("pt-BR")}</div>
