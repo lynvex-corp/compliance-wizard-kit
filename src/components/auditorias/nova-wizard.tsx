@@ -522,14 +522,19 @@ export function NovaAuditoriaWizard() {
                     <ChipToggle
                       label="Interna"
                       active={tipo === "Interna"}
-                      onClick={() => setTipo("Interna")}
+                      onClick={() => { setTipo("Interna"); setStep(1); }}
                     />
                     <ChipToggle
                       label="Externa"
                       active={tipo === "Externa"}
-                      onClick={() => setTipo("Externa")}
+                      onClick={() => { setTipo("Externa"); setStep(1); }}
                     />
                   </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {tipo === "Interna"
+                      ? "Interna: programação, plano detalhado, checklist e apontamentos na Jáwda."
+                      : "Externa: registro leve — a execução acontece no sistema da certificadora."}
+                  </p>
                 </div>
                 <div>
                   <Label>Evento</Label>
