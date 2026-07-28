@@ -540,34 +540,46 @@ export function NovaAuditoriaWizard() {
                       : "Externa: registro leve — a execução acontece no sistema da certificadora."}
                   </p>
                 </div>
-                <div>
-                  <Label>Evento</Label>
-                  <Select value={evento} onValueChange={setEvento}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EVENTOS.map((e) => (
-                        <SelectItem key={e} value={e}>
-                          {e}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {tipo === "Externa" && (
+                  <div>
+                    <Label>Evento</Label>
+                    <Select value={evento} onValueChange={setEvento}>
+                      <SelectTrigger className="mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EVENTOS.map((e) => (
+                          <SelectItem key={e} value={e}>
+                            {e}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <div>
                 <Label>Normas auditadas</Label>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {normasDisponiveis.map((n) => (
-                    <ChipToggle
-                      key={n}
-                      label={n}
-                      active={normasSel.includes(n)}
-                      onClick={() => toggleNorma(n)}
-                    />
-                  ))}
+                <div className="mt-2 flex flex-col gap-2">
+                  {normasDisponiveis.map((n) => {
+                    const liberada = n === "ISO 9001";
+                    return (
+                      <div key={n} className="flex items-center gap-2">
+                        <ChipToggle
+                          label={n}
+                          active={liberada}
+                          disabled
+                          onClick={() => toggleNorma(n)}
+                        />
+                        <span className="text-[11px] text-muted-foreground">
+                          {liberada
+                            ? "Padrão da v1 — não pode ser desmarcada"
+                            : "Disponível apenas na opção Personalizado"}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
