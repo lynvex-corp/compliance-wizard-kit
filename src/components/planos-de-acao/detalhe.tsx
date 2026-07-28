@@ -122,7 +122,7 @@ export function PlanoDetailPage() {
   const historico = [
     { evento: "Plano criado a partir da NC", usuario: "Ana Ribeiro", quando: format(inicio, "dd/MM/yyyy HH:mm", { locale: ptBR }) },
     { evento: "Responsável atribuído", usuario: "Beatriz Souza", quando: format(new Date(inicio.getTime() + 3600_000 * 2), "dd/MM/yyyy HH:mm", { locale: ptBR }) },
-    { evento: "5W2H preenchido", usuario: plano.responsavel.nome, quando: format(new Date(inicio.getTime() + 86400_000), "dd/MM/yyyy HH:mm", { locale: ptBR }) },
+    { evento: "Detalhamento da ação preenchido", usuario: plano.responsavel.nome, quando: format(new Date(inicio.getTime() + 86400_000), "dd/MM/yyyy HH:mm", { locale: ptBR }) },
     { evento: `Status alterado para "${plano.status}"`, usuario: "Sistema", quando: format(new Date(inicio.getTime() + 86400_000 * 2), "dd/MM/yyyy HH:mm", { locale: ptBR }) },
     { evento: "Comentário adicionado", usuario: "Fernanda Lima", quando: format(new Date(inicio.getTime() + 86400_000 * 5), "dd/MM/yyyy HH:mm", { locale: ptBR }) },
   ];
@@ -272,14 +272,14 @@ export function PlanoDetailPage() {
             <Card className="rounded-xl border-border/80 shadow-sm">
               <CardContent className="space-y-4 p-6">
                 <div>
-                  <h2 className="text-base font-semibold text-foreground">Ação Corretiva — 5W2H</h2>
+                  <h2 className="text-base font-semibold text-foreground">Ação Corretiva — Detalhamento da Ação</h2>
                   <p className="text-xs text-muted-foreground">Ficha técnica da ação planejada</p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <FiveW label="O quê" en="What" value={plano.descricao} />
+                  <FiveW label="O quê" en="descrição da ação" value={plano.descricao} />
                   <FiveW
                     label="Por quê"
-                    en="Why"
+                    en="justificativa"
                     value={
                       <>
                         Causa raiz identificada na NC de origem:{" "}
@@ -293,11 +293,11 @@ export function PlanoDetailPage() {
                       </>
                     }
                   />
-                  <FiveW label="Onde" en="Where" value="Linha de envase 02 — Setor de Produção" />
-                  <FiveW label="Quem" en="Who" value={`${plano.responsavel.nome} (${plano.responsavel.departamento})`} />
-                  <FiveW label="Quando" en="When" value={`${format(inicio, "dd/MM/yyyy", { locale: ptBR })} → ${format(prazo, "dd/MM/yyyy", { locale: ptBR })}`} />
-                  <FiveW label="Como" en="How" value="Revisão do POP-ENV-02, calibração dos sensores de peso e retreinamento dos operadores dos 3 turnos." />
-                  <FiveW label="Quanto" en="How much" value={formatBRL(plano.custo)} className="sm:col-span-2" />
+                  <FiveW label="Onde" en="local de aplicação" value="Linha de envase 02 — Setor de Produção" />
+                  <FiveW label="Quem" en="responsável" value={`${plano.responsavel.nome} (${plano.responsavel.departamento})`} />
+                  <FiveW label="Quando" en="prazo" value={`${format(inicio, "dd/MM/yyyy", { locale: ptBR })} → ${format(prazo, "dd/MM/yyyy", { locale: ptBR })}`} />
+                  <FiveW label="Como" en="método de execução" value="Revisão do POP-ENV-02, calibração dos sensores de peso e retreinamento dos operadores dos 3 turnos." />
+                  <FiveW label="Quanto custa" en="custo estimado" value={formatBRL(plano.custo)} className="sm:col-span-2" />
                 </div>
                 <Separator />
                 <div>
