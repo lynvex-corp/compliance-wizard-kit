@@ -300,11 +300,9 @@ export function NovaNCWizard() {
   const [origem, setOrigem] = useState<Origem>();
   const [prefixo, setPrefixo] = useState(PREFIXO_NC_PADRAO);
   const [setorOcorrencia, setSetorOcorrencia] = useState<string>();
-  const [tipoNC, setTipoNC] = useState<"Real" | "Potencial">("Real");
   const [tipoAcao, setTipoAcao] = useState<"Corretiva" | "Preventiva">("Corretiva");
   const [descricao, setDescricao] = useState("");
-  const [requisito, setRequisito] = useState<string>();
-  const [reqOpen, setReqOpen] = useState(false);
+  const [exemploIdx] = useState(() => Math.floor(Math.random() * 3));
   const [reincidente, setReincidente] = useState(false);
   const [ncsVinculadas, setNcsVinculadas] = useState<string[]>([]);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -615,29 +613,7 @@ export function NovaNCWizard() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>Tipo de não conformidade</Label>
-                  <ToggleGroup
-                    type="single"
-                    value={tipoNC}
-                    onValueChange={(v) => v && setTipoNC(v as "Real" | "Potencial")}
-                    className="grid grid-cols-2 gap-2"
-                  >
-                    <ToggleGroupItem
-                      value="Real"
-                      className="h-10 rounded-lg border border-border data-[state=on]:border-brand data-[state=on]:bg-brand-soft data-[state=on]:text-brand"
-                    >
-                      Real
-                    </ToggleGroupItem>
-                    <ToggleGroupItem
-                      value="Potencial"
-                      className="h-10 rounded-lg border border-border data-[state=on]:border-brand data-[state=on]:bg-brand-soft data-[state=on]:text-brand"
-                    >
-                      Potencial
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Tipo de ação prevista</Label>
+                  <Label>Tipo de Ação</Label>
                   <ToggleGroup
                     type="single"
                     value={tipoAcao}
@@ -666,48 +642,14 @@ export function NovaNCWizard() {
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
                   rows={5}
-                  placeholder="Descreva o desvio observado, contexto, produto/lote envolvido e impacto imediato…"
+                  placeholder={DESCRICAO_EXEMPLOS[exemploIdx]}
                   className="rounded-lg"
                 />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Requisito normativo associado</Label>
-                <Popover open={reqOpen} onOpenChange={setReqOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-10 w-full justify-between rounded-lg font-normal">
-                      {requisito
-                        ? (() => {
-                            const r = requisitosNormativos.find((x) => x.id === requisito)!;
-                            return `${r.codigo} — ${r.titulo}`;
-                          })()
-                        : <span className="text-muted-foreground">Buscar requisito…</span>}
-                      <Search className="h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Buscar por código ou tema…" />
-                      <CommandList>
-                        <CommandEmpty>Nenhum requisito encontrado.</CommandEmpty>
-                        <CommandGroup>
-                          {requisitosNormativos.map((r) => (
-                            <CommandItem
-                              key={r.id}
-                              value={`${r.codigo} ${r.titulo}`}
-                              onSelect={() => { setRequisito(r.id); setReqOpen(false); }}
-                            >
-                              <div className="flex flex-col">
-                                <span className="text-xs font-semibold text-brand">{r.codigo}</span>
-                                <span className="text-sm">{r.titulo}</span>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <ul className="space-y-1 text-[11px] leading-relaxed text-muted-foreground">
+                  {DESCRICAO_EXEMPLOS.map((ex) => (
+                    <li key={ex}>{ex}</li>
+                  ))}
+                </ul>
               </div>
 
               {/* Upload */}
@@ -985,7 +927,7 @@ export function NovaNCWizard() {
               >
                 {[
                   { v: "5porques", l: "5 Porquês" },
-                  { v: "ishikawa", l: "Ishikawa" },
+                  { v: "ishikawa", l: "Diagrama de Causa e Efeito" },
                 ].map((t) => (
                   <ToggleGroupItem
                     key={t.v}
@@ -1214,22 +1156,22 @@ export function NovaNCWizard() {
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
                   <BadgeCheck className="h-4 w-4 text-brand" />
-                  <h3 className="text-sm font-semibold text-foreground">Ação Corretiva — 5W2H</h3>
+                  <h3 className="text-sm font-semibold text-foreground">Ação Corretiva — Detalhamento da Ação</h3>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {([
-                    ["what", "O quê", "What", "textarea"],
-                    ["why", "Por quê", "Why", "textarea"],
-                    ["where", "Onde", "Where", "input"],
-                    ["who", "Quem", "Who", "input"],
-                    ["when", "Quando", "When", "input"],
-                    ["how", "Como", "How", "textarea"],
-                    ["howMuch", "Quanto", "How much", "input"],
+                    ["what", "O quê", "descrição da ação", "textarea"],
+                    ["why", "Por quê", "justificativa", "textarea"],
+                    ["where", "Onde", "local de aplicação", "input"],
+                    ["who", "Quem", "responsável", "input"],
+                    ["when", "Quando", "prazo", "input"],
+                    ["how", "Como", "método de execução", "textarea"],
+                    ["howMuch", "Quanto custa", "custo estimado", "input"],
                   ] as const).map(([key, ptL, enL, type]) => (
                     <div key={key} className="space-y-1.5 rounded-xl border border-border/80 bg-card p-3">
                       <div className="flex items-baseline justify-between">
                         <Label className="text-sm font-semibold">{ptL}</Label>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{enL}</span>
+                        <span className="text-[10px] tracking-wide text-muted-foreground">{enL}</span>
                       </div>
                       {type === "textarea" ? (
                         <Textarea rows={3} value={w5h2[key]} onChange={(e) => setW5h2((p) => ({ ...p, [key]: e.target.value }))} className="rounded-lg" />
