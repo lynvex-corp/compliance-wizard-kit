@@ -450,7 +450,12 @@ export function NovaAuditoriaWizard() {
     const aud = addAuditoria({
       tipo,
       normas: normasSel,
-      evento: evento as "Certificação" | "Monitoração 12 meses" | "Monitoração 24 meses" | "Recertificação" | "Auditoria Interna Ciclo 2026",
+      evento: (tipo === "Interna" ? "Auditoria Interna Ciclo 2026" : evento) as
+        | "Certificação"
+        | "Monitoração 12 meses"
+        | "Monitoração 24 meses"
+        | "Recertificação"
+        | "Auditoria Interna Ciclo 2026",
       escopo,
       status: "Programada",
       mesInicio: new Date(dataInicio).getMonth() + 1,
@@ -476,7 +481,7 @@ export function NovaAuditoriaWizard() {
         description:
           tipo === "Externa"
             ? `${aud.codigo} · ${certificadora} — registro externo criado.`
-            : `${aud.codigo} · ${normasSel.join(" · ")} — ${evento}. Aguardando ciência do auditor líder.`,
+            : `${aud.codigo} · ${normasSel.join(" · ")}. Aguardando ciência do auditor líder.`,
       },
     );
     setTimeout(() => navigate({ to: "/auditorias" }), 700);
@@ -1022,12 +1027,14 @@ export function NovaAuditoriaWizard() {
                     </div>
                     <div className="text-sm text-foreground">{tipo}</div>
                   </div>
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase text-muted-foreground">
-                      Evento
+                  {tipo === "Externa" && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase text-muted-foreground">
+                        Evento
+                      </div>
+                      <div className="text-sm text-foreground">{evento}</div>
                     </div>
-                    <div className="text-sm text-foreground">{evento}</div>
-                  </div>
+                  )}
                   <div>
                     <div className="text-[10px] font-semibold uppercase text-muted-foreground">
                       Normas
