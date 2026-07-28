@@ -57,7 +57,6 @@ import {
 import {
   mockNCs,
   usuariosMock,
-  requisitosNormativos,
   slaPorGravidade,
   severityClasses,
   origensNC,
@@ -70,6 +69,12 @@ import {
   type Origem,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+
+const DESCRICAO_EXEMPLOS = [
+  "Ex.: Durante a inspeção do lote 245 do dia 12/09, foram identificadas 8 peças fora da especificação de dureza, resultando em segregação do lote e retrabalho.",
+  "Ex.: O procedimento PO-QUA-004, revisão 02, não foi seguido na etapa de verificação final, gerando aprovação de peças com dimensão fora da tolerância.",
+  "Ex.: Reclamação do cliente Alfa Ltda. registrada em 15/09 sobre atraso de 6 dias na entrega do pedido 8821, sem comunicação prévia.",
+];
 
 const STEPS = [
   { n: 1, label: "Identificação", short: "Ident." },
