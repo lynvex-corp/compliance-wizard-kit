@@ -404,6 +404,8 @@ export interface PlanoAcao {
   id: string;
   codigo: string;
   descricao: string;
+  /** Problema / causa raiz que originou o plano */
+  motivo?: string;
   origemTipo: PlanoOrigemTipo;
   vinculadoCodigo: string | null;
   vinculadoLink: string | null;
