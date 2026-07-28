@@ -60,7 +60,6 @@ const EVENTOS = [
   "Monitoração 12 meses",
   "Monitoração 24 meses",
   "Recertificação",
-  "Interna",
 ];
 
 type Bloco = {
@@ -108,20 +107,24 @@ function ChipToggle({
   label,
   active,
   onClick,
+  disabled,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
       className={cn(
         "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
         active
           ? "border-brand bg-brand text-white"
           : "border-border bg-card text-muted-foreground hover:bg-brand-soft/60",
+        disabled && "cursor-not-allowed opacity-50 hover:bg-card",
       )}
     >
       {label}
@@ -237,8 +240,8 @@ export function NovaAuditoriaWizard() {
   const [auditoresExternos, setAuditoresExternos] = useState("Equipe da certificadora — a confirmar");
   const [relatorioExterno, setRelatorioExterno] = useState<string[]>([]);
   const [logoCliente, setLogoCliente] = useState<string | null>(null);
-  const [normasSel, setNormasSel] = useState<string[]>(["ISO 9001", "ISO 14001"]);
-  const [evento, setEvento] = useState<string>("Interna");
+  const [normasSel, setNormasSel] = useState<string[]>(["ISO 9001"]);
+  const [evento, setEvento] = useState<string>("Certificação");
   const [escopo, setEscopo] = useState(
     "Sistema de Gestão da Qualidade e Meio Ambiente — Sede e obras ativas",
   );
@@ -304,8 +307,9 @@ export function NovaAuditoriaWizard() {
     },
   ]);
 
-  const toggleNorma = (n: string) =>
-    setNormasSel((s) => (s.includes(n) ? s.filter((x) => x !== n) : [...s, n]));
+  const toggleNorma = (_n: string) => {
+    // v1: apenas ISO 9001 liberada e travada.
+  };
 
   const addBloco = (di: number) => {
     setDias((ds) =>
@@ -446,7 +450,12 @@ export function NovaAuditoriaWizard() {
     const aud = addAuditoria({
       tipo,
       normas: normasSel,
-      evento: evento as "Certificação" | "Monitoração 12 meses" | "Monitoração 24 meses" | "Recertificação" | "Auditoria Interna Ciclo 2026",
+      evento: (tipo === "Interna" ? "Auditoria Interna Ciclo 2026" : evento) as
+        | "Certificação"
+        | "Monitoração 12 meses"
+        | "Monitoração 24 meses"
+        | "Recertificação"
+        | "Auditoria Interna Ciclo 2026",
       escopo,
       status: "Programada",
       mesInicio: new Date(dataInicio).getMonth() + 1,
@@ -472,7 +481,7 @@ export function NovaAuditoriaWizard() {
         description:
           tipo === "Externa"
             ? `${aud.codigo} · ${certificadora} — registro externo criado.`
-            : `${aud.codigo} · ${normasSel.join(" · ")} — ${evento}. Aguardando ciência do auditor líder.`,
+            : `${aud.codigo} · ${normasSel.join(" · ")}. Aguardando ciência do auditor líder.`,
       },
     );
     setTimeout(() => navigate({ to: "/auditorias" }), 700);
@@ -536,34 +545,46 @@ export function NovaAuditoriaWizard() {
                       : "Externa: registro leve — a execução acontece no sistema da certificadora."}
                   </p>
                 </div>
-                <div>
-                  <Label>Evento</Label>
-                  <Select value={evento} onValueChange={setEvento}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EVENTOS.map((e) => (
-                        <SelectItem key={e} value={e}>
-                          {e}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {tipo === "Externa" && (
+                  <div>
+                    <Label>Evento</Label>
+                    <Select value={evento} onValueChange={setEvento}>
+                      <SelectTrigger className="mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EVENTOS.map((e) => (
+                          <SelectItem key={e} value={e}>
+                            {e}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <div>
                 <Label>Normas auditadas</Label>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {normasDisponiveis.map((n) => (
-                    <ChipToggle
-                      key={n}
-                      label={n}
-                      active={normasSel.includes(n)}
-                      onClick={() => toggleNorma(n)}
-                    />
-                  ))}
+                <div className="mt-2 flex flex-col gap-2">
+                  {normasDisponiveis.map((n) => {
+                    const liberada = n === "ISO 9001";
+                    return (
+                      <div key={n} className="flex items-center gap-2">
+                        <ChipToggle
+                          label={n}
+                          active={liberada}
+                          disabled
+                          onClick={() => toggleNorma(n)}
+                        />
+                        <span className="text-[11px] text-muted-foreground">
+                          {liberada
+                            ? "Padrão da v1 — não pode ser desmarcada"
+                            : "Disponível apenas na opção Personalizado"}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1006,12 +1027,14 @@ export function NovaAuditoriaWizard() {
                     </div>
                     <div className="text-sm text-foreground">{tipo}</div>
                   </div>
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase text-muted-foreground">
-                      Evento
+                  {tipo === "Externa" && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase text-muted-foreground">
+                        Evento
+                      </div>
+                      <div className="text-sm text-foreground">{evento}</div>
                     </div>
-                    <div className="text-sm text-foreground">{evento}</div>
-                  </div>
+                  )}
                   <div>
                     <div className="text-[10px] font-semibold uppercase text-muted-foreground">
                       Normas
