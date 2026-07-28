@@ -74,6 +74,8 @@ export const setoresOcorrencia = [
   "Operação",
   "Planejamento",
   "Projeto",
+  "Comercial",
+  "Pós-Venda",
   "Administrativo",
   "Financeiro",
   "RH",
