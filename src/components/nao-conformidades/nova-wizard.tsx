@@ -1119,7 +1119,7 @@ export function NovaNCWizard() {
                 <div>
                   <h2 className="text-base font-semibold text-foreground">4. Plano de Ação</h2>
                   <p className="text-sm text-muted-foreground">
-                    Defina contenção imediata e ação corretiva estruturada (5W2H).
+                    Defina contenção imediata e ação corretiva estruturada (detalhamento da ação).
                   </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={sugerirPlanoIA} className="gap-1.5 rounded-lg border-brand/40 text-brand hover:bg-brand-soft">

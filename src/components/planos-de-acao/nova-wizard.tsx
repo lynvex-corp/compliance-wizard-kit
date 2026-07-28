@@ -433,7 +433,7 @@ export function NovoPlanoWizard() {
                   <div>
                     <div className="text-sm font-semibold text-brand">Gerar ações com IA</div>
                     <div className="text-xs text-muted-foreground">
-                      Contingência + ações corretivas 5W2H a partir da causa raiz.
+                      Contingência + ações corretivas detalhadas a partir da causa raiz.
                     </div>
                   </div>
                 </div>

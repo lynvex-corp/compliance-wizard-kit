@@ -129,7 +129,7 @@ export function NCDetailPage() {
       responsavel: { nome: "Diego Almeida", iniciais: "DA" },
       resumo: (
         <>
-          Contenção imediata + 5W2H aprovados. Prazo: {format(prazo, "dd/MM/yyyy", { locale: ptBR })}.
+          Contenção imediata + detalhamento da ação aprovados. Prazo: {format(prazo, "dd/MM/yyyy", { locale: ptBR })}.
         </>
       ),
     },
@@ -341,7 +341,7 @@ export function NCDetailPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Nenhum plano vinculado. Ao criar, a origem e a causa raiz desta NC já vão preenchidas
-                    direto na etapa 5W2H.
+                    direto na etapa de detalhamento da ação.
                   </p>
                   <Button asChild size="sm" className="w-full gap-1 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90">
                     <Link

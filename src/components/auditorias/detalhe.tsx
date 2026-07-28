@@ -1572,7 +1572,7 @@ function CincoPorquesDialog({
             </div>
             {categoria && (
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">Categoria Ishikawa:</span>
+                <span className="text-muted-foreground">Categoria (causa e efeito):</span>
                 <Badge variant="outline" className="border-brand/40 bg-brand-soft text-brand">{categoria}</Badge>
               </div>
             )}

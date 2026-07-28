@@ -54,7 +54,7 @@ const MODULES: Array<{ match: (p: string) => boolean; ctx: AiModuleContext }> = 
     ctx: {
       moduleName: "Planos de Ação",
       greeting:
-        "Você está em Planos de Ação. Posso gerar um 5W2H completo a partir de uma NC ou risco e sugerir prazos por criticidade.",
+        "Você está em Planos de Ação. Posso gerar um detalhamento completo da ação a partir de uma NC ou risco e sugerir prazos por criticidade.",
       chips: [
         { label: "Gerar plano com IA", prompt: "Gere um plano de ação para uma NC crítica de reincidência." },
         { label: "Riscos de atraso", prompt: "Quais planos correm risco de atraso?" },
@@ -200,7 +200,7 @@ Posso criar esta NC no seu quadro agora.`,
 
   if (has(p, "plano de ação", "plano de acao", "5w2h", "gere um plano", "gerar plano")) {
     return {
-      markdown: `## Plano de ação sugerido (5W2H)
+      markdown: `## Plano de ação sugerido (Detalhamento da Ação)
 
 **Contenção imediata:** Isolar lote e interditar processo até validação.
 
