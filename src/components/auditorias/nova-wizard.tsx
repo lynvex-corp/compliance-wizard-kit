@@ -60,7 +60,6 @@ const EVENTOS = [
   "Monitoração 12 meses",
   "Monitoração 24 meses",
   "Recertificação",
-  "Interna",
 ];
 
 type Bloco = {
@@ -108,20 +107,24 @@ function ChipToggle({
   label,
   active,
   onClick,
+  disabled,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
       className={cn(
         "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
         active
           ? "border-brand bg-brand text-white"
           : "border-border bg-card text-muted-foreground hover:bg-brand-soft/60",
+        disabled && "cursor-not-allowed opacity-50 hover:bg-card",
       )}
     >
       {label}
@@ -237,8 +240,8 @@ export function NovaAuditoriaWizard() {
   const [auditoresExternos, setAuditoresExternos] = useState("Equipe da certificadora — a confirmar");
   const [relatorioExterno, setRelatorioExterno] = useState<string[]>([]);
   const [logoCliente, setLogoCliente] = useState<string | null>(null);
-  const [normasSel, setNormasSel] = useState<string[]>(["ISO 9001", "ISO 14001"]);
-  const [evento, setEvento] = useState<string>("Interna");
+  const [normasSel, setNormasSel] = useState<string[]>(["ISO 9001"]);
+  const [evento, setEvento] = useState<string>("Certificação");
   const [escopo, setEscopo] = useState(
     "Sistema de Gestão da Qualidade e Meio Ambiente — Sede e obras ativas",
   );
@@ -304,8 +307,9 @@ export function NovaAuditoriaWizard() {
     },
   ]);
 
-  const toggleNorma = (n: string) =>
-    setNormasSel((s) => (s.includes(n) ? s.filter((x) => x !== n) : [...s, n]));
+  const toggleNorma = (_n: string) => {
+    // v1: apenas ISO 9001 liberada e travada.
+  };
 
   const addBloco = (di: number) => {
     setDias((ds) =>
