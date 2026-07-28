@@ -248,6 +248,7 @@ export function NovoPlanoWizard() {
       const respCont = usuariosMock.find((u) => u.id === contResponsavelId);
       addPlano({
         descricao: `[Contingência] ${contencao.trim()}`,
+        motivo: problema.trim(),
         origemTipo: origem,
         vinculadoCodigo: vinculado || null,
         responsavel: {
@@ -266,6 +267,7 @@ export function NovoPlanoWizard() {
       const resp = usuariosMock.find((u) => u.id === a.responsavelId);
       addPlano({
         descricao: a.oque.trim(),
+        motivo: problema.trim(),
         origemTipo: origem,
         vinculadoCodigo: vinculado || null,
         responsavel: {
