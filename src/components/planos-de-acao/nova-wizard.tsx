@@ -40,8 +40,8 @@ import { Route as NovoPlanoRoute } from "@/routes/planos-de-acao.novo";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
-  { id: 1, label: "Origem e contexto", icon: ClipboardList },
-  { id: 2, label: "Ações (5W2H)", icon: Sparkles },
+  { id: 1, label: "Plano de Ação", icon: ClipboardList },
+  { id: 2, label: "Ações corretivas", icon: Sparkles },
 ];
 
 const ORIGENS: PlanoOrigemTipo[] = [
@@ -325,7 +325,7 @@ export function NovoPlanoWizard() {
         {step === 1 && (
           <Card className="rounded-xl">
             <CardHeader>
-              <CardTitle className="text-base">Origem e contexto</CardTitle>
+              <CardTitle className="text-base">Plano de Ação</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -349,12 +349,12 @@ export function NovoPlanoWizard() {
                 </div>
               </div>
               <div>
-                <Label>Problema / causa raiz</Label>
+                <Label>Descrição do Problema</Label>
                 <Textarea
                   className="mt-2 min-h-[110px]"
                   value={problema}
                   onChange={(e) => setProblema(e.target.value)}
-                  placeholder="Descreva o problema — quando o plano vem de uma NC, a causa raiz já chega preenchida."
+                  placeholder="Descreva o problema que originou o plano — quando vem de uma NC, a causa raiz já chega preenchida."
                 />
               </div>
             </CardContent>
@@ -478,7 +478,7 @@ export function NovoPlanoWizard() {
             <Card className="rounded-xl">
               <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
                 <div>
-                  <CardTitle className="text-base">Ações Corretivas (5W2H)</CardTitle>
+                  <CardTitle className="text-base">Ações Corretivas — Detalhamento da Ação</CardTitle>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Cada linha vira um item acompanhável no módulo de Planos de Ação. Todos os campos são obrigatórios.
                   </p>
@@ -500,19 +500,19 @@ export function NovoPlanoWizard() {
                     </div>
                     <div className="grid gap-3 md:grid-cols-12">
                       <div className="md:col-span-6">
-                        <Label className="text-xs">O quê (What) *</Label>
+                        <Label className="text-xs">O quê — descrição da ação *</Label>
                         <Input className="mt-1.5" value={a.oque} onChange={(e) => updateAcao(i, "oque", e.target.value)} />
                       </div>
                       <div className="md:col-span-6">
-                        <Label className="text-xs">Por quê (Why) *</Label>
+                        <Label className="text-xs">Por quê — justificativa *</Label>
                         <Input className="mt-1.5" value={a.porque} onChange={(e) => updateAcao(i, "porque", e.target.value)} />
                       </div>
                       <div className="md:col-span-4">
-                        <Label className="text-xs">Onde (Where) *</Label>
+                        <Label className="text-xs">Onde — local de aplicação *</Label>
                         <Input className="mt-1.5" value={a.onde} onChange={(e) => updateAcao(i, "onde", e.target.value)} />
                       </div>
                       <div className="md:col-span-4">
-                        <Label className="text-xs">Quem — responsável pela tratativa (Who) *</Label>
+                        <Label className="text-xs">Quem — responsável pela tratativa *</Label>
                         <Select value={a.responsavelId} onValueChange={(v) => updateAcao(i, "responsavelId", v)}>
                           <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecione" /></SelectTrigger>
                           <SelectContent>
@@ -530,15 +530,15 @@ export function NovoPlanoWizard() {
                         </Select>
                       </div>
                       <div className="md:col-span-3">
-                        <Label className="text-xs">Quando — prazo (When) *</Label>
+                        <Label className="text-xs">Quando — prazo *</Label>
                         <Input type="date" className="mt-1.5" value={a.prazo} onChange={(e) => updateAcao(i, "prazo", e.target.value)} />
                       </div>
                       <div className="md:col-span-6">
-                        <Label className="text-xs">Como (How) *</Label>
+                        <Label className="text-xs">Como — método de execução *</Label>
                         <Input className="mt-1.5" value={a.como} onChange={(e) => updateAcao(i, "como", e.target.value)} />
                       </div>
                       <div className="md:col-span-3">
-                        <Label className="text-xs">Quanto — R$ (How much) *</Label>
+                        <Label className="text-xs">Quanto custa — R$ *</Label>
                         <Input className="mt-1.5" value={a.quanto} onChange={(e) => updateAcao(i, "quanto", e.target.value)} placeholder="0" />
                       </div>
                     </div>
