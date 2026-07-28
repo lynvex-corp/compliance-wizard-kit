@@ -74,6 +74,8 @@ export const setoresOcorrencia = [
   "Operação",
   "Planejamento",
   "Projeto",
+  "Comercial",
+  "Pós-Venda",
   "Administrativo",
   "Financeiro",
   "RH",
@@ -402,6 +404,8 @@ export interface PlanoAcao {
   id: string;
   codigo: string;
   descricao: string;
+  /** Problema / causa raiz que originou o plano */
+  motivo?: string;
   origemTipo: PlanoOrigemTipo;
   vinculadoCodigo: string | null;
   vinculadoLink: string | null;

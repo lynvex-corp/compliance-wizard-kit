@@ -684,7 +684,7 @@ export function PlanosDeAcaoPage() {
                     <TableHeader>
                       <TableRow className="border-border/60 hover:bg-transparent">
                         <TableHead className="pl-6">Código</TableHead>
-                        <TableHead>Descrição</TableHead>
+                        <TableHead>Motivo do Plano de Ação</TableHead>
                         <TableHead>Origem</TableHead>
                         <TableHead>Vinculado a</TableHead>
                         <TableHead>Responsável</TableHead>
@@ -705,7 +705,7 @@ export function PlanosDeAcaoPage() {
                            )}
                          >
                           <TableCell className="pl-6 font-mono text-xs font-semibold text-brand">{p.codigo}</TableCell>
-                          <TableCell className="max-w-[320px] truncate text-sm">{p.descricao}</TableCell>
+                          <TableCell className="max-w-[320px] truncate text-sm">{p.motivo?.trim() || p.descricao}</TableCell>
                           <TableCell><OrigemBadge tipo={p.origemTipo} /></TableCell>
                           <TableCell>
                             {p.vinculadoCodigo ? (

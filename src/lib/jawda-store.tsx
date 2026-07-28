@@ -460,6 +460,7 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
         id: `plano-${Date.now()}`,
         codigo,
         descricao: input.descricao,
+        motivo: input.motivo ?? "",
         origemTipo: input.origemTipo ?? "Melhoria Contínua",
         vinculadoCodigo: input.vinculadoCodigo ?? null,
         vinculadoLink: input.vinculadoLink ?? null,
