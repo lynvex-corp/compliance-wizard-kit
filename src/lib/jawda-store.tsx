@@ -85,7 +85,29 @@ export interface SwotItem {
   quadrante: "F" | "O" | "W" | "T";
   texto: string;
   planoVinculado?: string;
+  categoria?: SwotCategoria;
+  criadoEm?: string;
+  autor?: string;
+  arquivado?: boolean;
+  origemNC?: string;
 }
+
+export type SwotCategoria =
+  | "Comercial"
+  | "Operacional"
+  | "Financeiro"
+  | "Pessoas"
+  | "Tecnologia"
+  | "Regulatório";
+
+export const SWOT_CATEGORIAS: SwotCategoria[] = [
+  "Comercial",
+  "Operacional",
+  "Financeiro",
+  "Pessoas",
+  "Tecnologia",
+  "Regulatório",
+];
 
 export interface ParteInteressada {
   id: string;
