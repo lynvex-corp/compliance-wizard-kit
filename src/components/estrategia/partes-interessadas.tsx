@@ -311,9 +311,15 @@ export function PartesInteressadasPage() {
                   <span className="absolute bottom-2 left-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Esforço mínimo</span>
                   <span className="absolute bottom-2 right-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Manter satisfeito</span>
 
-                  {partesInteressadas.map((p) => {
+                  {partesInteressadas.map((p, i) => {
                     const inf = nivelValor(p.influencia);
                     const inter = nivelValor(p.interesse);
+                    // desloca bolhas que caem na mesma coordenada para evitar sobreposição
+                    const mesmos = partesInteressadas.filter(
+                      (o) => nivelValor(o.influencia) === inf && nivelValor(o.interesse) === inter,
+                    );
+                    const ordem = mesmos.findIndex((o) => o.id === p.id);
+                    const desloc = mesmos.length > 1 ? (ordem - (mesmos.length - 1) / 2) * 8 : 0;
                     const prio = prioridade(inf, inter);
                     const size = prio === "Prioritária" ? 26 : prio === "Relevante" ? 22 : 18;
                     const color =
@@ -323,10 +329,10 @@ export function PartesInteressadasPage() {
                           ? "bg-[color:var(--warning)]"
                           : "bg-[color:var(--success)]";
                     const xPct = ((inter - 1) / 4) * 74 + 13;
-                    const yPct = ((inf - 1) / 4) * 76 + 12;
+                    const yPct = ((inf - 1) / 4) * 76 + 12 + desloc;
                     return (
                       <div
-                        key={p.id}
+                        key={p.id ?? i}
                         className="absolute flex items-center gap-1.5"
                         style={{ left: `${xPct}%`, bottom: `${yPct}%`, transform: "translate(-50%, 50%)" }}
                       >
