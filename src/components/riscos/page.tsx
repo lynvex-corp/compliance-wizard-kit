@@ -305,7 +305,7 @@ export function RiscosPage() {
           </div>
         )}
 
-        <div className="grid gap-4 lg:grid-cols-[440px_1fr]">
+        <div className="grid gap-4 lg:grid-cols-[400px_minmax(0,1fr)]">
           {/* Matriz */}
           <Card className="rounded-2xl border-border/80 shadow-sm">
             <CardContent className="p-5">
@@ -384,7 +384,7 @@ export function RiscosPage() {
           </Card>
 
           {/* Lista */}
-          <Card className="rounded-2xl border-border/80 shadow-sm">
+          <Card className="min-w-0 rounded-2xl border-border/80 shadow-sm">
             <CardContent className="p-0">
               <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
                 <h2 className="text-sm font-semibold text-foreground">
