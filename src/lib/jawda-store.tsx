@@ -117,6 +117,7 @@ export interface ParteInteressada {
   interesse: number; // 1-5
   necessidades: string;
   requisitos: string;
+  ultimaRevisao?: string; // ISO date (yyyy-mm-dd)
 }
 
 export interface EscopoRevisao {
