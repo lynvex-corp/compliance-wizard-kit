@@ -641,7 +641,12 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
   );
 
   const addSwotItem = useCallback((item: Omit<SwotItem, "id">) => {
-    const s: SwotItem = { ...item, id: `swot-${Date.now()}` };
+    const s: SwotItem = {
+      criadoEm: new Date().toISOString().slice(0, 10),
+      autor: "Você",
+      ...item,
+      id: `swot-${Date.now()}`,
+    };
     setSwot((prev) => [s, ...prev]);
     logActivity({ verb: "adicionou item SWOT", target: item.quadrante, targetType: "Sistema" });
     return s;
@@ -652,7 +657,8 @@ export function JawdaProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeSwotItem = useCallback((id: string) => {
-    setSwot((prev) => prev.filter((s) => s.id !== id));
+    // exclusão suave: o card vai para "arquivado" e continua auditável
+    setSwot((prev) => prev.map((s) => (s.id === id ? { ...s, arquivado: true } : s)));
   }, []);
 
   const moveSwotItem = useCallback(
