@@ -283,6 +283,7 @@ const seedRevisoes: EscopoRevisao[] = [
 const seedExclusoes: Exclusao[] = [
   { id: "exc-1", requisito: "ISO 9001 · 8.3", descricao: "Projeto e desenvolvimento de produtos", justificativa: "A organização atua exclusivamente na fabricação sob especificação do cliente, não realizando projeto próprio." },
   { id: "exc-2", requisito: "ISO 9001 · 7.1.5.2", descricao: "Rastreabilidade de medição", justificativa: "Aplicável apenas a instrumentos críticos — em revisão pela metrologia." },
+  { id: "exc-3", requisito: "ISO 9001 · 8.5.3", descricao: "Guarda de bens pertencentes a clientes ou fornecedores", justificativa: "" },
 ];
 
 function seedNotifications(state: Pick<JawdaState, "planosDeAcao" | "naoConformidades" | "auditorias">): AppNotification[] {
