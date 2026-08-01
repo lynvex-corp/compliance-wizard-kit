@@ -117,6 +117,7 @@ export interface ParteInteressada {
   interesse: number; // 1-5
   necessidades: string;
   requisitos: string;
+  ultimaRevisao?: string; // ISO date (yyyy-mm-dd)
 }
 
 export interface EscopoRevisao {
@@ -261,12 +262,13 @@ const seedSwot: SwotItem[] = [
 ];
 
 const seedPartes: ParteInteressada[] = [
-  { id: "pi-1", nome: "Clientes Corporativos (Top 20)", categoria: "Cliente", influencia: 5, interesse: 5, necessidades: "Prazo, qualidade e rastreabilidade", requisitos: "ISO 9001, SLA ≤ 5 dias" },
-  { id: "pi-2", nome: "Colaboradores diretos", categoria: "Colaborador", influencia: 4, interesse: 5, necessidades: "Ambiente seguro e desenvolvimento", requisitos: "NR-05, NR-35, plano de carreira" },
-  { id: "pi-3", nome: "Fornecedores críticos (Classe A)", categoria: "Fornecedor", influencia: 4, interesse: 3, necessidades: "Previsibilidade de compra e pagamento", requisitos: "Homologação + auditoria anual" },
-  { id: "pi-4", nome: "ANVISA", categoria: "Órgão regulador", influencia: 5, interesse: 3, necessidades: "Conformidade sanitária plena", requisitos: "RDC 658/2022 — BPF" },
-  { id: "pi-5", nome: "Comunidade do entorno", categoria: "Comunidade", influencia: 2, interesse: 4, necessidades: "Baixo impacto ambiental e ruído", requisitos: "Licenciamento IBAMA" },
-  { id: "pi-6", nome: "Acionistas / Board", categoria: "Acionista", influencia: 5, interesse: 4, necessidades: "Retorno financeiro sustentável", requisitos: "Relatórios trimestrais + compliance" },
+  { id: "pi-1", nome: "Clientes Corporativos (Top 20)", categoria: "Cliente", influencia: 5, interesse: 5, necessidades: "Prazo, qualidade e rastreabilidade", requisitos: "ISO 9001, SLA ≤ 5 dias", ultimaRevisao: "2026-03-12" },
+  { id: "pi-2", nome: "Colaboradores diretos", categoria: "Colaborador", influencia: 3, interesse: 5, necessidades: "Ambiente seguro e desenvolvimento", requisitos: "NR-05, NR-35, plano de carreira", ultimaRevisao: "2026-02-18" },
+  { id: "pi-3", nome: "Fornecedores críticos (Classe A)", categoria: "Fornecedor", influencia: 3, interesse: 3, necessidades: "Previsibilidade de compra e pagamento", requisitos: "Homologação + auditoria anual", ultimaRevisao: "2026-01-30" },
+  { id: "pi-4", nome: "ANVISA", categoria: "Órgão regulador", influencia: 5, interesse: 3, necessidades: "Conformidade sanitária plena", requisitos: "RDC 658/2022 — BPF", ultimaRevisao: "2026-04-02" },
+  { id: "pi-5", nome: "Comunidade do entorno", categoria: "Comunidade", influencia: 1, interesse: 3, necessidades: "Baixo impacto ambiental e ruído", requisitos: "Licenciamento ambiental vigente", ultimaRevisao: "2025-11-08" },
+  { id: "pi-6", nome: "Acionistas / Board", categoria: "Acionista", influencia: 5, interesse: 5, necessidades: "Retorno financeiro sustentável", requisitos: "Relatórios trimestrais + compliance", ultimaRevisao: "2026-03-01" },
+  { id: "pi-7", nome: "Sindicato da categoria", categoria: "Sindicato", influencia: 3, interesse: 5, necessidades: "Diálogo formal e acordo coletivo cumprido", requisitos: "CCT vigente", ultimaRevisao: "2026-02-05" },
 ];
 
 const ESCOPO_INICIAL =
@@ -281,6 +283,7 @@ const seedRevisoes: EscopoRevisao[] = [
 const seedExclusoes: Exclusao[] = [
   { id: "exc-1", requisito: "ISO 9001 · 8.3", descricao: "Projeto e desenvolvimento de produtos", justificativa: "A organização atua exclusivamente na fabricação sob especificação do cliente, não realizando projeto próprio." },
   { id: "exc-2", requisito: "ISO 9001 · 7.1.5.2", descricao: "Rastreabilidade de medição", justificativa: "Aplicável apenas a instrumentos críticos — em revisão pela metrologia." },
+  { id: "exc-3", requisito: "ISO 9001 · 8.5.3", descricao: "Guarda de bens pertencentes a clientes ou fornecedores", justificativa: "" },
 ];
 
 function seedNotifications(state: Pick<JawdaState, "planosDeAcao" | "naoConformidades" | "auditorias">): AppNotification[] {
