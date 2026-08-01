@@ -242,18 +242,22 @@ const NOW_ISO = new Date("2026-07-15T14:30:00Z").toISOString();
  * ============================================================ */
 
 const seedSwot: SwotItem[] = [
-  { id: "swot-s1", quadrante: "F", texto: "Equipe técnica certificada (12 engenheiros PMP/Lean)" },
-  { id: "swot-s2", quadrante: "F", texto: "Marca reconhecida — 22 anos de mercado" },
-  { id: "swot-s3", quadrante: "F", texto: "Certificação ISO 9001 ativa desde 2011" },
-  { id: "swot-w1", quadrante: "W", texto: "Turnover de 28% no chão de fábrica" },
-  { id: "swot-w2", quadrante: "W", texto: "ERP e MES sem integração — dupla digitação" },
-  { id: "swot-w3", quadrante: "W", texto: "Baixa maturidade digital em processos operacionais" },
-  { id: "swot-o1", quadrante: "O", texto: "Expansão para mercado sul (SC/RS) com demanda mapeada" },
-  { id: "swot-o2", quadrante: "O", texto: "Linha de crédito verde BNDES para modernização" },
-  { id: "swot-o3", quadrante: "O", texto: "Parceria de P&D com UFMG" },
-  { id: "swot-t1", quadrante: "T", texto: "Nova RDC 658/2022 amplia exigências até 2027" },
-  { id: "swot-t2", quadrante: "T", texto: "Concorrente asiático com preço 18% abaixo" },
-  { id: "swot-t3", quadrante: "T", texto: "Escassez regional de soldadores e operadores" },
+  { id: "swot-s1", quadrante: "F", texto: "Equipe técnica certificada (12 engenheiros PMP/Lean)", categoria: "Pessoas", criadoEm: "2026-02-10", autor: "Ana Prado" },
+  { id: "swot-s2", quadrante: "F", texto: "Marca reconhecida — 22 anos de mercado", categoria: "Comercial", criadoEm: "2026-02-10", autor: "Ana Prado" },
+  { id: "swot-s3", quadrante: "F", texto: "Certificação ISO 9001 ativa desde 2011", categoria: "Regulatório", criadoEm: "2026-02-12", autor: "Carlos Menezes" },
+  { id: "swot-w1", quadrante: "W", texto: "Turnover de 28% no chão de fábrica", categoria: "Pessoas", criadoEm: "2026-02-14", autor: "Marina Alves" },
+  { id: "swot-w2", quadrante: "W", texto: "ERP e MES sem integração — dupla digitação", categoria: "Tecnologia", criadoEm: "2026-02-14", autor: "Rafael Lima" },
+  { id: "swot-w3", quadrante: "W", texto: "Baixa maturidade digital em processos operacionais", categoria: "Operacional", criadoEm: "2026-02-18", autor: "Rafael Lima" },
+  { id: "swot-o1", quadrante: "O", texto: "Expansão para mercado sul (SC/RS) com demanda mapeada", categoria: "Comercial", criadoEm: "2026-03-02", autor: "Ana Prado" },
+  { id: "swot-o2", quadrante: "O", texto: "Linha de crédito verde BNDES para modernização", categoria: "Financeiro", criadoEm: "2026-03-02", autor: "Júlia Costa" },
+  { id: "swot-o3", quadrante: "O", texto: "Parceria de P&D com UFMG", categoria: "Tecnologia", criadoEm: "2026-03-05", autor: "Carlos Menezes" },
+  { id: "swot-t1", quadrante: "T", texto: "Nova RDC 658/2022 amplia exigências até 2027", categoria: "Regulatório", criadoEm: "2026-03-09", autor: "Carlos Menezes" },
+  { id: "swot-t2", quadrante: "T", texto: "Concorrente asiático com preço 18% abaixo", categoria: "Comercial", criadoEm: "2026-03-11", autor: "Ana Prado" },
+  { id: "swot-t3", quadrante: "T", texto: "Escassez regional de soldadores e operadores", categoria: "Pessoas", criadoEm: "2026-03-11", autor: "Marina Alves" },
+  // Cards automáticos originados de Não Conformidades sinalizadas como fraqueza/ameaça
+  { id: "swot-nc1", quadrante: "W", texto: "Falha recorrente na calibração de instrumentos da linha 2", categoria: "Operacional", criadoEm: "2026-04-02", autor: "Integração NC", origemNC: "NC_AI_003_2026" },
+  { id: "swot-nc2", quadrante: "T", texto: "Reclamação de cliente Top 20 por desvio dimensional em lote exportado", categoria: "Comercial", criadoEm: "2026-04-18", autor: "Integração NC", origemNC: "NC_RC_011_2026" },
+  { id: "swot-nc3", quadrante: "W", texto: "Registros de inspeção preenchidos manualmente sem rastreabilidade", categoria: "Tecnologia", criadoEm: "2026-05-06", autor: "Integração NC", origemNC: "NC_AE_007_2026" },
 ];
 
 const seedPartes: ParteInteressada[] = [
