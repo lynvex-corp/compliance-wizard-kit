@@ -82,7 +82,8 @@ export interface Risco {
 
 export interface SwotItem {
   id: string;
-  quadrante: "F" | "O" | "W" | "T";
+  /** "N" = card ainda não classificado (área neutra "Cards a classificar") */
+  quadrante: "F" | "O" | "W" | "T" | "N";
   texto: string;
   planoVinculado?: string;
   categoria?: SwotCategoria;
@@ -112,11 +113,12 @@ export const SWOT_CATEGORIAS: SwotCategoria[] = [
 export interface ParteInteressada {
   id: string;
   nome: string;
-  categoria: string;
-  influencia: number; // 1-5
-  interesse: number; // 1-5
+  categoria?: string;
+  influencia?: number; // 1-5 (reservado para a v2.0)
+  interesse?: number; // 1-5 (reservado para a v2.0)
   necessidades: string;
   requisitos: string;
+  expectativas?: string;
   ultimaRevisao?: string; // ISO date (yyyy-mm-dd)
 }
 
@@ -256,19 +258,19 @@ const seedSwot: SwotItem[] = [
   { id: "swot-t2", quadrante: "T", texto: "Concorrente asiático com preço 18% abaixo", categoria: "Comercial", criadoEm: "2026-03-11", autor: "Ana Prado" },
   { id: "swot-t3", quadrante: "T", texto: "Escassez regional de soldadores e operadores", categoria: "Pessoas", criadoEm: "2026-03-11", autor: "Marina Alves" },
   // Cards automáticos originados de Não Conformidades sinalizadas como fraqueza/ameaça
-  { id: "swot-nc1", quadrante: "W", texto: "Falha recorrente na calibração de instrumentos da linha 2", categoria: "Operacional", criadoEm: "2026-04-02", autor: "Integração NC", origemNC: "NC_AI_003_2026" },
-  { id: "swot-nc2", quadrante: "T", texto: "Reclamação de cliente Top 20 por desvio dimensional em lote exportado", categoria: "Comercial", criadoEm: "2026-04-18", autor: "Integração NC", origemNC: "NC_RC_011_2026" },
-  { id: "swot-nc3", quadrante: "W", texto: "Registros de inspeção preenchidos manualmente sem rastreabilidade", categoria: "Tecnologia", criadoEm: "2026-05-06", autor: "Integração NC", origemNC: "NC_AE_007_2026" },
+  { id: "swot-nc1", quadrante: "N", texto: "Falha recorrente na calibração de instrumentos da linha 2", categoria: "Operacional", criadoEm: "2026-04-02", autor: "Integração NC", origemNC: "NC_AI_003_2026" },
+  { id: "swot-nc2", quadrante: "N", texto: "Reclamação de cliente Top 20 por desvio dimensional em lote exportado", categoria: "Comercial", criadoEm: "2026-04-18", autor: "Integração NC", origemNC: "NC_RC_011_2026" },
+  { id: "swot-nc3", quadrante: "N", texto: "Registros de inspeção preenchidos manualmente sem rastreabilidade", categoria: "Tecnologia", criadoEm: "2026-05-06", autor: "Integração NC", origemNC: "NC_AE_007_2026" },
 ];
 
 const seedPartes: ParteInteressada[] = [
-  { id: "pi-1", nome: "Clientes Corporativos (Top 20)", categoria: "Cliente", influencia: 5, interesse: 5, necessidades: "Prazo, qualidade e rastreabilidade", requisitos: "ISO 9001, SLA ≤ 5 dias", ultimaRevisao: "2026-03-12" },
-  { id: "pi-2", nome: "Colaboradores diretos", categoria: "Colaborador", influencia: 3, interesse: 5, necessidades: "Ambiente seguro e desenvolvimento", requisitos: "NR-05, NR-35, plano de carreira", ultimaRevisao: "2026-02-18" },
-  { id: "pi-3", nome: "Fornecedores críticos (Classe A)", categoria: "Fornecedor", influencia: 3, interesse: 3, necessidades: "Previsibilidade de compra e pagamento", requisitos: "Homologação + auditoria anual", ultimaRevisao: "2026-01-30" },
-  { id: "pi-4", nome: "ANVISA", categoria: "Órgão regulador", influencia: 5, interesse: 3, necessidades: "Conformidade sanitária plena", requisitos: "RDC 658/2022 — BPF", ultimaRevisao: "2026-04-02" },
-  { id: "pi-5", nome: "Comunidade do entorno", categoria: "Comunidade", influencia: 1, interesse: 3, necessidades: "Baixo impacto ambiental e ruído", requisitos: "Licenciamento ambiental vigente", ultimaRevisao: "2025-11-08" },
-  { id: "pi-6", nome: "Acionistas / Board", categoria: "Acionista", influencia: 5, interesse: 5, necessidades: "Retorno financeiro sustentável", requisitos: "Relatórios trimestrais + compliance", ultimaRevisao: "2026-03-01" },
-  { id: "pi-7", nome: "Sindicato da categoria", categoria: "Sindicato", influencia: 3, interesse: 5, necessidades: "Diálogo formal e acordo coletivo cumprido", requisitos: "CCT vigente", ultimaRevisao: "2026-02-05" },
+  { id: "pi-1", nome: "Clientes Corporativos (Top 20)", necessidades: "Prazo, qualidade e rastreabilidade", requisitos: "Atendimento à ISO 9001 e SLA de entrega ≤ 5 dias", expectativas: "Entregas monitoradas por indicador de pontualidade e relatório mensal de lotes rastreados", ultimaRevisao: "2026-03-12" },
+  { id: "pi-2", nome: "Colaboradores diretos", necessidades: "Ambiente seguro e desenvolvimento", requisitos: "Cumprimento da NR-05 e NR-35 e plano de carreira formalizado", expectativas: "Programa anual de treinamentos e avaliação de desempenho semestral", ultimaRevisao: "2026-02-18" },
+  { id: "pi-3", nome: "Fornecedores críticos (Classe A)", necessidades: "Previsibilidade de compra e pagamento", requisitos: "Homologação vigente e auditoria anual de fornecedor", expectativas: "Programação trimestral de compras compartilhada e pagamento em prazo contratado", ultimaRevisao: "2026-01-30" },
+  { id: "pi-4", nome: "ANVISA", necessidades: "Conformidade sanitária plena", requisitos: "Atendimento à RDC 658/2022 — Boas Práticas de Fabricação", expectativas: "Autoinspeções registradas e evidências disponíveis para fiscalização a qualquer momento", ultimaRevisao: "2026-04-02" },
+  { id: "pi-5", nome: "Comunidade do entorno", necessidades: "Baixo impacto ambiental e ruído", requisitos: "Licenciamento ambiental vigente e controle de emissões", expectativas: "Monitoramento periódico de ruído e canal aberto de ouvidoria", ultimaRevisao: "2025-11-08" },
+  { id: "pi-6", nome: "Acionistas / Board", necessidades: "Retorno financeiro sustentável", requisitos: "Relatórios trimestrais e conformidade legal", expectativas: "Painel de indicadores financeiros e de conformidade revisado em reunião trimestral", ultimaRevisao: "2026-03-01" },
+  { id: "pi-7", nome: "Sindicato da categoria", necessidades: "Diálogo formal e acordo coletivo cumprido", requisitos: "Cumprimento integral da CCT vigente", expectativas: "Reuniões formais registradas em ata e resposta a demandas em até 15 dias", ultimaRevisao: "2026-02-05" },
 ];
 
 const ESCOPO_INICIAL =
