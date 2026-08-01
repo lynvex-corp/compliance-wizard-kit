@@ -60,7 +60,7 @@ const corte = (t: string, n = 46) => (t.length > n ? `${t.slice(0, n)}…` : t);
 export function AnaliseCenarioPage() {
   const {
     swotItens, addSwotItem, updateSwotItem, removeSwotItem, moveSwotItem,
-    ncs,
+    naoConformidades,
   } = useJawda();
   const navigate = useNavigate();
   const [dragId, setDragId] = useState<string | null>(null);
@@ -77,8 +77,8 @@ export function AnaliseCenarioPage() {
   const ativos = useMemo(() => swotItens.filter((s) => !s.arquivado), [swotItens]);
   const arquivados = useMemo(() => swotItens.filter((s) => s.arquivado), [swotItens]);
   const ncIdPorCodigo = useMemo(
-    () => new Map(ncs.map((n) => [n.codigo, n.id])),
-    [ncs],
+    () => new Map(naoConformidades.map((n) => [n.codigo, n.id])),
+    [naoConformidades],
   );
 
   const onDrop = (q: Quadrant) => {
