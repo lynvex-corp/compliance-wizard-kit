@@ -234,7 +234,7 @@ function ConquistasCard() {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {items.map((c) => {
             const icone = iconMap[c.icone];
             if (!c.ativa) {
