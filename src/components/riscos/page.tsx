@@ -527,6 +527,34 @@ export function RiscosPage() {
                   </Select>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-muted-foreground">Origem (Análise de Cenário)</label>
+                  <Select
+                    value={novo.origemSwot || "none"}
+                    onValueChange={(v) => setNovo({ ...novo, origemSwot: v === "none" ? "" : v })}
+                  >
+                    <SelectTrigger className="h-9 rounded-lg text-xs"><SelectValue placeholder="Selecionar card SWOT" /></SelectTrigger>
+                    <SelectContent className="max-w-[420px]">
+                      <SelectItem value="none">Sem vínculo com a SWOT</SelectItem>
+                      {cardsSwot.map((s) => (
+                        <SelectItem key={s.id} value={s.texto}>
+                          {s.quadrante} · {s.texto}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-muted-foreground">Área</label>
+                  <Select value={novo.area} onValueChange={(v) => setNovo({ ...novo, area: v })}>
+                    <SelectTrigger className="h-9 rounded-lg text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {AREAS.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-medium text-muted-foreground">Probabilidade</span>
@@ -542,10 +570,38 @@ export function RiscosPage() {
                 <Slider min={1} max={5} step={1} value={[novo.impacto]} onValueChange={(v) => setNovo({ ...novo, impacto: v[0] })} />
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border/70 bg-muted/40 px-3 py-2">
-                <span className="text-[11px] text-muted-foreground">Nível calculado</span>
-                <Badge className={cn("rounded-md text-white", nivel(novo.probabilidade, novo.impacto).color)}>
-                  {nivel(novo.probabilidade, novo.impacto).label}
-                </Badge>
+                <span className="text-[11px] text-muted-foreground">
+                  Risco (calculado) — Probabilidade × Impacto
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-semibold text-foreground">
+                    {novo.probabilidade} × {novo.impacto} = {novo.probabilidade * novo.impacto}
+                  </span>
+                  <Badge className={cn("rounded-md text-white", nivel(novo.probabilidade, novo.impacto).color)}>
+                    {nivel(novo.probabilidade, novo.impacto).label}
+                  </Badge>
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-muted-foreground">Ação a ser tomada</label>
+                <Textarea
+                  value={novo.acao}
+                  onChange={(e) => setNovo({ ...novo, acao: e.target.value })}
+                  rows={2}
+                  className="rounded-lg text-xs"
+                  placeholder="Descreva a ação prevista para tratar o risco ou aproveitar a oportunidade…"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-muted-foreground">Decisão</label>
+                <Select value={novo.decisao} onValueChange={(v) => setNovo({ ...novo, decisao: v as Decisao })}>
+                  <SelectTrigger className="h-9 rounded-lg text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {DECISOES.map((d) => (
+                      <SelectItem key={d} value={d}>{d} — {decisaoDica[d]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <MiniMatriz p={novo.probabilidade} i={novo.impacto} />
