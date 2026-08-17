@@ -1113,10 +1113,95 @@ export const PRAZO_CONTINGENCIA_DIAS_UTEIS_PADRAO = 2;
 export function addDiasUteis(base: Date, dias: number) {
   const d = new Date(base);
   let restantes = dias;
-  while (restantes > 0) {
-    d.setDate(d.getDate() + 1);
-    const dow = d.getDay();
-    if (dow !== 0 && dow !== 6) restantes -= 1;
-  }
   return d;
 }
+
+/* ============================================================
+ * Painel de Reconhecimento — Dashboard Executivo
+ * ============================================================ */
+
+export type ReconhecimentoPeriodo = "Este mês" | "Este trimestre" | "Este ano";
+
+export interface RankingIdentificador {
+  id: string;
+  nome: string;
+  iniciais: string;
+  setor: string;
+  contagens: Record<ReconhecimentoPeriodo, number>;
+}
+
+export const reconhecimentoIdentificadores: RankingIdentificador[] = [
+  {
+    id: "rank-1",
+    nome: "Ana Ribeiro",
+    iniciais: "AR",
+    setor: "Qualidade",
+    contagens: { "Este mês": 12, "Este trimestre": 31, "Este ano": 87 },
+  },
+  {
+    id: "rank-2",
+    nome: "Carlos Mendes",
+    iniciais: "CM",
+    setor: "Produção",
+    contagens: { "Este mês": 9, "Este trimestre": 24, "Este ano": 71 },
+  },
+  {
+    id: "rank-3",
+    nome: "Juliana Peixoto",
+    iniciais: "JP",
+    setor: "Regulatório",
+    contagens: { "Este mês": 7, "Este trimestre": 19, "Este ano": 58 },
+  },
+  {
+    id: "rank-4",
+    nome: "Diego Almeida",
+    iniciais: "DA",
+    setor: "Envase",
+    contagens: { "Este mês": 6, "Este trimestre": 15, "Este ano": 46 },
+  },
+  {
+    id: "rank-5",
+    nome: "Fernanda Lima",
+    iniciais: "FL",
+    setor: "Qualidade",
+    contagens: { "Este mês": 5, "Este trimestre": 14, "Este ano": 42 },
+  },
+];
+
+export interface ConquistaSetor {
+  id: string;
+  setor: string;
+  titulo: string;
+  icone: "flame" | "shield-check" | "trophy" | "check" | "award";
+  diasAtiva: number;
+  ativa: boolean;
+  quebradaEm?: string;
+  sequenciaAnterior?: number;
+}
+
+export const conquistasSetor: ConquistaSetor[] = [
+  {
+    id: "conq-producao",
+    setor: "Produção",
+    titulo: "45 dias sem NC crítica",
+    icone: "flame",
+    diasAtiva: 45,
+    ativa: true,
+  },
+  {
+    id: "conq-comercial",
+    setor: "Comercial",
+    titulo: "Zero planos de ação vencidos este mês",
+    icone: "check",
+    diasAtiva: 23,
+    ativa: true,
+  },
+  {
+    id: "conq-qualidade",
+    setor: "Qualidade",
+    titulo: "100% dos treinamentos concluídos no prazo",
+    icone: "trophy",
+    diasAtiva: 62,
+    ativa: true,
+  },
+];

@@ -42,6 +42,7 @@ import { eficaciaPlanosMensal } from "@/lib/mock-data";
 import { useJawda } from "@/lib/jawda-store";
 import { Line, LineChart } from "recharts";
 import { Link } from "@tanstack/react-router";
+import { ReconhecimentoPanel } from "./reconhecimento";
 
 const chartConfig: ChartConfig = {
   abertas: { label: "Abertas", color: "var(--brand)" },
@@ -201,6 +202,8 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <ReconhecimentoPanel />
 
       <Card className="rounded-xl border-border/80 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
