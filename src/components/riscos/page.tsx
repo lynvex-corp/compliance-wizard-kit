@@ -434,7 +434,9 @@ export function RiscosPage() {
                       <TableHead>Descrição</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Processo</TableHead>
-                      <TableHead>Avaliação</TableHead>
+                      <TableHead>Área</TableHead>
+                      <TableHead>Risco (P×I)</TableHead>
+                      <TableHead>Decisão</TableHead>
                       <TableHead>Ações</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead />
@@ -451,8 +453,16 @@ export function RiscosPage() {
                             <Badge variant="outline" className={cn("rounded-md text-[10px]", r.tipo === "Risco" ? "border-[color:var(--severity-critical)]/30 bg-[color:var(--severity-critical)]/10 text-[color:var(--severity-critical)]" : "border-[color:var(--success)]/30 bg-[color:var(--success)]/10 text-[color:var(--success)]")}>{r.tipo}</Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">{r.processo}</TableCell>
+                          <TableCell className="text-muted-foreground">{r.area ?? "—"}</TableCell>
                           <TableCell>
                             <Badge className={cn("rounded-md text-white", n.color)}>{n.label} · {r.probabilidade}×{r.impacto}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {r.decisao ? (
+                              <Badge variant="outline" className="rounded-md border-brand/30 text-[10px] text-brand">{r.decisao}</Badge>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground">—</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
