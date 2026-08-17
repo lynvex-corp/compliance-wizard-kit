@@ -22,9 +22,11 @@ import {
 import { Plus, Link2, ShieldAlert, Sparkles, RefreshCw, AlertTriangle, History, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useJawda } from "@/lib/jawda-store";
 
 type Tipo = "Risco" | "Oportunidade";
 type StatusR = "Identificado" | "Em tratamento" | "Monitorado" | "Encerrado";
+type Decisao = "Evitar" | "Assumir" | "Reduzir" | "Transferir" | "Explorar";
 
 interface Reavaliacao {
   data: string;
@@ -40,6 +42,10 @@ interface Registro {
   tipo: Tipo;
   processo: string;
   origem: string;
+  origemSwot?: string;
+  area?: string;
+  acao?: string;
+  decisao?: Decisao;
   probabilidade: number;
   impacto: number;
   acoes: string[];
@@ -55,6 +61,23 @@ const PROCESSOS = [
   "Suprimentos", "Produção", "Manutenção", "Comercial", "Qualidade",
   "RH", "Engenharia", "TI", "Regulatório", "Utilidades", "Logística",
 ];
+
+/** Lista fechada de áreas responsáveis pelo tratamento. */
+const AREAS = [
+  "Alta Direção", "Qualidade", "Produção", "Manutenção", "Suprimentos", "Comercial",
+  "Pós-Venda", "Recursos Humanos", "Engenharia", "Tecnologia da Informação",
+  "Financeiro", "Logística", "SST e Meio Ambiente",
+];
+
+const DECISOES: Decisao[] = ["Evitar", "Assumir", "Reduzir", "Transferir", "Explorar"];
+
+const decisaoDica: Record<Decisao, string> = {
+  Evitar: "Eliminar a atividade que gera o risco",
+  Assumir: "Aceitar o risco de forma consciente e monitorada",
+  Reduzir: "Mitigar probabilidade e/ou impacto com ações",
+  Transferir: "Compartilhar o risco (seguro, contrato, terceiro)",
+  Explorar: "Buscar ativamente o ganho da oportunidade",
+};
 
 const seed: Registro[] = [
   { id: 1, codigo: "R-001", descricao: "Falha no fornecimento de matéria-prima crítica MP-2231", tipo: "Risco", processo: "Suprimentos", origem: "Contexto", probabilidade: 4, impacto: 5, acoes: ["PA-2026-0007"], planoConcluido: true, status: "Em tratamento", criadoEm: "2026-01-14", historico: [] },
