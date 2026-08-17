@@ -155,6 +155,7 @@ const SUGESTAO_PADRAO = [
 
 export function RiscosPage() {
   const navigate = useNavigate();
+  const { swotItens } = useJawda();
   const [rows, setRows] = useState<Registro[]>(seed);
   const [open, setOpen] = useState(false);
   const [selecionado, setSelecionado] = useState<number | null>(null);
@@ -166,8 +167,11 @@ export function RiscosPage() {
   const [reav, setReav] = useState({ probabilidade: 3, impacto: 3, observacao: "" });
   const [novo, setNovo] = useState({
     descricao: "", tipo: "Risco" as Tipo, processo: "Produção", origem: "Contexto",
+    origemSwot: "", area: AREAS[1]!, acao: "", decisao: "Reduzir" as Decisao,
     probabilidade: 3, impacto: 3,
   });
+
+  const cardsSwot = useMemo(() => swotItens.filter((s) => !s.arquivado), [swotItens]);
 
   const alertas = useMemo(
     () => rows.filter((r) => r.tipo === "Risco" && r.acoes.length === 0 && (r.semAcaoDesdeDias ?? 0) > 60),
@@ -209,6 +213,10 @@ export function RiscosPage() {
         id, codigo,
         descricao: novo.descricao || "Novo registro sem descrição",
         tipo: novo.tipo, processo: novo.processo, origem: novo.origem,
+        origemSwot: novo.origemSwot || undefined,
+        area: novo.area,
+        acao: novo.acao || undefined,
+        decisao: novo.decisao,
         probabilidade: novo.probabilidade, impacto: novo.impacto,
         acoes: [], status: "Identificado",
         criadoEm: new Date().toISOString().slice(0, 10),
@@ -216,7 +224,11 @@ export function RiscosPage() {
       },
     ]);
     setOpen(false);
-    setNovo({ descricao: "", tipo: "Risco", processo: "Produção", origem: "Contexto", probabilidade: 3, impacto: 3 });
+    setNovo({
+      descricao: "", tipo: "Risco", processo: "Produção", origem: "Contexto",
+      origemSwot: "", area: AREAS[1]!, acao: "", decisao: "Reduzir",
+      probabilidade: 3, impacto: 3,
+    });
     toast.success(`${codigo} registrado`, { description: "Ponto posicionado na matriz conforme avaliação." });
   };
 
