@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import {
   FileText, ShieldCheck, AlertTriangle, Download, Pencil, Plus, Trash2, History, X, Check,
-  Bold, Italic, List, Undo2,
+  Bold, Italic, List, Undo2, Send, BadgeCheck, Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -54,6 +54,10 @@ export function EscopoSistemaPage() {
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
   const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
   const [destaque, setDestaque] = useState<string | null>(null);
+  const [statusDoc, setStatusDoc] = useState<"Rascunho" | "Aguardando Aprovação" | "Vigente">("Vigente");
+
+  const FLUXO = ["Rascunho", "Aguardando Aprovação", "Vigente"] as const;
+  const etapaAtual = FLUXO.indexOf(statusDoc);
 
   const semJust = useMemo(() => exclusoes.filter((e) => !e.justificativa.trim()), [exclusoes]);
   const revAtual = escopoRevisoes[escopoRevisoes.length - 1];
@@ -66,7 +70,10 @@ export function EscopoSistemaPage() {
     if (!novoTexto.trim()) { toast.error("O escopo não pode ficar vazio"); return; }
     if (novoTexto.trim() === escopoTexto.trim()) { toast.info("Nenhuma alteração para revisar"); return; }
     updateEscopoTexto(novoTexto);
-    toast.success("Nova revisão publicada — as anteriores permanecem no histórico");
+    setStatusDoc("Rascunho");
+    toast.success("Nova revisão criada como Rascunho", {
+      description: "Envie para aprovação da Alta Direção para torná-la vigente.",
+    });
     setRevSelecionada(null);
     setEditOpen(false);
   };
@@ -99,7 +106,7 @@ export function EscopoSistemaPage() {
       descricao: req.rotulo,
       justificativa: nova.justificativa,
     });
-    toast.success("Exclusão registrada com justificativa");
+    toast.success("Item não aplicável registrado com justificativa");
     setNova({ item: REQUISITOS_NORMA[0]!.item, justificativa: "" });
     setNovaOpen(false);
   };
