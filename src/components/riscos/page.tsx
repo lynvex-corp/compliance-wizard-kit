@@ -742,8 +742,35 @@ export function RiscosPage() {
               <div className="space-y-4 px-4 pb-6">
                 <p className="rounded-lg border border-border/60 bg-muted/30 p-3 text-sm leading-relaxed text-foreground/90">{detalhe.descricao}</p>
 
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Área</div>
+                    <div className="mt-1 text-xs text-foreground/90">{detalhe.area ?? "—"}</div>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Decisão</div>
+                    <div className="mt-1 text-xs text-foreground/90">{detalhe.decisao ?? "—"}</div>
+                  </div>
+                </div>
+
                 <div className="rounded-lg border border-border/60 p-3">
-                  <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Avaliação atual</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Origem — card da Análise de Cenário
+                  </div>
+                  <div className="mt-1 text-xs text-foreground/90">
+                    {detalhe.origemSwot ?? `Sem vínculo com a SWOT (origem: ${detalhe.origem})`}
+                  </div>
+                </div>
+
+                {detalhe.acao && (
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Ação a ser tomada</div>
+                    <p className="mt-1 text-xs leading-relaxed text-foreground/90">{detalhe.acao}</p>
+                  </div>
+                )}
+
+                <div className="rounded-lg border border-border/60 p-3">
+                  <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Risco (calculado)</div>
                   <div className="flex items-center gap-2">
                     <Badge className={cn("rounded-md text-white", nivel(detalhe.probabilidade, detalhe.impacto).color)}>
                       {nivel(detalhe.probabilidade, detalhe.impacto).label}
