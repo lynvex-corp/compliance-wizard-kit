@@ -237,7 +237,7 @@ export function EscopoSistemaPage() {
                 >
                   Rev. {revVisivel?.rev} ·{" "}
                   {revVisivel ? new Date(revVisivel.data).toLocaleDateString("pt-BR") : ""}
-                  {vendoHistorico ? " · histórico" : " · vigente"}
+                  {vendoHistorico ? " · histórico" : ` · ${statusDoc.toLowerCase()}`}
                 </Badge>
               </div>
 
@@ -314,13 +314,15 @@ export function EscopoSistemaPage() {
           <CardContent className="p-0">
             <div className="flex items-center justify-between border-b border-border/70 px-5 py-3">
               <div>
-                <h2 className="text-sm font-semibold text-foreground">Exclusões de requisitos</h2>
+                <h2 className="text-sm font-semibold text-foreground">Itens Não Aplicáveis</h2>
                 <p className="text-[11px] text-muted-foreground">
-                  Requisitos não aplicáveis ao escopo declarado — a justificativa é obrigatória.
+                  Registre os requisitos da norma que não se aplicam ao escopo declarado. Para cada item é
+                  obrigatório justificar por que ele não é aplicável e demonstrar que a não aplicação não afeta
+                  a capacidade de entregar produtos e serviços conformes.
                 </p>
               </div>
               <Button size="sm" onClick={() => setNovaOpen(true)} variant="outline" className="rounded-lg">
-                <Plus className="mr-1 h-3 w-3" /> Nova exclusão
+                <Plus className="mr-1 h-3 w-3" /> Novo item não aplicável
               </Button>
             </div>
             <Table>
@@ -328,7 +330,7 @@ export function EscopoSistemaPage() {
                 <TableRow className="text-[11px] uppercase tracking-wide text-muted-foreground">
                   <TableHead className="w-[150px]">Item da norma</TableHead>
                   <TableHead className="w-[280px]">Requisito</TableHead>
-                  <TableHead>Justificativa da exclusão</TableHead>
+                  <TableHead>Justificativa da não aplicabilidade</TableHead>
                   <TableHead className="w-[60px]" />
                 </TableRow>
               </TableHeader>
@@ -352,7 +354,7 @@ export function EscopoSistemaPage() {
                           id={`just-${e.id}`}
                           value={e.justificativa}
                           onChange={(ev) => updateExclusao(e.id, { justificativa: ev.target.value })}
-                          placeholder="Descreva por que o requisito não se aplica ao escopo (obrigatório)"
+                          placeholder="Descreva por que o requisito não é aplicável ao escopo declarado (obrigatório)"
                           className={cn(
                             "min-h-[60px] rounded-md text-xs",
                             pendente && "border-[color:var(--severity-critical)]/60",
@@ -368,7 +370,7 @@ export function EscopoSistemaPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => { removeExclusao(e.id); toast.success("Exclusão removida"); }}
+                          onClick={() => { removeExclusao(e.id); toast.success("Item não aplicável removido"); }}
                           className="h-7 w-7 p-0 text-[color:var(--severity-critical)]"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -389,9 +391,18 @@ export function EscopoSistemaPage() {
           <DialogHeader>
             <DialogTitle>Editar escopo do sistema de gestão</DialogTitle>
             <DialogDescription>
-              Ao salvar, a revisão {revAtual?.rev} é preservada no histórico e uma nova revisão é publicada.
+              Ao salvar, a revisão {revAtual?.rev} é preservada no histórico e uma nova revisão é criada em
+              Rascunho, aguardando envio e aprovação da Alta Direção.
             </DialogDescription>
           </DialogHeader>
+          <div className="flex items-start gap-2 rounded-lg border border-brand/25 bg-brand-soft/40 p-3 text-[11px] text-foreground/85">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
+            <span>
+              Descreva os produtos e serviços cobertos, as unidades e locais, os processos incluídos e eventuais
+              interfaces com terceiros. Evite generalidades — o escopo deve permitir a um auditor entender
+              exatamente o que está sob o sistema de gestão.
+            </span>
+          </div>
           <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-muted/40 p-1">
             <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => aplicarMarca("bold")} title="Negrito">
               <Bold className="h-3.5 w-3.5" />
@@ -413,18 +424,18 @@ export function EscopoSistemaPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}><X className="mr-1 h-3 w-3" /> Cancelar</Button>
             <Button onClick={salvarEscopo} className="bg-brand text-white hover:bg-brand/90">
-              <Check className="mr-1 h-3 w-3" /> Publicar nova revisão
+              <Check className="mr-1 h-3 w-3" /> Salvar como rascunho
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Nova exclusão */}
+      {/* Novo item não aplicável */}
       <Dialog open={novaOpen} onOpenChange={setNovaOpen}>
         <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Nova exclusão de requisito</DialogTitle>
-            <DialogDescription>Selecione o requisito e registre a justificativa.</DialogDescription>
+            <DialogTitle>Novo item não aplicável</DialogTitle>
+            <DialogDescription>Selecione o requisito da norma e registre a justificativa da não aplicabilidade.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <div>
@@ -440,11 +451,11 @@ export function EscopoSistemaPage() {
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium">Justificativa da exclusão *</label>
+              <label className="text-xs font-medium">Justificativa da não aplicabilidade *</label>
               <Textarea
                 value={nova.justificativa}
                 onChange={(e) => setNova({ ...nova, justificativa: e.target.value })}
-                placeholder="Explique por que o requisito não é aplicável ao escopo declarado"
+                placeholder="Explique por que o requisito não é aplicável e por que isso não afeta a conformidade do produto/serviço"
                 className="mt-1 min-h-[110px] rounded-md"
               />
             </div>
