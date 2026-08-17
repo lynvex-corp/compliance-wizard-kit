@@ -42,6 +42,7 @@ import { eficaciaPlanosMensal } from "@/lib/mock-data";
 import { useJawda } from "@/lib/jawda-store";
 import { Line, LineChart } from "recharts";
 import { Link } from "@tanstack/react-router";
+import { ReconhecimentoPanel } from "./reconhecimento";
 
 const chartConfig: ChartConfig = {
   abertas: { label: "Abertas", color: "var(--brand)" },
