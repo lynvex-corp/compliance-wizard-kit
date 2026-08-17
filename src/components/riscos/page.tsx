@@ -22,9 +22,11 @@ import {
 import { Plus, Link2, ShieldAlert, Sparkles, RefreshCw, AlertTriangle, History, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useJawda } from "@/lib/jawda-store";
 
 type Tipo = "Risco" | "Oportunidade";
 type StatusR = "Identificado" | "Em tratamento" | "Monitorado" | "Encerrado";
+type Decisao = "Evitar" | "Assumir" | "Reduzir" | "Transferir" | "Explorar";
 
 interface Reavaliacao {
   data: string;
@@ -40,6 +42,10 @@ interface Registro {
   tipo: Tipo;
   processo: string;
   origem: string;
+  origemSwot?: string;
+  area?: string;
+  acao?: string;
+  decisao?: Decisao;
   probabilidade: number;
   impacto: number;
   acoes: string[];
@@ -55,6 +61,23 @@ const PROCESSOS = [
   "Suprimentos", "Produção", "Manutenção", "Comercial", "Qualidade",
   "RH", "Engenharia", "TI", "Regulatório", "Utilidades", "Logística",
 ];
+
+/** Lista fechada de áreas responsáveis pelo tratamento. */
+const AREAS = [
+  "Alta Direção", "Qualidade", "Produção", "Manutenção", "Suprimentos", "Comercial",
+  "Pós-Venda", "Recursos Humanos", "Engenharia", "Tecnologia da Informação",
+  "Financeiro", "Logística", "SST e Meio Ambiente",
+];
+
+const DECISOES: Decisao[] = ["Evitar", "Assumir", "Reduzir", "Transferir", "Explorar"];
+
+const decisaoDica: Record<Decisao, string> = {
+  Evitar: "Eliminar a atividade que gera o risco",
+  Assumir: "Aceitar o risco de forma consciente e monitorada",
+  Reduzir: "Mitigar probabilidade e/ou impacto com ações",
+  Transferir: "Compartilhar o risco (seguro, contrato, terceiro)",
+  Explorar: "Buscar ativamente o ganho da oportunidade",
+};
 
 const seed: Registro[] = [
   { id: 1, codigo: "R-001", descricao: "Falha no fornecimento de matéria-prima crítica MP-2231", tipo: "Risco", processo: "Suprimentos", origem: "Contexto", probabilidade: 4, impacto: 5, acoes: ["PA-2026-0007"], planoConcluido: true, status: "Em tratamento", criadoEm: "2026-01-14", historico: [] },
@@ -132,6 +155,7 @@ const SUGESTAO_PADRAO = [
 
 export function RiscosPage() {
   const navigate = useNavigate();
+  const { swotItens } = useJawda();
   const [rows, setRows] = useState<Registro[]>(seed);
   const [open, setOpen] = useState(false);
   const [selecionado, setSelecionado] = useState<number | null>(null);
@@ -143,8 +167,11 @@ export function RiscosPage() {
   const [reav, setReav] = useState({ probabilidade: 3, impacto: 3, observacao: "" });
   const [novo, setNovo] = useState({
     descricao: "", tipo: "Risco" as Tipo, processo: "Produção", origem: "Contexto",
+    origemSwot: "", area: AREAS[1]!, acao: "", decisao: "Reduzir" as Decisao,
     probabilidade: 3, impacto: 3,
   });
+
+  const cardsSwot = useMemo(() => swotItens.filter((s) => !s.arquivado), [swotItens]);
 
   const alertas = useMemo(
     () => rows.filter((r) => r.tipo === "Risco" && r.acoes.length === 0 && (r.semAcaoDesdeDias ?? 0) > 60),
@@ -186,6 +213,10 @@ export function RiscosPage() {
         id, codigo,
         descricao: novo.descricao || "Novo registro sem descrição",
         tipo: novo.tipo, processo: novo.processo, origem: novo.origem,
+        origemSwot: novo.origemSwot || undefined,
+        area: novo.area,
+        acao: novo.acao || undefined,
+        decisao: novo.decisao,
         probabilidade: novo.probabilidade, impacto: novo.impacto,
         acoes: [], status: "Identificado",
         criadoEm: new Date().toISOString().slice(0, 10),
@@ -193,7 +224,11 @@ export function RiscosPage() {
       },
     ]);
     setOpen(false);
-    setNovo({ descricao: "", tipo: "Risco", processo: "Produção", origem: "Contexto", probabilidade: 3, impacto: 3 });
+    setNovo({
+      descricao: "", tipo: "Risco", processo: "Produção", origem: "Contexto",
+      origemSwot: "", area: AREAS[1]!, acao: "", decisao: "Reduzir",
+      probabilidade: 3, impacto: 3,
+    });
     toast.success(`${codigo} registrado`, { description: "Ponto posicionado na matriz conforme avaliação." });
   };
 
@@ -399,7 +434,9 @@ export function RiscosPage() {
                       <TableHead>Descrição</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Processo</TableHead>
-                      <TableHead>Avaliação</TableHead>
+                      <TableHead>Área</TableHead>
+                      <TableHead>Risco (P×I)</TableHead>
+                      <TableHead>Decisão</TableHead>
                       <TableHead>Ações</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead />
@@ -416,8 +453,16 @@ export function RiscosPage() {
                             <Badge variant="outline" className={cn("rounded-md text-[10px]", r.tipo === "Risco" ? "border-[color:var(--severity-critical)]/30 bg-[color:var(--severity-critical)]/10 text-[color:var(--severity-critical)]" : "border-[color:var(--success)]/30 bg-[color:var(--success)]/10 text-[color:var(--success)]")}>{r.tipo}</Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">{r.processo}</TableCell>
+                          <TableCell className="text-muted-foreground">{r.area ?? "—"}</TableCell>
                           <TableCell>
                             <Badge className={cn("rounded-md text-white", n.color)}>{n.label} · {r.probabilidade}×{r.impacto}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {r.decisao ? (
+                              <Badge variant="outline" className="rounded-md border-brand/30 text-[10px] text-brand">{r.decisao}</Badge>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground">—</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
@@ -492,6 +537,34 @@ export function RiscosPage() {
                   </Select>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-muted-foreground">Origem (Análise de Cenário)</label>
+                  <Select
+                    value={novo.origemSwot || "none"}
+                    onValueChange={(v) => setNovo({ ...novo, origemSwot: v === "none" ? "" : v })}
+                  >
+                    <SelectTrigger className="h-9 rounded-lg text-xs"><SelectValue placeholder="Selecionar card SWOT" /></SelectTrigger>
+                    <SelectContent className="max-w-[420px]">
+                      <SelectItem value="none">Sem vínculo com a SWOT</SelectItem>
+                      {cardsSwot.map((s) => (
+                        <SelectItem key={s.id} value={s.texto}>
+                          {s.quadrante} · {s.texto}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-muted-foreground">Área</label>
+                  <Select value={novo.area} onValueChange={(v) => setNovo({ ...novo, area: v })}>
+                    <SelectTrigger className="h-9 rounded-lg text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {AREAS.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-medium text-muted-foreground">Probabilidade</span>
@@ -507,10 +580,38 @@ export function RiscosPage() {
                 <Slider min={1} max={5} step={1} value={[novo.impacto]} onValueChange={(v) => setNovo({ ...novo, impacto: v[0] })} />
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border/70 bg-muted/40 px-3 py-2">
-                <span className="text-[11px] text-muted-foreground">Nível calculado</span>
-                <Badge className={cn("rounded-md text-white", nivel(novo.probabilidade, novo.impacto).color)}>
-                  {nivel(novo.probabilidade, novo.impacto).label}
-                </Badge>
+                <span className="text-[11px] text-muted-foreground">
+                  Risco (calculado) — Probabilidade × Impacto
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-semibold text-foreground">
+                    {novo.probabilidade} × {novo.impacto} = {novo.probabilidade * novo.impacto}
+                  </span>
+                  <Badge className={cn("rounded-md text-white", nivel(novo.probabilidade, novo.impacto).color)}>
+                    {nivel(novo.probabilidade, novo.impacto).label}
+                  </Badge>
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-muted-foreground">Ação a ser tomada</label>
+                <Textarea
+                  value={novo.acao}
+                  onChange={(e) => setNovo({ ...novo, acao: e.target.value })}
+                  rows={2}
+                  className="rounded-lg text-xs"
+                  placeholder="Descreva a ação prevista para tratar o risco ou aproveitar a oportunidade…"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-muted-foreground">Decisão</label>
+                <Select value={novo.decisao} onValueChange={(v) => setNovo({ ...novo, decisao: v as Decisao })}>
+                  <SelectTrigger className="h-9 rounded-lg text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {DECISOES.map((d) => (
+                      <SelectItem key={d} value={d}>{d} — {decisaoDica[d]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <MiniMatriz p={novo.probabilidade} i={novo.impacto} />
@@ -641,8 +742,35 @@ export function RiscosPage() {
               <div className="space-y-4 px-4 pb-6">
                 <p className="rounded-lg border border-border/60 bg-muted/30 p-3 text-sm leading-relaxed text-foreground/90">{detalhe.descricao}</p>
 
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Área</div>
+                    <div className="mt-1 text-xs text-foreground/90">{detalhe.area ?? "—"}</div>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Decisão</div>
+                    <div className="mt-1 text-xs text-foreground/90">{detalhe.decisao ?? "—"}</div>
+                  </div>
+                </div>
+
                 <div className="rounded-lg border border-border/60 p-3">
-                  <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Avaliação atual</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Origem — card da Análise de Cenário
+                  </div>
+                  <div className="mt-1 text-xs text-foreground/90">
+                    {detalhe.origemSwot ?? `Sem vínculo com a SWOT (origem: ${detalhe.origem})`}
+                  </div>
+                </div>
+
+                {detalhe.acao && (
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Ação a ser tomada</div>
+                    <p className="mt-1 text-xs leading-relaxed text-foreground/90">{detalhe.acao}</p>
+                  </div>
+                )}
+
+                <div className="rounded-lg border border-border/60 p-3">
+                  <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Risco (calculado)</div>
                   <div className="flex items-center gap-2">
                     <Badge className={cn("rounded-md text-white", nivel(detalhe.probabilidade, detalhe.impacto).color)}>
                       {nivel(detalhe.probabilidade, detalhe.impacto).label}
