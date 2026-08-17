@@ -129,13 +129,35 @@ export function EscopoSistemaPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Escopo do Sistema de Gestão</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Requisito 4.3 da ISO 9001 — cada alteração salva gera uma nova revisão; as anteriores nunca são sobrescritas.
+              Declare os limites e a aplicabilidade do sistema de gestão: produtos e serviços cobertos, unidades,
+              processos e locais. Cada alteração gera uma nova revisão em Rascunho, que passa por aprovação da
+              Alta Direção antes de se tornar vigente. As revisões anteriores nunca são sobrescritas.
             </p>
           </div>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" className="rounded-lg" onClick={() => toast.info("Exportação de PDF simulada no protótipo")}>
               <Download className="mr-1.5 h-4 w-4" /> Exportar PDF
             </Button>
+            {statusDoc === "Rascunho" && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-lg border-[color:var(--warning)]/50 text-[color:var(--warning)]"
+                onClick={() => { setStatusDoc("Aguardando Aprovação"); toast.success("Revisão enviada para aprovação da Alta Direção"); }}
+              >
+                <Send className="mr-1.5 h-4 w-4" /> Enviar para aprovação
+              </Button>
+            )}
+            {statusDoc === "Aguardando Aprovação" && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-lg border-[color:var(--success)]/50 text-[color:var(--success)]"
+                onClick={() => { setStatusDoc("Vigente"); toast.success("Escopo aprovado pela Alta Direção — revisão vigente"); }}
+              >
+                <BadgeCheck className="mr-1.5 h-4 w-4" /> Aprovar (Alta Direção)
+              </Button>
+            )}
             <Button
               size="sm"
               onClick={() => { setNovoTexto(escopoTexto); setEditOpen(true); }}
@@ -146,16 +168,37 @@ export function EscopoSistemaPage() {
           </div>
         </header>
 
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-muted/30 px-4 py-3">
+          {FLUXO.map((etapa, idx) => (
+            <div key={etapa} className="flex items-center gap-2">
+              <span
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-medium",
+                  idx === etapaAtual
+                    ? "border-brand/50 bg-brand-soft text-brand"
+                    : idx < etapaAtual
+                      ? "border-[color:var(--success)]/40 bg-[color:var(--success)]/10 text-[color:var(--success)]"
+                      : "border-border/60 bg-card text-muted-foreground",
+                )}
+              >
+                <span className="font-mono">{idx + 1}</span> {etapa}
+                {etapa === "Aguardando Aprovação" && <span className="text-[10px]">(Alta Direção)</span>}
+              </span>
+              {idx < FLUXO.length - 1 && <span className="text-muted-foreground">→</span>}
+            </div>
+          ))}
+        </div>
+
         {semJust.length > 0 && (
           <Alert
             variant="destructive"
             className="rounded-xl border-[color:var(--severity-critical)]/50 bg-[color:var(--severity-critical)]/10"
           >
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Exclusão sem justificativa registrada — risco de apontamento em auditoria</AlertTitle>
+            <AlertTitle>Item não aplicável sem justificativa registrada — risco de apontamento em auditoria</AlertTitle>
             <AlertDescription className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               <span>
-                {semJust.length} exclusão(ões) pendente(s): {semJust.map((e) => e.requisito).join(", ")}
+                {semJust.length} item(ns) não aplicável(is) pendente(s): {semJust.map((e) => e.requisito).join(", ")}
               </span>
               <Button
                 size="sm"
