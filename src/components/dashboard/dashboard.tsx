@@ -203,6 +203,8 @@ export function Dashboard() {
         </Card>
       </div>
 
+      <ReconhecimentoPanel />
+
       <Card className="rounded-xl border-border/80 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
