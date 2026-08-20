@@ -42,6 +42,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { JawdaLogo } from "@/components/brand/logo";
+import { useSobreJawda } from "./sobre-jawda";
 import {
   navTop,
   navGroups,
@@ -141,6 +142,7 @@ function NavRow({
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { setOpen: setSobreOpen } = useSobreJawda();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
 
@@ -155,7 +157,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="px-4 py-5">
-        <JawdaLogo showWordmark={!collapsed} size={26} />
+        <button
+          type="button"
+          onClick={() => setSobreOpen(true)}
+          aria-label="Sobre a Jáwda"
+          className="flex items-center rounded-lg transition-opacity hover:opacity-80"
+        >
+          <JawdaLogo showWordmark={!collapsed} size={26} />
+        </button>
       </SidebarHeader>
       <SidebarContent className="px-2">
         {/* Top single item */}
