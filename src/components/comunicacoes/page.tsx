@@ -661,6 +661,10 @@ function NovaComunicacaoDialog({
               </div>
             </div>
           )}
+          <div className="rounded-lg border border-dashed border-border/70 p-2.5 text-[10px] text-muted-foreground">
+            Listas de Frequência (treinamentos e DDS) podem ser anexadas por referência ao registro criado em
+            Documentos — o registro não é duplicado aqui.
+          </div>
           <div className="flex items-center justify-between rounded-lg border border-border/70 p-3">
             <div>
               <Label className="flex items-center gap-1.5 text-[11px]"><Zap className="h-3.5 w-3.5 text-brand" /> Comunicação Imediata</Label>

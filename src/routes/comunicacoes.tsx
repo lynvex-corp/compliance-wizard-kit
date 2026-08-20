@@ -5,7 +5,7 @@ export const Route = createFileRoute("/comunicacoes")({
   head: () => ({
     meta: [
       { title: "Comunicações · Jáwda" },
-      { name: "description", content: "Processo de comunicação e disparo de comunicados internos e externos com registro de ciência — requisito 7.4." },
+      { name: "description", content: "Processo de comunicação e disparo de comunicados internos e externos, com códigos COM_INT/COM_EXT e registro de ciência." },
       { property: "og:title", content: "Comunicações · Jáwda" },
       { property: "og:description", content: "Documente o processo de comunicação e envie comunicados com controle de leitura e ciência." },
       { property: "og:type", content: "website" },
