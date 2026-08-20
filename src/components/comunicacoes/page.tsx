@@ -158,19 +158,26 @@ export function ComunicacoesPage() {
   const [perfil, setPerfil] = useState("Gestor da Qualidade");
   const [processos, setProcessos] = useState(PROCESSOS_INICIAIS);
   const [comunicacoes, setComunicacoes] = useState(COMUNICACOES_INICIAIS);
+  const [busca, setBusca] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("Todos");
 
   // Governança: todos os perfis podem comunicar e ser comunicados; o que muda é quem vê o quê.
   const ehComunicador = true;
 
+  const casa = (c: Comunicacao) =>
+    (filtroTipo === "Todos" || c.tipo === filtroTipo) &&
+    (c.id + c.descricao + c.responsavel + (c.nomeExterno ?? "")).toLowerCase().includes(busca.toLowerCase());
+
   const recebidas = useMemo(
-    () => comunicacoes.filter((c) => c.publico.includes("Todos") || c.publico.includes(perfil)),
-    [comunicacoes, perfil],
+    () => comunicacoes.filter((c) => (c.publico.includes("Todos") || c.publico.includes(perfil)) && casa(c)),
+    [comunicacoes, perfil, busca, filtroTipo],
   );
   const enviadas = useMemo(
-    () => comunicacoes.filter((c) => c.responsavel === perfil),
-    [comunicacoes, perfil],
+    () => comunicacoes.filter((c) => c.responsavel === perfil && casa(c)),
+    [comunicacoes, perfil, busca, filtroTipo],
   );
   const naoLidas = recebidas.filter((c) => !c.leituras.find((l) => l.perfil === perfil)?.ciente);
+  const proximas = comunicacoes.filter((c) => !c.imediata && c.quando && diasAte(c.quando) >= 0 && diasAte(c.quando) <= 3);
 
   const darCiente = (id: string) => {
     const agora = new Date().toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -209,9 +216,38 @@ export function ComunicacoesPage() {
                 </SelectContent>
               </Select>
             </div>
-            {ehComunicador && <NovaComunicacaoDialog perfil={perfil} onCreate={(c) => setComunicacoes((p) => [c, ...p])} />}
+            <NovaComunicacaoDialog
+              perfil={perfil}
+              proximoId={(tipo) => proximoCodigo(comunicacoes, tipo)}
+              onCreate={(c) => setComunicacoes((p) => [c, ...p])}
+            />
           </div>
         </header>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar por código, descrição, comunicador…"
+              className="h-9 w-72 rounded-lg pl-8 text-xs" />
+          </div>
+          <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+            <SelectTrigger className="h-9 w-40 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["Todos", "Interna", "Externa"].map((t) => <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {proximas.length > 0 && (
+          <div className="flex items-start gap-3 rounded-xl border border-[color:var(--warning)]/40 bg-[color:var(--warning)]/10 px-4 py-3">
+            <Bell className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--severity-high)]" />
+            <div className="text-xs text-foreground/85">
+              <strong>{proximas.length}</strong> comunicação(ões) com data programada próxima:{" "}
+              {proximas.map((c) => `${c.id} (${diasAte(c.quando) === 0 ? "hoje" : `em ${diasAte(c.quando)} dia(s)`})`).join(", ")}.
+              <div className="text-[11px] text-muted-foreground">O envio é automático por e-mail e pelo sistema na data e hora programadas.</div>
+            </div>
+          </div>
+        )}
 
         {naoLidas.length > 0 && (
           <div className="flex items-center gap-3 rounded-xl border border-brand/30 bg-brand-soft px-4 py-3">
