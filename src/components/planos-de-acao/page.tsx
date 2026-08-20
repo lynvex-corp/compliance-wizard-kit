@@ -126,6 +126,8 @@ const origemIcon: Record<PlanoOrigemTipo, typeof AlertTriangle> = {
   "Reclamação de Cliente": MessageSquare,
   "Melhoria Contínua": Sparkles,
   "Estratégia": Target,
+  "Indicador": Target,
+  "Avaliação de Desempenho": UsersIcon,
 };
 
 const origemBadge: Record<PlanoOrigemTipo, string> = {
@@ -137,6 +139,8 @@ const origemBadge: Record<PlanoOrigemTipo, string> = {
   "Reclamação de Cliente": "bg-[color:var(--chart-3)]/15 text-[color:var(--chart-3)] border-[color:var(--chart-3)]/30",
   "Melhoria Contínua": "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
   "Estratégia": "bg-brand-soft text-brand border-brand/20",
+  "Indicador": "bg-[color:var(--chart-2)]/15 text-[color:var(--chart-2)] border-[color:var(--chart-2)]/30",
+  "Avaliação de Desempenho": "bg-[color:var(--chart-4)]/15 text-[color:var(--chart-4)] border-[color:var(--chart-4)]/30",
 };
 
 function formatDate(iso: string) {
