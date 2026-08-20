@@ -313,7 +313,7 @@ export const navGroups: NavGroup[] = [
       { label: "Partes Interessadas", to: "/partes-interessadas", icon: "Handshake" },
       { label: "Escopo do Sistema", to: "/escopo-sistema", icon: "Target" },
       { label: "Riscos e Oportunidades", to: "/riscos", icon: "ShieldAlert" },
-      { label: "Mudanças no SG", to: "/mudancas-sg", icon: "Shuffle" },
+      { label: "Mudanças e Melhoria", to: "/mudancas-sg", icon: "Shuffle" },
     ],
   },
   {
@@ -323,6 +323,7 @@ export const navGroups: NavGroup[] = [
       { label: "Processos e Fluxos", to: "/processos", icon: "GitBranch" },
       { label: "Documentos", to: "/documentos", icon: "FileText" },
       { label: "Suprimentos · Fornecedores", to: "/aquisicao", icon: "Truck" },
+      { label: "Produto ou Serviço", to: "/produto-servico", icon: "Package" },
       { label: "Produção e Serviços", to: "/producao", icon: "Factory", externo: true },
       { label: "Comunicações", to: "/comunicacoes", icon: "MessageSquare" },
     ],
@@ -1206,4 +1207,20 @@ export const conquistasSetor: ConquistaSetor[] = [
     diasAtiva: 62,
     ativa: true,
   },
+];
+
+export interface RankingMelhoria {
+  id: string;
+  nome: string;
+  iniciais: string;
+  setor: string;
+  contagens: Record<ReconhecimentoPeriodo, number>;
+}
+
+export const reconhecimentoMelhorias: RankingMelhoria[] = [
+  { id: "melh-1", nome: "Rafael Costa", iniciais: "RC", setor: "Engenharia", contagens: { "Este mês": 8, "Este trimestre": 21, "Este ano": 63 } },
+  { id: "melh-2", nome: "Beatriz Souza", iniciais: "BS", setor: "Qualidade", contagens: { "Este mês": 7, "Este trimestre": 18, "Este ano": 54 } },
+  { id: "melh-3", nome: "Marcos Vieira", iniciais: "MV", setor: "Logística", contagens: { "Este mês": 5, "Este trimestre": 16, "Este ano": 41 } },
+  { id: "melh-4", nome: "Ana Ribeiro", iniciais: "AR", setor: "Qualidade", contagens: { "Este mês": 4, "Este trimestre": 12, "Este ano": 37 } },
+  { id: "melh-5", nome: "Carlos Mendes", iniciais: "CM", setor: "Produção", contagens: { "Este mês": 3, "Este trimestre": 10, "Este ano": 28 } },
 ];

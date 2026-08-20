@@ -180,7 +180,7 @@ export function ProdutoServicoPage() {
 
   const registrarNC = (d: Demanda) => {
     toast.info(`Abrindo Nova NC vinculada a ${d.id}`, { description: `Origem "Produto ou Serviço" · ${d.cliente}` });
-    setTimeout(() => navigate({ to: "/nao-conformidades/nova", search: { origem: "Produto ou Serviço", demanda: d.id } as never }), 400);
+    setTimeout(() => navigate({ to: "/nao-conformidades/nova" }), 400);
   };
 
   const salvarComparacao = () => {
