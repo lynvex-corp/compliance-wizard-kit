@@ -130,6 +130,12 @@ function dentroExpediente(hora: string) {
   return hora >= EXPEDIENTE.inicio && hora <= EXPEDIENTE.fim;
 }
 
+// Alerta de proximidade quando a comunicação tem data definida.
+function diasAte(quando: string) {
+  const d = new Date(quando).getTime() - Date.now();
+  return Math.ceil(d / 86400000);
+}
+
 function PublicoPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const toggle = (p: string) => {
     if (p === "Todos") return onChange(value.includes("Todos") ? [] : ["Todos"]);
