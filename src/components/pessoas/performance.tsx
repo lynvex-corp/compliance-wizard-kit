@@ -300,7 +300,7 @@ export function PerformancePage() {
               </Badge>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ciclos, formulário CHA (Conhecimento, Habilidades e Atitudes), matriz de decisão e devolutiva.
+              Ciclos, Método CHA (Conhecimento, Habilidades e Atitudes), Matriz de Apoio à Decisão e devolutiva.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -311,7 +311,25 @@ export function PerformancePage() {
                 {PERFIS.map((p) => <SelectItem key={p} value={p} className="text-xs">{p}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button className="gap-2 bg-brand text-brand-foreground hover:bg-brand/90" onClick={() => setNovaOpen(true)}>
+            {perfil !== "Líder" && perfil !== "Diretoria" && (
+              <label className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/20 px-2 py-1.5 text-[11px] text-muted-foreground">
+                <Switch checked={acumulaLider} onCheckedChange={setAcumulaLider} />
+                Acumula perfil de Líder
+              </label>
+            )}
+            {ehLider && (
+              <Select value={liderAtual} onValueChange={setLiderAtual}>
+                <SelectTrigger className="h-9 w-[170px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {LIDERES.map((l) => <SelectItem key={l} value={l} className="text-xs">{l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+            <Button
+              className="gap-2 bg-brand text-brand-foreground hover:bg-brand/90"
+              disabled={!temAcesso}
+              onClick={() => setNovaOpen(true)}
+            >
               <Plus className="h-4 w-4" /> Nova avaliação
             </Button>
           </div>
@@ -321,9 +339,11 @@ export function PerformancePage() {
           <CardContent className="flex items-start gap-2 p-3 text-xs text-muted-foreground">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
             <span>
-              <strong className="text-foreground">Confidencialidade:</strong> cada avaliação é visível apenas para o
-              avaliador que a realizou. Nem outros avaliadores nem o avaliado têm acesso ao formulário — o avaliado só
-              enxerga a devolutiva quando ela é explicitamente compartilhada.
+              <strong className="text-foreground">Confidencialidade e acesso:</strong> cada perfil Líder vê apenas as
+              avaliações dos seus próprios avaliados. Somente a Diretoria vê todas as avaliações — e por isso é o único
+              perfil com a coluna <em>Avaliador</em>. O Gestor da Qualidade não tem acesso às avaliações, a menos que
+              também acumule o perfil de Líder. Ao avaliado são compartilhados os itens e notas do CHA, a nota geral e o
+              registro da devolutiva.
             </span>
           </CardContent>
         </Card>
@@ -359,6 +379,15 @@ export function PerformancePage() {
               ))}
             </div>
 
+            <div className="relative max-w-md">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Buscar por empregado, ciclo, ano, avaliador ou código…"
+                className="h-9 pl-9 text-xs"
+              />
+            </div>
             <Card className="rounded-xl">
               <CardContent className="p-0">
                 <Table>
@@ -366,6 +395,7 @@ export function PerformancePage() {
                     <TableRow>
                       <TableHead>Avaliação</TableHead>
                       <TableHead>Empregado</TableHead>
+                      {ehDiretoria && <TableHead>Avaliador</TableHead>}
                       <TableHead>Ciclo</TableHead>
                       <TableHead className="text-center">Média geral</TableHead>
                       <TableHead>Quadrante</TableHead>
@@ -385,6 +415,9 @@ export function PerformancePage() {
                             <div className="text-sm font-medium">{a.empregado}</div>
                             <div className="text-[11px] text-muted-foreground">{CARGOS[a.empregado] ?? "—"}</div>
                           </TableCell>
+                          {ehDiretoria && (
+                            <TableCell className="text-sm text-muted-foreground">{a.avaliador}</TableCell>
+                          )}
                           <TableCell className="text-sm text-muted-foreground">{a.ciclo}</TableCell>
                           <TableCell className="text-center">
                             <span className={cn("text-sm font-bold", m >= metaMinima ? "text-[color:var(--success)]" : "text-[color:var(--severity-critical)]")}>
@@ -410,8 +443,10 @@ export function PerformancePage() {
                     })}
                     {minhas.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
-                          Nenhuma avaliação registrada por este perfil. Avaliações de outros avaliadores não são exibidas.
+                        <TableCell colSpan={ehDiretoria ? 8 : 7} className="py-10 text-center text-sm text-muted-foreground">
+                          {temAcesso
+                            ? "Nenhuma avaliação encontrada para este avaliador ou termo de busca."
+                            : "Seu perfil não tem acesso às avaliações. O acesso é exclusivo da Diretoria e dos perfis Líder."}
                         </TableCell>
                       </TableRow>
                     )}
@@ -483,7 +518,9 @@ export function PerformancePage() {
                     <div className="mb-3 flex items-center gap-2">
                       <CalendarClock className="h-4 w-4 text-brand" />
                       <h2 className="text-sm font-semibold">Programação do ciclo — 2026</h2>
-                      <span className="text-[11px] text-muted-foreground">Clique no mês para programar ou remover.</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        Clique no mês para agendar quem será avaliado — o avaliado é notificado assim que o avaliador programa a avaliação.
+                      </span>
                     </div>
                     <div className="overflow-x-auto">
                       <div className="grid min-w-[1100px] grid-cols-12 gap-2">
@@ -492,11 +529,14 @@ export function PerformancePage() {
                           return (
                             <button
                               key={m}
-                              onClick={() => toggleMes(i + 1)}
+                              onClick={() => agendarNoMes(i + 1)}
                               className="border-l border-dashed border-border pl-2 text-left"
                             >
                               <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{m}</div>
                               <div className="flex min-h-[110px] flex-col gap-2">
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+                                  <CalendarPlus className="h-3 w-3" /> agendar
+                                </div>
                                 {itens.map((t) => (
                                   <div key={t} className="rounded-lg border border-brand/30 bg-brand-soft p-2 text-[11px] font-medium text-brand">
                                     {t}
