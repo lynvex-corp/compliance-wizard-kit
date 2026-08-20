@@ -978,7 +978,7 @@ export function DocumentosPage() {
     const marcar = (arr: Doc[]) => arr.map((d) => d.codigo === obsoletar.codigo
       ? {
           ...d, status: "Obsoleto" as Status,
-          historico: [{ rev: d.rev, data: "17/08/2026", autor: perfil, mudanca: "Documento tornado obsoleto — retirado de uso e mantido no histórico." }, ...d.historico],
+          historico: [{ rev: d.rev, data: "17/08/2026", autor: perfil, mudanca: "Documento inutilizado ou revogado — retirado de uso e mantido no histórico." }, ...d.historico],
         }
       : d);
     setInternos(marcar);
