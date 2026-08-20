@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Check, Circle, Plus, Shuffle, Users, Package, Scale, ThumbsUp, ThumbsDown, CalendarClock } Lightbulb } from "lucide-react";
+import { Check, Circle, Plus, Shuffle, Users, Package, Scale, ThumbsUp, ThumbsDown, CalendarClock, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
