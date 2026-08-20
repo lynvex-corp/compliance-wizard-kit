@@ -1123,7 +1123,7 @@ export function DocumentosPage() {
           <AlertDialogFooter>
             <AlertDialogCancel className="text-xs">Cancelar</AlertDialogCancel>
             <AlertDialogAction className="bg-brand text-white hover:bg-brand/90" onClick={confirmarObsoleto}>
-              Confirmar obsolescência
+              Confirmar inutilização/revogação
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
