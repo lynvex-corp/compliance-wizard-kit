@@ -396,7 +396,9 @@ export type PlanoOrigemTipo =
   | "Análise Crítica"
   | "Reclamação de Cliente"
   | "Melhoria Contínua"
-  | "Estratégia";
+  | "Estratégia"
+  | "Indicador"
+  | "Avaliação de Desempenho";
 
 export type PDCA = "Plan" | "Do" | "Check" | "Act";
 
