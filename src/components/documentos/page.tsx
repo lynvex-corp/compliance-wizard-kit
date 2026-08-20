@@ -967,6 +967,8 @@ export function DocumentosPage() {
   const [histDoc, setHistDoc] = useState<Doc | null>(null);
   const [histOpen, setHistOpen] = useState(false);
   const [obsoletar, setObsoletar] = useState<Doc | null>(null);
+  const [atas, setAtas] = useState<Ata[]>(ATAS_INICIAIS);
+  const [listas, setListas] = useState<ListaFreq[]>(LISTAS_INICIAIS);
 
   const filt = (arr: Doc[]) => arr.filter((d) => (d.codigo + d.titulo).toLowerCase().includes(busca.toLowerCase()));
   const abrirHistorico = (d: Doc) => { setHistDoc(d); setHistOpen(true); };
@@ -981,7 +983,7 @@ export function DocumentosPage() {
       : d);
     setInternos(marcar);
     setExternos(marcar);
-    toast.success(`${obsoletar.codigo} tornado obsoleto e mantido no histórico.`);
+    toast.success(`${obsoletar.codigo} inutilizado/revogado e mantido no histórico.`);
     setObsoletar(null);
   };
 
@@ -1021,7 +1023,22 @@ export function DocumentosPage() {
           </Card>
         )}
 
+        <PoliticaQualidadeCard perfil={perfil} />
+
         <PermissoesCard />
+
+        <RegistrosSection
+          atas={atas}
+          listas={listas}
+          onAta={(a) => setAtas((p) => [a, ...p])}
+          onLista={(l) => setListas((p) => [l, ...p])}
+          onAssinar={(id, nome) => {
+            setListas((p) => p.map((l) => l.id === id
+              ? { ...l, participantes: l.participantes.map((x) => (x.nome === nome ? { ...x, confirmado: true } : x)) }
+              : l));
+            toast.success(`Presença de ${nome} confirmada.`);
+          }}
+        />
 
         <Tabs defaultValue="int">
           <TabsList className="rounded-lg bg-muted/60 p-1">
@@ -1097,7 +1114,7 @@ export function DocumentosPage() {
       <AlertDialog open={!!obsoletar} onOpenChange={(v) => !v && setObsoletar(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base">Tornar o documento obsoleto?</AlertDialogTitle>
+            <AlertDialogTitle className="text-base">Inutilizar ou revogar o documento?</AlertDialogTitle>
             <AlertDialogDescription className="text-xs">
               {obsoletar?.codigo} — {obsoletar?.titulo}. O documento sai de uso imediatamente e deixa de ser aplicável
               às atividades, mas <strong>permanece no histórico</strong> para fins de rastreabilidade e auditoria. A ação é registrada com autor e data.
