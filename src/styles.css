@@ -178,3 +178,17 @@
     color: var(--color-foreground);
   }
 }
+
+@keyframes jawda-confetti-fall {
+  0% { transform: translate3d(0, -10px, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(var(--jawda-dx, 0px), 320px, 0) rotate(720deg); opacity: 0; }
+}
+
+.jawda-confetti-piece {
+  position: absolute;
+  top: 0;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  animation: jawda-confetti-fall 1.4s ease-in forwards;
+}
