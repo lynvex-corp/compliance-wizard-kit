@@ -22,15 +22,17 @@ import {
 } from "@/components/ui/table";
 import {
   CalendarClock, Grid3x3, Lock, Plus, Settings2, ShieldCheck, Star, Target,
-  MessageSquare, Save, Check, Users,
+  MessageSquare, Save, Check, Users, Search, CalendarPlus,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 /* --------------------------------- dados --------------------------------- */
 
-const PERFIS = ["Gestor da Qualidade", "Alta Direção", "Gestor de Área", "Colaborador"];
-const PERFIS_CONFIG = ["Gestor da Qualidade", "Alta Direção"];
+const PERFIS = ["Diretoria", "Gestor da Qualidade", "Líder", "Colaborador"];
+const PERFIS_CONFIG = ["Diretoria"];
+const LIDERES = ["Diego Almeida", "Carla Menezes", "Fernanda Lima"];
 const PERIODICIDADES = ["Anual", "Bienal", "Semestral", "Trimestral"];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
@@ -74,7 +76,7 @@ const BLOCOS = [
   {
     nome: "Atitudes",
     perguntas: [
-      "Possui atitudes condizentes com a cultura e os valores da empresa?",
+      "Possui atitudes condizentes com a cultura e política da qualidade, bem como com os valores da empresa?",
       "É engajado?",
       "Busca a melhoria contínua do seu processo?",
       "Colabora com colegas e outras áreas?",
@@ -83,11 +85,11 @@ const BLOCOS = [
   },
 ] as const;
 
-const POTENCIAIS = ["Baixo", "Médio", "Alto"] as const;
+const POTENCIAIS = ["Alto Potencial", "Cultura", "Técnico"] as const;
 type Potencial = (typeof POTENCIAIS)[number];
 
 const MATRIZ: { label: string; acao: string }[][] = [
-  // linha 0 = potencial Alto
+  // linha 0 = Alto Potencial
   [
     { label: "Enigma", acao: "Acompanhar de perto — potencial alto sem entrega" },
     { label: "Forte contribuidor", acao: "Desenvolver para assumir novos desafios" },
@@ -124,7 +126,6 @@ interface Avaliacao {
   notas: Notas;
   detalhes: Detalhes;
   potencial: Potencial;
-  planoDesenvolvimento: string;
   registroDevolutiva: string;
   dataDevolutiva: string;
   devolutivaCompartilhada: boolean;
@@ -151,12 +152,11 @@ const AVALIACOES_INICIAIS: Avaliacao[] = [
   {
     id: "AV-2026-001",
     empregado: "Fernanda Lima",
-    avaliador: "Gestor da Qualidade",
+    avaliador: "Carla Menezes",
     ciclo: "Ciclo 2026.1",
     notas: notasIniciais([9, 9, 10, 9, 8, 9, 8, 9, 9, 8, 10, 9, 9, 9, 10]),
     detalhes: {},
-    potencial: "Alto",
-    planoDesenvolvimento: "Preparar para liderar auditorias internas do próximo ciclo.",
+    potencial: "Alto Potencial",
     registroDevolutiva: "Conversa realizada; alinhado plano de sucessão técnica.",
     dataDevolutiva: "2026-04-18",
     devolutivaCompartilhada: true,
@@ -165,12 +165,11 @@ const AVALIACOES_INICIAIS: Avaliacao[] = [
   {
     id: "AV-2026-002",
     empregado: "Ana Ribeiro",
-    avaliador: "Gestor da Qualidade",
+    avaliador: "Diego Almeida",
     ciclo: "Ciclo 2026.1",
     notas: notasIniciais([6, 8, 6, 6, 7, 6, 6, 5, 7, 7, 8, 8, 7, 8, 6]),
     detalhes: {},
-    potencial: "Alto",
-    planoDesenvolvimento: "",
+    potencial: "Alto Potencial",
     registroDevolutiva: "",
     dataDevolutiva: "",
     devolutivaCompartilhada: false,
@@ -179,12 +178,11 @@ const AVALIACOES_INICIAIS: Avaliacao[] = [
   {
     id: "AV-2026-003",
     empregado: "Marcos Vinícius",
-    avaliador: "Gestor de Área",
+    avaliador: "Diego Almeida",
     ciclo: "Ciclo 2026.1",
     notas: notasIniciais([7, 6, 6, 7, 6, 7, 7, 6, 6, 6, 7, 7, 6, 7, 7]),
     detalhes: {},
-    potencial: "Médio",
-    planoDesenvolvimento: "",
+    potencial: "Cultura",
     registroDevolutiva: "",
     dataDevolutiva: "",
     devolutivaCompartilhada: false,
@@ -206,7 +204,7 @@ function faixaDesempenho(media: number, meta: number): 0 | 1 | 2 {
   if (media < meta + 1.5) return 1;
   return 2;
 }
-const linhaPotencial = (p: Potencial) => (p === "Alto" ? 0 : p === "Médio" ? 1 : 2);
+const linhaPotencial = (p: Potencial) => (p === "Alto Potencial" ? 0 : p === "Cultura" ? 1 : 2);
 
 /* -------------------------------- componente ------------------------------ */
 
@@ -247,9 +245,8 @@ export function PerformancePage() {
       ciclo: nova.ciclo,
       notas: notasIniciais(),
       detalhes: {},
-      potencial: "Médio",
-      planoDesenvolvimento: "",
-      registroDevolutiva: "",
+      potencial: "Cultura",
+        registroDevolutiva: "",
       dataDevolutiva: "",
       devolutivaCompartilhada: false,
       concluida: false,
