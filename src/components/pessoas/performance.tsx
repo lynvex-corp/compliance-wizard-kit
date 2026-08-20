@@ -659,7 +659,7 @@ function FormularioAvaliacao({
         <DialogTitle className="flex items-center gap-2">
           <Star className="h-4 w-4 text-brand" /> Avaliação de desempenho — {a.empregado}
         </DialogTitle>
-        <DialogDescription>Metodologia CHA · escala de 1 a 10 · meta mínima {meta}.</DialogDescription>
+        <DialogDescription>Método CHA · escala de 1 a 10 · meta mínima {meta}.</DialogDescription>
       </DialogHeader>
 
       <div className="grid gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 md:grid-cols-3">
@@ -751,18 +751,18 @@ function FormularioAvaliacao({
         </CardContent>
       </Card>
 
-      {/* matriz de decisão */}
+      {/* Matriz de Apoio à Decisão */}
       <Card className="rounded-xl">
         <CardContent className="space-y-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Grid3x3 className="h-4 w-4 text-brand" />
-              <h3 className="text-sm font-semibold">Matriz de decisão — desempenho × potencial</h3>
+              <h3 className="text-sm font-semibold">Matriz de Apoio à Decisão — Perfil Atual: Desempenho x Cultura</h3>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Potencial avaliado:</span>
+              <span className="text-xs text-muted-foreground">Dimensão predominante:</span>
               <Select value={a.potencial} onValueChange={(v) => onPatch({ potencial: v as Potencial })}>
-                <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {POTENCIAIS.map((p) => <SelectItem key={p} value={p} className="text-xs">{p}</SelectItem>)}
                 </SelectContent>
@@ -770,8 +770,18 @@ function FormularioAvaliacao({
             </div>
           </div>
           <div className="flex">
-            <div className="flex w-6 items-center justify-center">
-              <span className="-rotate-90 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Potencial →</span>
+            <div className="mr-2 flex w-[86px] shrink-0 flex-col gap-2">
+              {POTENCIAIS.map((d) => (
+                <div
+                  key={d}
+                  className={cn(
+                    "flex min-h-[92px] items-center justify-end rounded-lg pr-2 text-right text-[10px] font-semibold uppercase leading-tight tracking-wide",
+                    d === a.potencial ? "text-brand" : "text-muted-foreground",
+                  )}
+                >
+                  {d}
+                </div>
+              ))}
             </div>
             <div className="flex-1">
               <div className="grid grid-cols-3 gap-2">
@@ -812,24 +822,29 @@ function FormularioAvaliacao({
             <MessageSquare className="h-4 w-4 text-brand" />
             <h3 className="text-sm font-semibold">Devolutiva</h3>
           </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">Plano de ação de desenvolvimento</Label>
-              <Button
-                size="sm" variant="outline" className="h-7 gap-1.5 rounded-lg text-[11px]"
-                onClick={() => toast.success("Plano de ação gerado", {
-                  description: `Plano de desenvolvimento vinculado à avaliação ${a.id} de ${a.empregado}.`,
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-brand/25 bg-brand-soft/30 p-3">
+            <div className="text-[11px] text-muted-foreground">
+              O plano de ação é elaborado em comum acordo entre avaliador e avaliado, após a devolutiva, e fica editável
+              pelos dois perfis.
+            </div>
+            <Button
+              asChild
+              size="sm" variant="outline" className="h-7 gap-1.5 rounded-lg text-[11px]"
+            >
+              <Link
+                to="/planos-de-acao/novo"
+                search={{
+                  origem: "Avaliação de Desempenho",
+                  vinculado: a.id,
+                  problema: `Desenvolvimento de ${a.empregado} — avaliação ${a.id} (média ${geral.toFixed(1)}).`,
+                }}
+                onClick={() => toast.success("Plano de ação iniciado", {
+                  description: `Vinculado à avaliação ${a.id} de ${a.empregado}.`,
                 })}
               >
                 <Plus className="h-3.5 w-3.5" /> Gerar Plano de Ação
-              </Button>
-            </div>
-            <Textarea
-              value={a.planoDesenvolvimento}
-              onChange={(e) => onPatch({ planoDesenvolvimento: e.target.value })}
-              placeholder="Ações de desenvolvimento acordadas com o avaliado…"
-              className="min-h-[70px] text-xs"
-            />
+              </Link>
+            </Button>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Registro da devolutiva</Label>
@@ -847,8 +862,8 @@ function FormularioAvaliacao({
             </div>
             <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3">
               <div>
-                <div className="text-xs font-medium">Compartilhar devolutiva com o avaliado</div>
-                <div className="text-[10px] text-muted-foreground">As notas e o formulário permanecem restritos ao avaliador.</div>
+                <div className="text-xs font-medium">Compartilhar com o avaliado</div>
+                <div className="text-[10px] text-muted-foreground">Compartilha os itens e notas do CHA, a nota geral e o registro da devolutiva.</div>
               </div>
               <Switch checked={a.devolutivaCompartilhada} onCheckedChange={(v) => onPatch({ devolutivaCompartilhada: v })} />
             </div>
