@@ -209,8 +209,14 @@ const linhaPotencial = (p: Potencial) => (p === "Alto Potencial" ? 0 : p === "Cu
 /* -------------------------------- componente ------------------------------ */
 
 export function PerformancePage() {
-  const [perfil, setPerfil] = useState("Gestor da Qualidade");
+  const [perfil, setPerfil] = useState("Líder");
+  const [acumulaLider, setAcumulaLider] = useState(false);
+  const [liderAtual, setLiderAtual] = useState(LIDERES[0]);
+  const [busca, setBusca] = useState("");
   const podeConfigurar = PERFIS_CONFIG.includes(perfil);
+  const ehDiretoria = perfil === "Diretoria";
+  const ehLider = perfil === "Líder" || acumulaLider;
+  const temAcesso = ehDiretoria || ehLider;
 
   const [periodicidade, setPeriodicidade] = useState("Anual");
   const [metaMinima, setMetaMinima] = useState(7);
@@ -224,13 +230,22 @@ export function PerformancePage() {
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>(AVALIACOES_INICIAIS);
   const [abertaId, setAbertaId] = useState<string | null>(null);
   const [novaOpen, setNovaOpen] = useState(false);
-  const [nova, setNova] = useState({ empregado: EMPREGADOS[0], ciclo: CICLOS[0].nome });
+  const [nova, setNova] = useState({ empregado: EMPREGADOS[0], ciclo: CICLOS[0].nome, mes: 0, agenda: true });
 
-  // Governança: só vê o que o próprio perfil avaliou
-  const minhas = useMemo(
-    () => avaliacoes.filter((a) => a.avaliador === perfil),
-    [avaliacoes, perfil],
-  );
+  // Governança: a Diretoria vê tudo; o Líder vê apenas seus avaliados
+  const minhas = useMemo(() => {
+    const base = ehDiretoria
+      ? avaliacoes
+      : ehLider
+        ? avaliacoes.filter((a) => a.avaliador === liderAtual)
+        : [];
+    const t = busca.trim().toLowerCase();
+    if (!t) return base;
+    return base.filter((a) =>
+      [a.id, a.empregado, a.ciclo, a.avaliador, CARGOS[a.empregado] ?? ""]
+        .join(" ").toLowerCase().includes(t),
+    );
+  }, [avaliacoes, ehDiretoria, ehLider, liderAtual, busca]);
   const aberta = avaliacoes.find((a) => a.id === abertaId) ?? null;
 
   const patch = (id: string, p: Partial<Avaliacao>) =>
@@ -241,7 +256,7 @@ export function PerformancePage() {
     const nv: Avaliacao = {
       id,
       empregado: nova.empregado,
-      avaliador: perfil,
+      avaliador: ehLider ? liderAtual : "Diretoria",
       ciclo: nova.ciclo,
       notas: notasIniciais(),
       detalhes: {},
@@ -253,17 +268,24 @@ export function PerformancePage() {
     };
     setAvaliacoes((p) => [nv, ...p]);
     setNovaOpen(false);
-    setAbertaId(id);
-    if (notificar) toast.info(`${nova.empregado} foi notificado sobre a abertura da avaliação.`);
+    if (nova.mes) {
+      setProgramacao((prev) => ({
+        ...prev,
+        [nova.mes]: [...(prev[nova.mes] ?? []), `${nova.empregado} — ${nova.ciclo}`],
+      }));
+    }
+    if (notificar) {
+      toast.info(`${nova.empregado} foi notificado`, {
+        description: `Avaliação programada${nova.mes ? ` para ${MESES[nova.mes - 1]}` : ""}${nova.agenda ? " e vinculada à agenda do avaliador." : "."}`,
+      });
+    }
+    setNova((n) => ({ ...n, mes: 0 }));
   }
 
-  function toggleMes(mes: number) {
-    if (!podeConfigurar) return;
-    setProgramacao((prev) => {
-      const atual = prev[mes] ?? [];
-      if (atual.length) { const c = { ...prev }; delete c[mes]; return c; }
-      return { ...prev, [mes]: ["Ciclo — avaliação de desempenho"] };
-    });
+  function agendarNoMes(mes: number) {
+    if (!temAcesso) return;
+    setNova((n) => ({ ...n, mes }));
+    setNovaOpen(true);
   }
 
   return (
