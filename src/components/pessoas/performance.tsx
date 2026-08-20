@@ -458,19 +458,20 @@ export function PerformancePage() {
 
           {/* --------------------------- ciclo ---------------------------- */}
           <TabsContent value="ciclo" className="mt-4 space-y-4">
-            {!podeConfigurar ? (
+            {!temAcesso ? (
               <Card className="rounded-xl">
                 <CardContent className="flex flex-col items-center gap-2 p-10 text-center">
                   <ShieldCheck className="h-8 w-8 text-muted-foreground" />
                   <div className="text-sm font-semibold">Configuração restrita</div>
                   <p className="max-w-md text-xs text-muted-foreground">
-                    A configuração do ciclo é permitida apenas para Gestor da Qualidade e Alta Direção.
+                    Os parâmetros do ciclo são definidos pela Diretoria e a programação é feita pelos perfis Líder.
                     Seu perfil atual é <strong>{perfil}</strong>.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <>
+                {podeConfigurar && (
                 <Card className="rounded-xl">
                   <CardContent className="space-y-4 p-5">
                     <div className="flex items-center gap-2">
@@ -503,15 +504,16 @@ export function PerformancePage() {
                     <Separator />
                     <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3">
                       <div>
-                        <div className="text-sm font-medium">Notificar o empregado avaliado quando o ciclo abrir</div>
+                        <div className="text-sm font-medium">Notificar o avaliado ao programar a avaliação</div>
                         <div className="text-[11px] text-muted-foreground">
-                          Envia aviso automático no início do ciclo, sem expor o conteúdo da avaliação.
+                          O aviso é enviado assim que o avaliador agenda a avaliação, sem expor o conteúdo do formulário.
                         </div>
                       </div>
                       <Switch checked={notificar} onCheckedChange={setNotificar} />
                     </div>
                   </CardContent>
                 </Card>
+                )}
 
                 <Card className="rounded-xl">
                   <CardContent className="p-5">
@@ -561,7 +563,9 @@ export function PerformancePage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Nova avaliação</DialogTitle>
-            <DialogDescription>O avaliador é preenchido automaticamente pelo perfil logado.</DialogDescription>
+            <DialogDescription>
+              O avaliador é preenchido automaticamente pelo perfil logado. O avaliado é notificado assim que a avaliação é programada.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
@@ -584,12 +588,34 @@ export function PerformancePage() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Avaliador</Label>
-              <Input value={perfil} readOnly className="h-9 bg-muted/40 text-xs" />
+              <Input value={ehLider ? liderAtual : "Diretoria"} readOnly className="h-9 bg-muted/40 text-xs" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Mês programado</Label>
+              <Select
+                value={String(nova.mes)}
+                onValueChange={(v) => setNova((n) => ({ ...n, mes: Number(v) }))}
+              >
+                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0" className="text-xs">Sem data definida</SelectItem>
+                  {MESES.map((m, i) => (
+                    <SelectItem key={m} value={String(i + 1)} className="text-xs">{m}/2026</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3">
+              <div>
+                <div className="text-xs font-medium">Vincular à agenda automaticamente</div>
+                <div className="text-[10px] text-muted-foreground">Cria o compromisso na agenda do avaliador e do avaliado.</div>
+              </div>
+              <Switch checked={nova.agenda} onCheckedChange={(v) => setNova((n) => ({ ...n, agenda: v }))} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNovaOpen(false)}>Cancelar</Button>
-            <Button className="bg-brand text-brand-foreground hover:bg-brand/90" onClick={criar}>Iniciar avaliação</Button>
+            <Button className="bg-brand text-brand-foreground hover:bg-brand/90" onClick={criar}>Programar avaliação</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
