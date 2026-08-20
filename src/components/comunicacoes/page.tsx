@@ -19,7 +19,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  AlertTriangle, BellRing, CheckCircle2, Clock, Eye, Megaphone, Plus, Send, Users,
+  AlertTriangle, Bell, BellRing, CheckCircle2, Clock, Eye, Megaphone, Plus, Search, Send, Users, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -36,11 +36,11 @@ const FORMAS = [
   "Reunião de análise crítica",
   "Reunião de rotina",
 ];
-const RESPONSAVEIS = ["Alta Direção", "Comercial", "Gestor da Qualidade", "Recursos Humanos"];
+const COMUNICADORES_LISTA = ["Alta Direção", "Colaborador", "Comercial", "Gestor da Qualidade", "Gestor de Área", "Recursos Humanos"];
 const TIPOS = ["Externa", "Interna"];
 const PERFIS_ALVO = ["Alta Direção", "Comercial", "Colaborador", "Gestor da Qualidade", "Gestor de Área", "Recursos Humanos", "Todos"];
-const PERFIS_SESSAO = ["Alta Direção", "Colaborador", "Comercial", "Gestor da Qualidade", "Recursos Humanos"];
-const COMUNICADORES = ["Alta Direção", "Comercial", "Gestor da Qualidade", "Recursos Humanos"];
+const PERFIS_SESSAO = ["Alta Direção", "Colaborador", "Comercial", "Gestor da Qualidade", "Gestor de Área", "Recursos Humanos"];
+
 
 const EXPEDIENTE = { inicio: "08:00", fim: "18:00" };
 
@@ -65,6 +65,9 @@ type Comunicacao = {
   quando: string;
   publico: string[];
   leituras: Leitura[];
+  imediata?: boolean;
+  nomeExterno?: string;
+  emails?: string[];
 };
 
 const PROCESSOS_INICIAIS: ProcessoCom[] = [
@@ -78,9 +81,15 @@ const PROCESSOS_INICIAIS: ProcessoCom[] = [
   { id: "PC-008", tipo: "Interna", descricao: "Avisos urgentes de parada de linha e mudança de escala.", forma: "Aplicativo de mensagem", responsavel: "Recursos Humanos", quando: "", sobDemanda: true, publico: ["Todos"] },
 ];
 
+function proximoCodigo(lista: Comunicacao[], tipo: string) {
+  const prefixo = tipo === "Externa" ? "COM_EXT" : "COM_INT";
+  const n = lista.filter((c) => c.id.startsWith(prefixo)).length + 1;
+  return `${prefixo}_${String(n).padStart(3, "0")}`;
+}
+
 const COMUNICACOES_INICIAIS: Comunicacao[] = [
   {
-    id: "CM-2026-014", tipo: "Interna",
+    id: "COM_INT_001", tipo: "Interna",
     descricao: "Revisão 04 da Política da Qualidade publicada. Leitura obrigatória antes do dia 20/08.",
     responsavel: "Gestor da Qualidade", quando: "2026-08-14T09:00",
     publico: ["Todos"],
@@ -92,7 +101,7 @@ const COMUNICACOES_INICIAIS: Comunicacao[] = [
     ],
   },
   {
-    id: "CM-2026-015", tipo: "Interna",
+    id: "COM_INT_002", tipo: "Interna",
     descricao: "Resultado da auditoria interna do 2º semestre: 3 NCs registradas no módulo de Não Conformidades.",
     responsavel: "Gestor da Qualidade", quando: "2026-08-17T14:30",
     publico: ["Alta Direção", "Gestor de Área", "Colaborador"],
@@ -102,9 +111,10 @@ const COMUNICACOES_INICIAIS: Comunicacao[] = [
     ],
   },
   {
-    id: "CM-2026-016", tipo: "Externa",
+    id: "COM_EXT_001", tipo: "Externa",
     descricao: "Comunicado a fornecedores sobre nova especificação de embalagem MP-2231.",
     responsavel: "Comercial", quando: "2026-08-12T10:00",
+    nomeExterno: "TecPack Embalagens", emails: ["rita@tecpack.com.br"],
     publico: ["Comercial"],
     leituras: [{ perfil: "Comercial", ciente: true, cienteEm: "12/08 10:22" }],
   },
@@ -118,6 +128,12 @@ function alcance(c: Comunicacao) {
 function dentroExpediente(hora: string) {
   if (!hora) return true;
   return hora >= EXPEDIENTE.inicio && hora <= EXPEDIENTE.fim;
+}
+
+// Alerta de proximidade quando a comunicação tem data definida.
+function diasAte(quando: string) {
+  const d = new Date(quando).getTime() - Date.now();
+  return Math.ceil(d / 86400000);
 }
 
 function PublicoPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
@@ -142,18 +158,26 @@ export function ComunicacoesPage() {
   const [perfil, setPerfil] = useState("Gestor da Qualidade");
   const [processos, setProcessos] = useState(PROCESSOS_INICIAIS);
   const [comunicacoes, setComunicacoes] = useState(COMUNICACOES_INICIAIS);
+  const [busca, setBusca] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("Todos");
 
-  const ehComunicador = COMUNICADORES.includes(perfil);
+  // Governança: todos os perfis podem comunicar e ser comunicados; o que muda é quem vê o quê.
+  const ehComunicador = true;
+
+  const casa = (c: Comunicacao) =>
+    (filtroTipo === "Todos" || c.tipo === filtroTipo) &&
+    (c.id + c.descricao + c.responsavel + (c.nomeExterno ?? "")).toLowerCase().includes(busca.toLowerCase());
 
   const recebidas = useMemo(
-    () => comunicacoes.filter((c) => c.publico.includes("Todos") || c.publico.includes(perfil)),
-    [comunicacoes, perfil],
+    () => comunicacoes.filter((c) => (c.publico.includes("Todos") || c.publico.includes(perfil)) && casa(c)),
+    [comunicacoes, perfil, busca, filtroTipo],
   );
   const enviadas = useMemo(
-    () => comunicacoes.filter((c) => c.responsavel === perfil),
-    [comunicacoes, perfil],
+    () => comunicacoes.filter((c) => c.responsavel === perfil && casa(c)),
+    [comunicacoes, perfil, busca, filtroTipo],
   );
   const naoLidas = recebidas.filter((c) => !c.leituras.find((l) => l.perfil === perfil)?.ciente);
+  const proximas = comunicacoes.filter((c) => !c.imediata && c.quando && diasAte(c.quando) >= 0 && diasAte(c.quando) <= 3);
 
   const darCiente = (id: string) => {
     const agora = new Date().toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -179,7 +203,7 @@ export function ComunicacoesPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Comunicações</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Processo de comunicação e disparo de comunicados — requisito 7.4 da ISO 9001.
+              Processo de comunicação e disparo de comunicados, com registro de ciência.
             </p>
           </div>
           <div className="flex items-end gap-3">
@@ -192,9 +216,38 @@ export function ComunicacoesPage() {
                 </SelectContent>
               </Select>
             </div>
-            {ehComunicador && <NovaComunicacaoDialog perfil={perfil} onCreate={(c) => setComunicacoes((p) => [c, ...p])} />}
+            <NovaComunicacaoDialog
+              perfil={perfil}
+              proximoId={(tipo) => proximoCodigo(comunicacoes, tipo)}
+              onCreate={(c) => setComunicacoes((p) => [c, ...p])}
+            />
           </div>
         </header>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar por código, descrição, comunicador…"
+              className="h-9 w-72 rounded-lg pl-8 text-xs" />
+          </div>
+          <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+            <SelectTrigger className="h-9 w-40 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["Todos", "Interna", "Externa"].map((t) => <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {proximas.length > 0 && (
+          <div className="flex items-start gap-3 rounded-xl border border-[color:var(--warning)]/40 bg-[color:var(--warning)]/10 px-4 py-3">
+            <Bell className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--severity-high)]" />
+            <div className="text-xs text-foreground/85">
+              <strong>{proximas.length}</strong> comunicação(ões) com data programada próxima:{" "}
+              {proximas.map((c) => `${c.id} (${diasAte(c.quando) === 0 ? "hoje" : `em ${diasAte(c.quando)} dia(s)`})`).join(", ")}.
+              <div className="text-[11px] text-muted-foreground">O envio é automático por e-mail e pelo sistema na data e hora programadas.</div>
+            </div>
+          </div>
+        )}
 
         {naoLidas.length > 0 && (
           <div className="flex items-center gap-3 rounded-xl border border-brand/30 bg-brand-soft px-4 py-3">
@@ -227,7 +280,7 @@ export function ComunicacoesPage() {
                 <p className="max-w-2xl text-xs text-muted-foreground">
                   Registro de como as comunicações acontecem na organização, incluindo as que ocorrem fora do
                   sistema (reuniões, diálogos de segurança, comunicação informal). Serve como evidência do
-                  processo de comunicação exigido pela norma.
+                  processo de comunicação da organização.
                 </p>
                 <NovoProcessoDialog onCreate={(p) => setProcessos((prev) => [...prev, p])} />
               </div>
@@ -240,7 +293,7 @@ export function ComunicacoesPage() {
                         <TableHead className="text-[11px]">Tipo</TableHead>
                         <TableHead className="text-[11px]">Descrição</TableHead>
                         <TableHead className="text-[11px]">Forma</TableHead>
-                        <TableHead className="text-[11px]">Responsável</TableHead>
+                        <TableHead className="text-[11px]">Comunicador</TableHead>
                         <TableHead className="text-[11px]">Quando</TableHead>
                         <TableHead className="text-[11px]">Quem será comunicado</TableHead>
                       </TableRow>
@@ -390,7 +443,7 @@ function QuadroEmpregado({
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="text-[11px]">Código</TableHead>
                   <TableHead className="text-[11px]">Descrição</TableHead>
-                  <TableHead className="text-[11px]">Responsável</TableHead>
+                  <TableHead className="text-[11px]">Comunicador</TableHead>
                   <TableHead className="text-[11px]">Ciência</TableHead>
                 </TableRow>
               </TableHeader>
@@ -423,7 +476,7 @@ function NovoProcessoDialog({ onCreate }: { onCreate: (p: ProcessoCom) => void }
   const [tipo, setTipo] = useState("Interna");
   const [descricao, setDescricao] = useState("");
   const [forma, setForma] = useState(FORMAS[0]);
-  const [responsavel, setResponsavel] = useState(RESPONSAVEIS[0]);
+  const [responsavel, setResponsavel] = useState(COMUNICADORES_LISTA[0]);
   const [sobDemanda, setSobDemanda] = useState(false);
   const [quando, setQuando] = useState("");
   const [publico, setPublico] = useState<string[]>([]);
@@ -466,10 +519,10 @@ function NovoProcessoDialog({ onCreate }: { onCreate: (p: ProcessoCom) => void }
               </Select>
             </div>
             <div>
-              <Label className="text-[11px]">Responsável</Label>
+              <Label className="text-[11px]">Comunicador</Label>
               <Select value={responsavel} onValueChange={setResponsavel}>
                 <SelectTrigger className="mt-1 h-9 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>{RESPONSAVEIS.map((r) => <SelectItem key={r} value={r} className="text-xs">{r}</SelectItem>)}</SelectContent>
+                <SelectContent>{COMUNICADORES_LISTA.map((r) => <SelectItem key={r} value={r} className="text-xs">{r}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
@@ -511,35 +564,54 @@ function NovoProcessoDialog({ onCreate }: { onCreate: (p: ProcessoCom) => void }
   );
 }
 
-function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate: (c: Comunicacao) => void }) {
+function NovaComunicacaoDialog({
+  perfil, proximoId, onCreate,
+}: { perfil: string; proximoId: (tipo: string) => string; onCreate: (c: Comunicacao) => void }) {
   const [open, setOpen] = useState(false);
   const [tipo, setTipo] = useState("Interna");
   const [descricao, setDescricao] = useState("");
   const [data, setData] = useState("");
   const [hora, setHora] = useState("09:00");
   const [publico, setPublico] = useState<string[]>([]);
+  const [imediata, setImediata] = useState(false);
+  const [nomeExterno, setNomeExterno] = useState("");
+  const [emails, setEmails] = useState("");
   const horaValida = dentroExpediente(hora);
 
   const enviar = () => {
-    if (!descricao.trim() || !data || publico.length === 0) {
+    if (!descricao.trim() || (!imediata && !data) || publico.length === 0) {
       toast.error("Preencha descrição, data/horário e quem será comunicado.");
       return;
     }
-    if (!horaValida) {
+    if (tipo === "Externa" && (!nomeExterno.trim() || !emails.trim())) {
+      toast.error("Informe o nome e ao menos um e-mail da parte interessada externa.");
+      return;
+    }
+    if (!imediata && !horaValida) {
       toast.error("Horário fora do expediente", { description: `Selecione entre ${EXPEDIENTE.inicio} e ${EXPEDIENTE.fim}.` });
       return;
     }
     const destinos = publico.includes("Todos")
       ? PERFIS_SESSAO.filter((p) => p !== perfil)
       : publico;
+    const agora = new Date();
+    const quando = imediata
+      ? `${agora.toISOString().slice(0, 10)}T${agora.toTimeString().slice(0, 5)}`
+      : `${data}T${hora}`;
     onCreate({
-      id: `CM-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
-      tipo, descricao, responsavel: perfil, quando: `${data}T${hora}`, publico,
+      id: proximoId(tipo),
+      tipo, descricao, responsavel: perfil, quando, publico, imediata,
+      nomeExterno: tipo === "Externa" ? nomeExterno : undefined,
+      emails: tipo === "Externa" ? emails.split(/[,;\s]+/).filter(Boolean) : undefined,
       leituras: destinos.map((p) => ({ perfil: p, ciente: false })),
     });
-    toast.success("Comunicação programada", { description: `Envio em ${new Date(`${data}T${hora}`).toLocaleString("pt-BR")}.` });
+    toast.success(imediata ? "Comunicação enviada agora" : "Comunicação programada", {
+      description: imediata
+        ? "Disparo imediato por e-mail e pelo sistema."
+        : `Envio automático em ${new Date(quando).toLocaleString("pt-BR")}, por e-mail e pelo sistema.`,
+    });
     setOpen(false);
-    setDescricao(""); setPublico([]); setData("");
+    setDescricao(""); setPublico([]); setData(""); setNomeExterno(""); setEmails(""); setImediata(false);
   };
 
   return (
@@ -566,7 +638,7 @@ function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate:
               </Select>
             </div>
             <div>
-              <Label className="text-[11px]">Responsável</Label>
+              <Label className="text-[11px]">Comunicador</Label>
               <Input value={perfil} readOnly className="mt-1 h-9 bg-muted/40 text-xs" />
             </div>
           </div>
@@ -575,6 +647,33 @@ function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate:
             <Textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} className="mt-1 text-xs"
               placeholder="Ex.: Publicada a revisão 05 do procedimento de inspeção de recebimento." />
           </div>
+          {tipo === "Externa" && (
+            <div className="grid gap-3 rounded-lg border border-brand/30 bg-brand-soft/40 p-3 sm:grid-cols-2">
+              <div className="sm:col-span-2 text-[10px] uppercase tracking-wide text-brand">Parte interessada externa</div>
+              <div>
+                <Label className="text-[11px]">Nome (cliente, fornecedor ou outra parte)</Label>
+                <Input value={nomeExterno} onChange={(e) => setNomeExterno(e.target.value)} className="mt-1 h-9 text-xs" />
+              </div>
+              <div>
+                <Label className="text-[11px]">E-mail(s)</Label>
+                <Input value={emails} onChange={(e) => setEmails(e.target.value)} className="mt-1 h-9 text-xs"
+                  placeholder="um ou mais, separados por vírgula" />
+              </div>
+            </div>
+          )}
+          <div className="rounded-lg border border-dashed border-border/70 p-2.5 text-[10px] text-muted-foreground">
+            Listas de Frequência (treinamentos e DDS) podem ser anexadas por referência ao registro criado em
+            Documentos — o registro não é duplicado aqui.
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-border/70 p-3">
+            <div>
+              <Label className="flex items-center gap-1.5 text-[11px]"><Zap className="h-3.5 w-3.5 text-brand" /> Comunicação Imediata</Label>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">Ao ligar, a comunicação sai na hora e não precisa de agendamento.</p>
+            </div>
+            <Switch checked={imediata} onCheckedChange={setImediata} />
+          </div>
+          {!imediata && (
+          <>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-[11px]">Data programada</Label>
@@ -598,6 +697,8 @@ function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate:
               ? `Envios permitidos apenas dentro do expediente (${EXPEDIENTE.inicio} às ${EXPEDIENTE.fim}).`
               : `Horário fora do expediente. A comunicação deve ser programada entre ${EXPEDIENTE.inicio} e ${EXPEDIENTE.fim} para garantir que o destinatário esteja em jornada de trabalho.`}
           </div>
+          </>
+          )}
           <div>
             <Label className="text-[11px]">Quem será comunicado</Label>
             <div className="mt-1"><PublicoPicker value={publico} onChange={setPublico} /></div>
@@ -605,7 +706,7 @@ function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate:
         </div>
         <DialogFooter>
           <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button size="sm" disabled={!horaValida} className="rounded-lg bg-brand text-white hover:bg-brand/90" onClick={enviar}>
+          <Button size="sm" disabled={!imediata && !horaValida} className="rounded-lg bg-brand text-white hover:bg-brand/90" onClick={enviar}>
             <Send className="mr-1.5 h-4 w-4" /> Enviar comunicação
           </Button>
         </DialogFooter>

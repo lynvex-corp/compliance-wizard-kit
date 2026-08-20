@@ -24,6 +24,7 @@ import {
 import {
   Plus, Search, AlertTriangle, FileText, CheckCircle2, Clock, ArrowRight,
   Archive, History, Sparkles, ShieldCheck, Server, DatabaseBackup, Lock, Upload, Ban,
+  ScrollText, Users, PenLine, Paperclip,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -147,7 +148,7 @@ type Perfil = (typeof perfis)[number];
 
 const permissoes: { perfil: string; alteracao: boolean; redacao: boolean; visualizacao: boolean; nota: string }[] = [
   { perfil: "Diretoria", alteracao: true, redacao: true, visualizacao: true, nota: "Define o modelo e a governança documental." },
-  { perfil: "Gestor da Qualidade", alteracao: true, redacao: true, visualizacao: true, nota: "Elabora, revisa e torna documentos obsoletos." },
+  { perfil: "Gestor da Qualidade", alteracao: true, redacao: true, visualizacao: true, nota: "Elabora, revisa e pode inutilizar ou revogar documentos." },
   { perfil: "Executor (por setor)", alteracao: false, redacao: true, visualizacao: true, nota: "Preenche informações e números nos registros do seu setor." },
 ];
 
@@ -157,8 +158,407 @@ function podeAlterar(p: Perfil) {
 
 const tiposRepositorio: Tipo[] = ["Lei", "Manual", "Norma", "Planilha", "Procedimento", "Outro"];
 
-const raciPapeis = ["Responsável", "Aprovador", "Consultado", "Informado"] as const;
+const raciPapeis = ["Responsável", "Elaborador", "Consultado", "Informado"] as const;
 const raciAreas = ["Comercial", "Compras", "Produção", "Qualidade", "RH"];
+
+/* ------------------------- Política da Qualidade -------------------------- */
+
+const POLITICA_TEXTO_INICIAL =
+  "A organização compromete-se a fornecer produtos e serviços que atendam integralmente aos requisitos dos clientes e aos requisitos legais aplicáveis, promovendo a melhoria contínua do sistema de gestão da qualidade, o desenvolvimento das pessoas, a segurança das operações e o relacionamento ético com todas as partes interessadas.";
+
+interface PolRev { rev: string; data: string; autor: string; mudanca: string; aprovador: string }
+
+const POLITICA_HISTORICO: PolRev[] = [
+  { rev: "04", data: "10/02/2026", autor: "Fernanda Lima", aprovador: "Diretoria", mudanca: "Inclusão do compromisso com segurança das operações e desenvolvimento das pessoas." },
+  { rev: "03", data: "03/05/2025", autor: "Fernanda Lima", aprovador: "Diretoria", mudanca: "Alinhamento da política ao novo escopo do SGQ." },
+  { rev: "02", data: "11/08/2024", autor: "Rafael Costa", aprovador: "Diretoria", mudanca: "Revisão de redação após análise crítica da direção." },
+];
+
+function PoliticaQualidadeCard({ perfil }: { perfil: Perfil }) {
+  const [texto, setTexto] = useState(POLITICA_TEXTO_INICIAL);
+  const [rascunho, setRascunho] = useState(POLITICA_TEXTO_INICIAL);
+  const [editando, setEditando] = useState(false);
+  const [historico, setHistorico] = useState<PolRev[]>(POLITICA_HISTORICO);
+  const [pendente, setPendente] = useState<{ rev: string; texto: string } | null>(null);
+
+  const podeEditar = perfil === "Gestor da Qualidade" || perfil === "Diretoria";
+  const podeAprovar = perfil === "Diretoria";
+  const revAtual = historico[0].rev;
+  const proximaRev = String(Number(revAtual) + 1).padStart(2, "0");
+
+  return (
+    <Card className="rounded-xl border-brand/30 shadow-sm">
+      <CardHeader className="pb-2">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <ScrollText className="h-4 w-4 text-brand" /> Política da Qualidade
+              <Badge variant="outline" className="rounded-md text-[10px]">rev. {revAtual}</Badge>
+            </CardTitle>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Documento formal. Edição por Gestor da Qualidade e Diretoria; aprovação exclusiva da Diretoria.
+              Referenciada pelos Objetivos da Qualidade (módulo Indicadores) — o texto não é duplicado lá, apenas consultado.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {!editando && podeEditar && (
+              <Button size="sm" variant="outline" className="h-8 rounded-lg text-[11px]" onClick={() => { setRascunho(texto); setEditando(true); }}>
+                <PenLine className="mr-1.5 h-3.5 w-3.5" /> Editar política
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {editando ? (
+          <>
+            <Textarea value={rascunho} onChange={(e) => setRascunho(e.target.value)} rows={6} className="text-xs" />
+            <div className="flex justify-end gap-2">
+              <Button size="sm" variant="ghost" className="text-[11px]" onClick={() => setEditando(false)}>Cancelar</Button>
+              <Button size="sm" className="rounded-lg bg-brand text-white text-[11px] hover:bg-brand/90"
+                onClick={() => {
+                  setPendente({ rev: proximaRev, texto: rascunho });
+                  setEditando(false);
+                  toast.success(`Revisão ${proximaRev} submetida para aprovação da Diretoria.`);
+                }}>
+                Submeter para aprovação
+              </Button>
+            </div>
+          </>
+        ) : (
+          <p className="rounded-lg border border-border/70 bg-muted/20 p-3 text-xs leading-relaxed text-foreground/85">{texto}</p>
+        )}
+
+        {pendente && (
+          <div className="rounded-lg border border-[color:var(--warning)]/40 bg-[color:var(--warning)]/10 p-3">
+            <div className="text-xs font-semibold text-[color:var(--severity-high)]">
+              Revisão {pendente.rev} aguardando aprovação da Diretoria
+            </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">{pendente.texto}</p>
+            {podeAprovar ? (
+              <div className="mt-2 flex gap-2">
+                <Button size="sm" className="h-7 rounded-lg bg-[color:var(--success)] text-[11px] text-white hover:opacity-90"
+                  onClick={() => {
+                    setTexto(pendente.texto);
+                    setHistorico((h) => [{
+                      rev: pendente.rev, data: new Date().toLocaleDateString("pt-BR"),
+                      autor: "Gestor da Qualidade", aprovador: "Diretoria",
+                      mudanca: "Revisão do texto da Política da Qualidade aprovada pela Diretoria.",
+                    }, ...h]);
+                    setPendente(null);
+                    toast.success("Política da Qualidade aprovada e publicada.");
+                  }}>
+                  Aprovar revisão
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => { setPendente(null); toast("Revisão devolvida ao elaborador."); }}>
+                  Devolver
+                </Button>
+              </div>
+            ) : (
+              <p className="mt-2 text-[10px] text-muted-foreground">Somente o perfil Diretoria pode aprovar.</p>
+            )}
+          </div>
+        )}
+
+        <div>
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-foreground">
+            <History className="h-3.5 w-3.5 text-brand" /> Histórico de revisões
+          </div>
+          <div className="overflow-hidden rounded-lg border border-border/70">
+            <Table>
+              <TableHeader className="bg-muted/40">
+                <TableRow className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <TableHead>Revisão</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Elaborador</TableHead>
+                  <TableHead>Aprovação</TableHead>
+                  <TableHead>Alteração</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historico.map((h, i) => (
+                  <TableRow key={h.rev} className="text-xs">
+                    <TableCell className="font-mono text-[11px] font-semibold text-brand">
+                      {h.rev}{i === 0 && <Badge variant="outline" className="ml-1.5 rounded-md text-[9px]">vigente</Badge>}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{h.data}</TableCell>
+                    <TableCell className="text-muted-foreground">{h.autor}</TableCell>
+                    <TableCell className="text-muted-foreground">{h.aprovador}</TableCell>
+                    <TableCell className="text-foreground/85">{h.mudanca}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* --------------------- Atas e Listas de Frequência ------------------------ */
+
+interface Ata { id: string; titulo: string; data: string; participantes: string; pauta: string; deliberacoes: string; anexo?: string }
+interface ListaFreq { id: string; evento: string; data: string; participantes: { nome: string; confirmado: boolean }[] }
+
+const ATAS_INICIAIS: Ata[] = [
+  {
+    id: "ATA-2026-004", titulo: "Análise crítica da direção — 1º semestre", data: "30/06/2026",
+    participantes: "Diretoria, Fernanda Lima, Rafael Costa, Beatriz Souza",
+    pauta: "Desempenho dos indicadores, resultado das auditorias, status das NCs e recursos necessários.",
+    deliberacoes: "Aprovada a contratação de auditor interno adicional e revisão da meta de eficácia para 90%.",
+    anexo: "ata-analise-critica-1s2026.pdf",
+  },
+  {
+    id: "ATA-2026-003", titulo: "Reunião de abertura de auditoria interna", data: "12/05/2026",
+    participantes: "Rafael Costa, Diego Almeida, gestores de área",
+    pauta: "Escopo, critérios e agenda da auditoria interna.",
+    deliberacoes: "Agenda validada; auditoria da produção antecipada para o turno da manhã.",
+  },
+];
+
+const LISTAS_INICIAIS: ListaFreq[] = [
+  {
+    id: "LF-2026-011", evento: "Diálogo Diário de Segurança — linha de envase", data: "18/08/2026",
+    participantes: [
+      { nome: "Marcos Vieira", confirmado: true },
+      { nome: "Ana Paula Reis", confirmado: true },
+      { nome: "Jonas Ferreira", confirmado: false },
+    ],
+  },
+  {
+    id: "LF-2026-010", evento: "Treinamento — Controle de documentos (rev. 04)", data: "05/08/2026",
+    participantes: [
+      { nome: "Beatriz Souza", confirmado: true },
+      { nome: "Diego Almeida", confirmado: true },
+      { nome: "Carla Menezes", confirmado: true },
+    ],
+  },
+];
+
+function NovaAtaDialog({ onCreate }: { onCreate: (a: Ata) => void }) {
+  const [open, setOpen] = useState(false);
+  const [titulo, setTitulo] = useState("");
+  const [data, setData] = useState("");
+  const [participantes, setParticipantes] = useState("");
+  const [pauta, setPauta] = useState("");
+  const [deliberacoes, setDeliberacoes] = useState("");
+  const [anexo, setAnexo] = useState("");
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="rounded-lg">
+          <Plus className="mr-1.5 h-4 w-4" /> Nova Ata de Reunião
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="text-base">Nova Ata de Reunião</DialogTitle>
+          <DialogDescription className="text-xs">
+            Registro estruturado da reunião. Campos genéricos por ora — serão ajustados quando o modelo oficial for fornecido.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-1.5 md:col-span-2">
+            <Label className="text-[11px]">Título da reunião</Label>
+            <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} className="h-9 text-xs" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">Data</Label>
+            <Input type="date" value={data} onChange={(e) => setData(e.target.value)} className="h-9 text-xs" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">Anexo</Label>
+            <label className="flex h-9 cursor-pointer items-center gap-2 rounded-md border border-dashed border-border px-3 text-[11px] text-muted-foreground hover:border-brand/50">
+              <Paperclip className="h-3.5 w-3.5" />
+              <span className="truncate">{anexo || "Selecionar arquivo"}</span>
+              <input type="file" className="hidden" onChange={(e) => setAnexo(e.target.files?.[0]?.name ?? "")} />
+            </label>
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label className="text-[11px]">Participantes</Label>
+            <Input value={participantes} onChange={(e) => setParticipantes(e.target.value)} className="h-9 text-xs" placeholder="Nomes separados por vírgula" />
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label className="text-[11px]">Pauta</Label>
+            <Textarea value={pauta} onChange={(e) => setPauta(e.target.value)} rows={2} className="text-xs" />
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label className="text-[11px]">Deliberações</Label>
+            <Textarea value={deliberacoes} onChange={(e) => setDeliberacoes(e.target.value)} rows={2} className="text-xs" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button size="sm" disabled={!titulo.trim()} className="bg-brand text-white hover:bg-brand/90"
+            onClick={() => {
+              onCreate({
+                id: `ATA-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
+                titulo, data: data ? new Date(`${data}T00:00`).toLocaleDateString("pt-BR") : "—",
+                participantes, pauta, deliberacoes, anexo: anexo || undefined,
+              });
+              setOpen(false);
+              setTitulo(""); setData(""); setParticipantes(""); setPauta(""); setDeliberacoes(""); setAnexo("");
+              toast.success("Ata de reunião arquivada.");
+            }}>
+            Arquivar ata
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function NovaListaDialog({ onCreate }: { onCreate: (l: ListaFreq) => void }) {
+  const [open, setOpen] = useState(false);
+  const [evento, setEvento] = useState("");
+  const [data, setData] = useState("");
+  const [nomes, setNomes] = useState("");
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="rounded-lg">
+          <Plus className="mr-1.5 h-4 w-4" /> Nova Lista de Frequência
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-base">Nova Lista de Frequência</DialogTitle>
+          <DialogDescription className="text-xs">
+            Usada em treinamentos e no Diálogo Diário de Segurança (DDS). Este registro também pode ser
+            anexado a partir do submódulo Comunicações — a lista é apenas referenciada, nunca duplicada.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">Título / evento</Label>
+            <Input value={evento} onChange={(e) => setEvento(e.target.value)} className="h-9 text-xs" placeholder="Ex.: DDS — uso de EPI na linha 2" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">Data</Label>
+            <Input type="date" value={data} onChange={(e) => setData(e.target.value)} className="h-9 text-xs" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">Participantes (um por linha)</Label>
+            <Textarea value={nomes} onChange={(e) => setNomes(e.target.value)} rows={4} className="text-xs" placeholder={"Marcos Vieira\nAna Paula Reis"} />
+            <p className="text-[10px] text-muted-foreground">Cada participante recebe uma confirmação/assinatura eletrônica na lista.</p>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button size="sm" disabled={!evento.trim()} className="bg-brand text-white hover:bg-brand/90"
+            onClick={() => {
+              onCreate({
+                id: `LF-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
+                evento, data: data ? new Date(`${data}T00:00`).toLocaleDateString("pt-BR") : "—",
+                participantes: nomes.split("\n").map((n) => n.trim()).filter(Boolean).map((n) => ({ nome: n, confirmado: false })),
+              });
+              setOpen(false);
+              setEvento(""); setData(""); setNomes("");
+              toast.success("Lista de frequência criada.");
+            }}>
+            Criar lista
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RegistrosSection({
+  atas, listas, onAta, onLista, onAssinar,
+}: {
+  atas: Ata[]; listas: ListaFreq[];
+  onAta: (a: Ata) => void; onLista: (l: ListaFreq) => void;
+  onAssinar: (idLista: string, nome: string) => void;
+}) {
+  return (
+    <Card className="rounded-xl border-border/70 shadow-sm">
+      <CardHeader className="pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Archive className="h-4 w-4 text-brand" /> Atas e listas de frequência
+            </CardTitle>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Seção arquivada separadamente das demais categorias de documento.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <NovaAtaDialog onCreate={onAta} />
+            <NovaListaDialog onCreate={onLista} />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="atas">
+          <TabsList className="rounded-lg bg-muted/60 p-1">
+            <TabsTrigger value="atas" className="rounded-md text-xs">Atas de reunião ({atas.length})</TabsTrigger>
+            <TabsTrigger value="listas" className="rounded-md text-xs">Listas de frequência ({listas.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="atas" className="mt-3 space-y-2">
+            {atas.map((a) => (
+              <div key={a.id} className="rounded-lg border border-border/70 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-[11px] font-semibold text-brand">{a.id}</span>
+                  <span className="text-xs font-medium text-foreground">{a.titulo}</span>
+                  <Badge variant="outline" className="rounded-md text-[10px] text-muted-foreground">{a.data}</Badge>
+                  {a.anexo && (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <Paperclip className="h-3 w-3" /> {a.anexo}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1.5 grid gap-1 text-[11px] text-muted-foreground md:grid-cols-3">
+                  <div><strong className="text-foreground/80">Participantes:</strong> {a.participantes || "—"}</div>
+                  <div><strong className="text-foreground/80">Pauta:</strong> {a.pauta || "—"}</div>
+                  <div><strong className="text-foreground/80">Deliberações:</strong> {a.deliberacoes || "—"}</div>
+                </div>
+              </div>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="listas" className="mt-3 space-y-2">
+            {listas.map((l) => (
+              <div key={l.id} className="rounded-lg border border-border/70 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-[11px] font-semibold text-brand">{l.id}</span>
+                  <span className="text-xs font-medium text-foreground">{l.evento}</span>
+                  <Badge variant="outline" className="rounded-md text-[10px] text-muted-foreground">{l.data}</Badge>
+                  <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Users className="h-3 w-3" /> {l.participantes.filter((p) => p.confirmado).length}/{l.participantes.length} confirmados
+                  </span>
+                </div>
+                <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                  {l.participantes.map((p) => (
+                    <div key={p.nome} className={cn(
+                      "flex items-center justify-between rounded-md border px-2.5 py-1.5 text-[11px]",
+                      p.confirmado ? "border-[color:var(--success)]/30 bg-[color:var(--success)]/10" : "border-border/70",
+                    )}>
+                      <span className="text-foreground/85">{p.nome}</span>
+                      {p.confirmado ? (
+                        <span className="inline-flex items-center gap-1 text-[color:var(--success)]">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Assinado
+                        </span>
+                      ) : (
+                        <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-brand" onClick={() => onAssinar(l.id, p.nome)}>
+                          Confirmar presença
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+}
 
 function PermissoesCard() {
   return (
@@ -282,7 +682,7 @@ function DocTable({
                   </Button>
                   {podeAlterar(perfil) && d.status !== "Obsoleto" && (
                     <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-[11px] text-[color:var(--severity-high)]" onClick={() => onObsoletar(d)}>
-                      <Archive className="h-3.5 w-3.5" /> Obsoletar
+                      <Ban className="h-3.5 w-3.5" /> Inutilizar ou Revogar
                     </Button>
                   )}
                 </div>
@@ -335,7 +735,7 @@ function NovoDocumentoDialog({ disabled }: { disabled: boolean }) {
             <Input className="h-9 font-mono text-xs" placeholder="PO.XXX.000" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Responsável pela elaboração</Label>
+            <Label className="text-xs">Elaborador</Label>
             <Input className="h-9 text-xs" placeholder="Nome do elaborador" />
           </div>
           <div className="space-y-1.5 md:col-span-2">
@@ -567,6 +967,8 @@ export function DocumentosPage() {
   const [histDoc, setHistDoc] = useState<Doc | null>(null);
   const [histOpen, setHistOpen] = useState(false);
   const [obsoletar, setObsoletar] = useState<Doc | null>(null);
+  const [atas, setAtas] = useState<Ata[]>(ATAS_INICIAIS);
+  const [listas, setListas] = useState<ListaFreq[]>(LISTAS_INICIAIS);
 
   const filt = (arr: Doc[]) => arr.filter((d) => (d.codigo + d.titulo).toLowerCase().includes(busca.toLowerCase()));
   const abrirHistorico = (d: Doc) => { setHistDoc(d); setHistOpen(true); };
@@ -576,12 +978,12 @@ export function DocumentosPage() {
     const marcar = (arr: Doc[]) => arr.map((d) => d.codigo === obsoletar.codigo
       ? {
           ...d, status: "Obsoleto" as Status,
-          historico: [{ rev: d.rev, data: "17/08/2026", autor: perfil, mudanca: "Documento tornado obsoleto — retirado de uso e mantido no histórico." }, ...d.historico],
+          historico: [{ rev: d.rev, data: "17/08/2026", autor: perfil, mudanca: "Documento inutilizado ou revogado — retirado de uso e mantido no histórico." }, ...d.historico],
         }
       : d);
     setInternos(marcar);
     setExternos(marcar);
-    toast.success(`${obsoletar.codigo} tornado obsoleto e mantido no histórico.`);
+    toast.success(`${obsoletar.codigo} inutilizado/revogado e mantido no histórico.`);
     setObsoletar(null);
   };
 
@@ -621,7 +1023,22 @@ export function DocumentosPage() {
           </Card>
         )}
 
+        <PoliticaQualidadeCard perfil={perfil} />
+
         <PermissoesCard />
+
+        <RegistrosSection
+          atas={atas}
+          listas={listas}
+          onAta={(a) => setAtas((p) => [a, ...p])}
+          onLista={(l) => setListas((p) => [l, ...p])}
+          onAssinar={(id, nome) => {
+            setListas((p) => p.map((l) => l.id === id
+              ? { ...l, participantes: l.participantes.map((x) => (x.nome === nome ? { ...x, confirmado: true } : x)) }
+              : l));
+            toast.success(`Presença de ${nome} confirmada.`);
+          }}
+        />
 
         <Tabs defaultValue="int">
           <TabsList className="rounded-lg bg-muted/60 p-1">
@@ -697,7 +1114,7 @@ export function DocumentosPage() {
       <AlertDialog open={!!obsoletar} onOpenChange={(v) => !v && setObsoletar(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base">Tornar o documento obsoleto?</AlertDialogTitle>
+            <AlertDialogTitle className="text-base">Inutilizar ou revogar o documento?</AlertDialogTitle>
             <AlertDialogDescription className="text-xs">
               {obsoletar?.codigo} — {obsoletar?.titulo}. O documento sai de uso imediatamente e deixa de ser aplicável
               às atividades, mas <strong>permanece no histórico</strong> para fins de rastreabilidade e auditoria. A ação é registrada com autor e data.
@@ -706,7 +1123,7 @@ export function DocumentosPage() {
           <AlertDialogFooter>
             <AlertDialogCancel className="text-xs">Cancelar</AlertDialogCancel>
             <AlertDialogAction className="bg-brand text-white hover:bg-brand/90" onClick={confirmarObsoleto}>
-              Confirmar obsolescência
+              Confirmar inutilização/revogação
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
