@@ -9,9 +9,11 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Check, Circle, Plus, Shuffle, Users, Package, Scale, ThumbsUp, ThumbsDown, CalendarClock } from "lucide-react";
+import { Check, Circle, Plus, Shuffle, Users, Package, Scale, ThumbsUp, ThumbsDown, CalendarClock } Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+type TipoRegistro = "Mudança" | "Melhoria";
 
 type Status = "Em avaliação" | "Aprovada" | "Implementada" | "Rejeitada";
 
@@ -19,6 +21,7 @@ type ChecklistKey = "proposito" | "integridade" | "recursos" | "responsabilidade
 
 interface Mudanca {
   id: string;
+  tipo: TipoRegistro;
   titulo: string;
   descricao: string;
   dataProposta: string;
@@ -48,6 +51,7 @@ const statusColor: Record<Status, string> = {
 const seed: Mudanca[] = [
   {
     id: "m1",
+    tipo: "Mudança",
     titulo: "Assessoria da qualidade passa a responder diretamente à obra",
     descricao: "Alteração de subordinação funcional da área da qualidade, aproximando-a da rotina operacional das frentes de obra.",
     dataProposta: "2026-07-18",
@@ -63,6 +67,7 @@ const seed: Mudanca[] = [
   },
   {
     id: "m2",
+    tipo: "Melhoria",
     titulo: "Nova estrutura de comitês do SGQ (mensal → quinzenal)",
     descricao: "Aumento da frequência das reuniões de análise crítica dos indicadores estratégicos.",
     dataProposta: "2026-06-02",
@@ -81,6 +86,7 @@ const seed: Mudanca[] = [
   },
   {
     id: "m3",
+    tipo: "Mudança",
     titulo: "Terceirização parcial do laboratório físico-químico",
     descricao: "Transferência de ensaios não críticos para laboratório homologado externo.",
     dataProposta: "2026-05-15",
@@ -99,6 +105,7 @@ const seed: Mudanca[] = [
   },
   {
     id: "m4",
+    tipo: "Melhoria",
     titulo: "Migração do sistema documental para nova plataforma",
     descricao: "Adoção de plataforma com controle de versão automático e workflow de aprovação eletrônica.",
     dataProposta: "2026-03-20",
@@ -117,6 +124,7 @@ const seed: Mudanca[] = [
   },
   {
     id: "m5",
+    tipo: "Mudança",
     titulo: "Unificação dos turnos de inspeção final",
     descricao: "Concentração da inspeção final em turno único com equipe ampliada.",
     dataProposta: "2026-04-08",
@@ -133,14 +141,33 @@ const seed: Mudanca[] = [
   },
 ];
 
+const ONBOARDING = [
+  "Escolha o Tipo de Registro: use Mudança quando algo passa a funcionar de outra forma, e Melhoria quando algo que já funciona será aperfeiçoado.",
+  "Descreva o registro com clareza: título curto e objetivo, descrição do que exatamente muda e quem responde por ele.",
+  "No card criado, preencha os 4 itens de avaliação: propósito e consequências, integridade do sistema, recursos e responsabilidades.",
+  "Com a avaliação completa, o Gestor da Qualidade ou a Diretoria registra a decisão final com justificativa obrigatória.",
+];
+
 const vazio = { proposito: "", integridade: "", recursos: "", responsabilidades: "" };
 
 export function MudancasSGPage() {
   const [items, setItems] = useState<Mudanca[]>(seed);
   const [openNova, setOpenNova] = useState(false);
-  const [nova, setNova] = useState({ titulo: "", descricao: "", dataProposta: "", responsavel: "" });
+  const [nova, setNova] = useState<{ tipo: TipoRegistro; titulo: string; descricao: string; dataProposta: string; responsavel: string }>({ tipo: "Mudança", titulo: "", descricao: "", dataProposta: "", responsavel: "" });
+  const [onboardingStep, setOnboardingStep] = useState(0);
   const [decisao, setDecisao] = useState<{ id: string; tipo: "Aprovar" | "Rejeitar" } | null>(null);
   const [form, setForm] = useState({ justificativa: "", dataImplementacao: "", responsavelExecucao: "" });
+
+  const abrirNovo = () => {
+    setOpenNova(true);
+    const visto = typeof window !== "undefined" && window.localStorage.getItem("jawda-onboarding-mudancas") === "1";
+    setOnboardingStep(visto ? 0 : 1);
+  };
+
+  const encerrarOnboarding = () => {
+    setOnboardingStep(0);
+    if (typeof window !== "undefined") window.localStorage.setItem("jawda-onboarding-mudancas", "1");
+  };
 
   const resumo = useMemo(() => ({
     total: items.length,
@@ -164,6 +191,7 @@ export function MudancasSGPage() {
     if (!nova.titulo.trim()) return;
     const m: Mudanca = {
       id: `m-${Date.now()}`,
+      tipo: nova.tipo,
       titulo: nova.titulo,
       descricao: nova.descricao,
       dataProposta: nova.dataProposta || new Date().toISOString().slice(0, 10),
@@ -174,8 +202,9 @@ export function MudancasSGPage() {
     };
     setItems([m, ...items]);
     setOpenNova(false);
-    setNova({ titulo: "", descricao: "", dataProposta: "", responsavel: "" });
-    toast.success("Mudança registrada", { description: "Preencha os 4 itens de avaliação para avançar o status." });
+    const tipo = nova.tipo;
+    setNova({ tipo: "Mudança", titulo: "", descricao: "", dataProposta: "", responsavel: "" });
+    toast.success(`${tipo} registrada`, { description: "Preencha os 4 itens de avaliação para avançar o status." });
   };
 
   const confirmarDecisao = () => {
@@ -209,11 +238,13 @@ export function MudancasSGPage() {
         <div className="mx-auto max-w-[1100px] space-y-6">
           <header className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">Mudanças no Sistema de Gestão</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Requisito 6.3 da ISO 9001 — controle de mudanças planejadas.</p>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">Mudanças e Melhoria</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Toda melhoria é uma forma de mudança — os dois tipos seguem o mesmo fluxo de avaliação e aprovação.
+              </p>
             </div>
-            <Button size="sm" className="rounded-lg bg-brand text-white hover:bg-brand/90" onClick={() => setOpenNova(true)}>
-              <Plus className="mr-1.5 h-4 w-4" /> Nova mudança
+            <Button size="sm" className="rounded-lg bg-brand text-white hover:bg-brand/90" onClick={abrirNovo}>
+              <Plus className="mr-1.5 h-4 w-4" /> Novo Registro
             </Button>
           </header>
 
@@ -248,13 +279,26 @@ export function MudancasSGPage() {
                         <h3 className="mt-0.5 text-base font-semibold text-foreground">{m.titulo}</h3>
                         <p className="mt-1 text-xs leading-relaxed text-foreground/80">{m.descricao}</p>
                       </div>
-                      <Badge variant="outline" className={cn("rounded-md border text-[10px]", statusColor[m.status])}>{m.status}</Badge>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "rounded-md border text-[10px]",
+                            m.tipo === "Melhoria"
+                              ? "border-[color:var(--success)]/30 bg-[color:var(--success)]/10 text-[color:var(--success)]"
+                              : "border-brand/25 bg-brand-soft text-brand",
+                          )}
+                        >
+                          {m.tipo}
+                        </Badge>
+                        <Badge variant="outline" className={cn("rounded-md border text-[10px]", statusColor[m.status])}>{m.status}</Badge>
+                      </div>
                     </div>
 
                     <div className="rounded-lg border border-border/60 p-3">
                       <div className="mb-2 flex items-center justify-between">
                         <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          Checklist de avaliação (6.3 a–d)
+                          Checklist de avaliação
                         </div>
                         <span className="text-[10px] font-mono text-muted-foreground">{preenchidos}/4</span>
                       </div>
@@ -387,10 +431,59 @@ export function MudancasSGPage() {
         <Dialog open={openNova} onOpenChange={setOpenNova}>
           <DialogContent className="max-w-lg rounded-2xl">
             <DialogHeader>
-              <DialogTitle>Nova mudança no Sistema de Gestão</DialogTitle>
-              <DialogDescription>Após registrar, preencha os 4 itens de avaliação obrigatórios no card da mudança.</DialogDescription>
+              <DialogTitle>Novo Registro — Mudança ou Melhoria</DialogTitle>
+              <DialogDescription>Após registrar, preencha os 4 itens de avaliação obrigatórios no card.</DialogDescription>
             </DialogHeader>
+
+            {onboardingStep > 0 && (
+              <div className="rounded-xl border border-brand/30 bg-brand-soft/50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
+                    <Lightbulb className="h-3.5 w-3.5" /> Passo {onboardingStep} de {ONBOARDING.length}
+                  </div>
+                  <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground" onClick={encerrarOnboarding}>
+                    Pular guia
+                  </Button>
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-foreground/85">{ONBOARDING[onboardingStep - 1]}</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="flex flex-1 gap-1">
+                    {ONBOARDING.map((_, i) => (
+                      <span key={i} className={cn("h-1 flex-1 rounded-full", i < onboardingStep ? "bg-brand" : "bg-brand/20")} />
+                    ))}
+                  </div>
+                  <Button
+                    size="sm"
+                    className="h-7 rounded-md bg-brand text-[11px] text-white hover:bg-brand/90"
+                    onClick={() => (onboardingStep < ONBOARDING.length ? setOnboardingStep(onboardingStep + 1) : encerrarOnboarding())}
+                  >
+                    {onboardingStep < ONBOARDING.length ? "Próximo" : "Entendi"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3 py-1">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-muted-foreground">Tipo de Registro</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["Mudança", "Melhoria"] as TipoRegistro[]).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setNova({ ...nova, tipo: t })}
+                      className={cn(
+                        "rounded-lg border p-2.5 text-left transition-all",
+                        nova.tipo === t ? "border-brand/50 bg-brand-soft/60" : "border-border/70 bg-background hover:border-brand/25",
+                      )}
+                    >
+                      <div className="text-xs font-semibold text-foreground">{t}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {t === "Mudança" ? "Altera estrutura, processo ou responsabilidade." : "Aperfeiçoa algo que já funciona."}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="space-y-1.5">
                 <label className="text-[11px] font-medium text-muted-foreground">Título</label>
                 <Input value={nova.titulo} onChange={(e) => setNova({ ...nova, titulo: e.target.value })} className="h-9 rounded-lg text-xs" placeholder="Ex.: Centralização do controle de calibração" />
@@ -412,7 +505,7 @@ export function MudancasSGPage() {
             </div>
             <DialogFooter>
               <Button variant="outline" className="rounded-lg" onClick={() => setOpenNova(false)}>Cancelar</Button>
-              <Button className="rounded-lg bg-brand text-white hover:bg-brand/90" disabled={!nova.titulo.trim()} onClick={salvarNova}>Registrar mudança</Button>
+              <Button className="rounded-lg bg-brand text-white hover:bg-brand/90" disabled={!nova.titulo.trim()} onClick={salvarNova}>Registrar {nova.tipo.toLowerCase()}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
