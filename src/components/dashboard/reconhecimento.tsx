@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import {
   reconhecimentoIdentificadores,
+  reconhecimentoMelhorias,
   conquistasSetor,
   type ReconhecimentoPeriodo,
   type ConquistaSetor,
@@ -45,7 +46,15 @@ const periodos: ReconhecimentoPeriodo[] = [
  * - "Protetores do Padrão"
  * - "Heróis da Primeira Linha"
  */
-function RankingCard() {
+interface RankingCardProps {
+  titulo: string;
+  descricao: string;
+  unidade: string;
+  rodape: string;
+  fonte: typeof reconhecimentoIdentificadores;
+}
+
+function RankingCard({ titulo, descricao, unidade, rodape, fonte }: RankingCardProps) {
   const [periodo, setPeriodo] = useState<ReconhecimentoPeriodo>("Este mês");
   const [animating, setAnimating] = useState(false);
 
@@ -56,7 +65,7 @@ function RankingCard() {
     setTimeout(() => setAnimating(false), 320);
   };
 
-  const ranking = [...reconhecimentoIdentificadores]
+  const ranking = [...fonte]
     .sort((a, b) => b.contagens[periodo] - a.contagens[periodo])
     .slice(0, 5);
 
@@ -67,14 +76,9 @@ function RankingCard() {
           <div>
             <div className="flex items-center gap-2">
               <Crown className="h-4 w-4 text-[color:var(--warning)]" />
-              <CardTitle className="text-base font-semibold">
-                Olho Vivo da Qualidade
-              </CardTitle>
+              <CardTitle className="text-base font-semibold">{titulo}</CardTitle>
             </div>
-            <CardDescription className="mt-1 max-w-md text-xs leading-relaxed">
-              Pessoas que mais contribuem identificando problemas antes que
-              virem prejuízo.
-            </CardDescription>
+            <CardDescription className="mt-1 max-w-md text-xs leading-relaxed">{descricao}</CardDescription>
           </div>
           <div className="flex items-center gap-1 rounded-lg border border-border/80 bg-muted/40 p-1">
             {periodos.map((p) => (
@@ -158,7 +162,7 @@ function RankingCard() {
                   <div className="text-lg font-semibold leading-none text-foreground">
                     {p.contagens[periodo]}
                   </div>
-                  <div className="text-[10px] text-muted-foreground">NCs</div>
+                  <div className="text-[10px] text-muted-foreground">{unidade}</div>
                 </div>
               </li>
             );
@@ -166,7 +170,7 @@ function RankingCard() {
         </ul>
         <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
           <TrendingUp className="h-3.5 w-3.5 text-success" />
-          <span>Identificar cedo é cuidar. Cada registro aqui evita um prejuízo.</span>
+          <span>{rodape}</span>
         </div>
       </CardContent>
     </Card>
@@ -318,7 +322,20 @@ function ConquistasCard() {
 export function ReconhecimentoPanel() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <RankingCard />
+      <RankingCard
+        titulo="Olho Vivo da Qualidade"
+        descricao="Pessoas que mais contribuem identificando problemas antes que virem prejuízo."
+        unidade="NCs"
+        rodape="Identificar cedo é cuidar. Cada registro aqui evita um prejuízo."
+        fonte={reconhecimentoIdentificadores}
+      />
+      <RankingCard
+        titulo="Motor da Melhoria"
+        descricao="Pessoas que mais registram melhorias de processo — quem propõe faz a empresa avançar."
+        unidade="Melhorias"
+        rodape="Cada melhoria registrada é um passo a mais na cultura de qualidade."
+        fonte={reconhecimentoMelhorias}
+      />
       <ConquistasCard />
     </div>
   );
