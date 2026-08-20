@@ -19,7 +19,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  AlertTriangle, BellRing, CheckCircle2, Clock, Eye, Megaphone, Plus, Send, Users,
+  AlertTriangle, Bell, BellRing, CheckCircle2, Clock, Eye, Megaphone, Plus, Search, Send, Users, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -564,35 +564,54 @@ function NovoProcessoDialog({ onCreate }: { onCreate: (p: ProcessoCom) => void }
   );
 }
 
-function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate: (c: Comunicacao) => void }) {
+function NovaComunicacaoDialog({
+  perfil, proximoId, onCreate,
+}: { perfil: string; proximoId: (tipo: string) => string; onCreate: (c: Comunicacao) => void }) {
   const [open, setOpen] = useState(false);
   const [tipo, setTipo] = useState("Interna");
   const [descricao, setDescricao] = useState("");
   const [data, setData] = useState("");
   const [hora, setHora] = useState("09:00");
   const [publico, setPublico] = useState<string[]>([]);
+  const [imediata, setImediata] = useState(false);
+  const [nomeExterno, setNomeExterno] = useState("");
+  const [emails, setEmails] = useState("");
   const horaValida = dentroExpediente(hora);
 
   const enviar = () => {
-    if (!descricao.trim() || !data || publico.length === 0) {
+    if (!descricao.trim() || (!imediata && !data) || publico.length === 0) {
       toast.error("Preencha descrição, data/horário e quem será comunicado.");
       return;
     }
-    if (!horaValida) {
+    if (tipo === "Externa" && (!nomeExterno.trim() || !emails.trim())) {
+      toast.error("Informe o nome e ao menos um e-mail da parte interessada externa.");
+      return;
+    }
+    if (!imediata && !horaValida) {
       toast.error("Horário fora do expediente", { description: `Selecione entre ${EXPEDIENTE.inicio} e ${EXPEDIENTE.fim}.` });
       return;
     }
     const destinos = publico.includes("Todos")
       ? PERFIS_SESSAO.filter((p) => p !== perfil)
       : publico;
+    const agora = new Date();
+    const quando = imediata
+      ? `${agora.toISOString().slice(0, 10)}T${agora.toTimeString().slice(0, 5)}`
+      : `${data}T${hora}`;
     onCreate({
-      id: `CM-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
-      tipo, descricao, responsavel: perfil, quando: `${data}T${hora}`, publico,
+      id: proximoId(tipo),
+      tipo, descricao, responsavel: perfil, quando, publico, imediata,
+      nomeExterno: tipo === "Externa" ? nomeExterno : undefined,
+      emails: tipo === "Externa" ? emails.split(/[,;\s]+/).filter(Boolean) : undefined,
       leituras: destinos.map((p) => ({ perfil: p, ciente: false })),
     });
-    toast.success("Comunicação programada", { description: `Envio em ${new Date(`${data}T${hora}`).toLocaleString("pt-BR")}.` });
+    toast.success(imediata ? "Comunicação enviada agora" : "Comunicação programada", {
+      description: imediata
+        ? "Disparo imediato por e-mail e pelo sistema."
+        : `Envio automático em ${new Date(quando).toLocaleString("pt-BR")}, por e-mail e pelo sistema.`,
+    });
     setOpen(false);
-    setDescricao(""); setPublico([]); setData("");
+    setDescricao(""); setPublico([]); setData(""); setNomeExterno(""); setEmails(""); setImediata(false);
   };
 
   return (
@@ -628,6 +647,29 @@ function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate:
             <Textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} className="mt-1 text-xs"
               placeholder="Ex.: Publicada a revisão 05 do procedimento de inspeção de recebimento." />
           </div>
+          {tipo === "Externa" && (
+            <div className="grid gap-3 rounded-lg border border-brand/30 bg-brand-soft/40 p-3 sm:grid-cols-2">
+              <div className="sm:col-span-2 text-[10px] uppercase tracking-wide text-brand">Parte interessada externa</div>
+              <div>
+                <Label className="text-[11px]">Nome (cliente, fornecedor ou outra parte)</Label>
+                <Input value={nomeExterno} onChange={(e) => setNomeExterno(e.target.value)} className="mt-1 h-9 text-xs" />
+              </div>
+              <div>
+                <Label className="text-[11px]">E-mail(s)</Label>
+                <Input value={emails} onChange={(e) => setEmails(e.target.value)} className="mt-1 h-9 text-xs"
+                  placeholder="um ou mais, separados por vírgula" />
+              </div>
+            </div>
+          )}
+          <div className="flex items-center justify-between rounded-lg border border-border/70 p-3">
+            <div>
+              <Label className="flex items-center gap-1.5 text-[11px]"><Zap className="h-3.5 w-3.5 text-brand" /> Comunicação Imediata</Label>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">Ao ligar, a comunicação sai na hora e não precisa de agendamento.</p>
+            </div>
+            <Switch checked={imediata} onCheckedChange={setImediata} />
+          </div>
+          {!imediata && (
+          <>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-[11px]">Data programada</Label>
@@ -651,6 +693,8 @@ function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate:
               ? `Envios permitidos apenas dentro do expediente (${EXPEDIENTE.inicio} às ${EXPEDIENTE.fim}).`
               : `Horário fora do expediente. A comunicação deve ser programada entre ${EXPEDIENTE.inicio} e ${EXPEDIENTE.fim} para garantir que o destinatário esteja em jornada de trabalho.`}
           </div>
+          </>
+          )}
           <div>
             <Label className="text-[11px]">Quem será comunicado</Label>
             <div className="mt-1"><PublicoPicker value={publico} onChange={setPublico} /></div>
@@ -658,7 +702,7 @@ function NovaComunicacaoDialog({ perfil, onCreate }: { perfil: string; onCreate:
         </div>
         <DialogFooter>
           <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button size="sm" disabled={!horaValida} className="rounded-lg bg-brand text-white hover:bg-brand/90" onClick={enviar}>
+          <Button size="sm" disabled={!imediata && !horaValida} className="rounded-lg bg-brand text-white hover:bg-brand/90" onClick={enviar}>
             <Send className="mr-1.5 h-4 w-4" /> Enviar comunicação
           </Button>
         </DialogFooter>
