@@ -148,7 +148,7 @@ type Perfil = (typeof perfis)[number];
 
 const permissoes: { perfil: string; alteracao: boolean; redacao: boolean; visualizacao: boolean; nota: string }[] = [
   { perfil: "Diretoria", alteracao: true, redacao: true, visualizacao: true, nota: "Define o modelo e a governança documental." },
-  { perfil: "Gestor da Qualidade", alteracao: true, redacao: true, visualizacao: true, nota: "Elabora, revisa e torna documentos obsoletos." },
+  { perfil: "Gestor da Qualidade", alteracao: true, redacao: true, visualizacao: true, nota: "Elabora, revisa e pode inutilizar ou revogar documentos." },
   { perfil: "Executor (por setor)", alteracao: false, redacao: true, visualizacao: true, nota: "Preenche informações e números nos registros do seu setor." },
 ];
 
@@ -682,7 +682,7 @@ function DocTable({
                   </Button>
                   {podeAlterar(perfil) && d.status !== "Obsoleto" && (
                     <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-[11px] text-[color:var(--severity-high)]" onClick={() => onObsoletar(d)}>
-                      <Archive className="h-3.5 w-3.5" /> Obsoletar
+                      <Ban className="h-3.5 w-3.5" /> Inutilizar ou Revogar
                     </Button>
                   )}
                 </div>
@@ -735,7 +735,7 @@ function NovoDocumentoDialog({ disabled }: { disabled: boolean }) {
             <Input className="h-9 font-mono text-xs" placeholder="PO.XXX.000" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Responsável pela elaboração</Label>
+            <Label className="text-xs">Elaborador</Label>
             <Input className="h-9 text-xs" placeholder="Nome do elaborador" />
           </div>
           <div className="space-y-1.5 md:col-span-2">
