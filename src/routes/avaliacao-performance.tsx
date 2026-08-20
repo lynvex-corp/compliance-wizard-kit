@@ -5,9 +5,9 @@ export const Route = createFileRoute("/avaliacao-performance")({
   head: () => ({
     meta: [
       { title: "Avaliação de Desempenho — Jáwda" },
-      { name: "description", content: "Ciclos de avaliação, formulário CHA com escala de 1 a 10, matriz de decisão desempenho × potencial e registro de devolutiva." },
+      { name: "description", content: "Ciclos de avaliação, Método CHA com escala de 1 a 10, Matriz de Apoio à Decisão (Desempenho x Cultura) e registro de devolutiva." },
       { property: "og:title", content: "Avaliação de Desempenho — Jáwda" },
-      { property: "og:description", content: "Configuração de ciclo, avaliação CHA confidencial, matriz de decisão e devolutiva compartilhável." },
+      { property: "og:description", content: "Programação dinâmica de ciclo, Método CHA confidencial, Matriz de Apoio à Decisão e devolutiva compartilhável." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

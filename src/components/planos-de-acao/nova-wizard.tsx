@@ -52,6 +52,9 @@ const ORIGENS: PlanoOrigemTipo[] = [
   "Análise Crítica",
   "Reclamação de Cliente",
   "Melhoria Contínua",
+  "Estratégia",
+  "Indicador",
+  "Avaliação de Desempenho",
 ];
 
 const DEPARTAMENTOS = ["Qualidade", "Produção", "Suprimentos", "Manutenção", "RH", "Comercial", "TI"];

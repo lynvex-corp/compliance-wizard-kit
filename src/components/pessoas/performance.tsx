@@ -22,15 +22,17 @@ import {
 } from "@/components/ui/table";
 import {
   CalendarClock, Grid3x3, Lock, Plus, Settings2, ShieldCheck, Star, Target,
-  MessageSquare, Save, Check, Users,
+  MessageSquare, Save, Check, Users, Search, CalendarPlus,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 /* --------------------------------- dados --------------------------------- */
 
-const PERFIS = ["Gestor da Qualidade", "Alta Direção", "Gestor de Área", "Colaborador"];
-const PERFIS_CONFIG = ["Gestor da Qualidade", "Alta Direção"];
+const PERFIS = ["Diretoria", "Gestor da Qualidade", "Líder", "Colaborador"];
+const PERFIS_CONFIG = ["Diretoria"];
+const LIDERES = ["Diego Almeida", "Carla Menezes", "Fernanda Lima"];
 const PERIODICIDADES = ["Anual", "Bienal", "Semestral", "Trimestral"];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
@@ -74,7 +76,7 @@ const BLOCOS = [
   {
     nome: "Atitudes",
     perguntas: [
-      "Possui atitudes condizentes com a cultura e os valores da empresa?",
+      "Possui atitudes condizentes com a cultura e política da qualidade, bem como com os valores da empresa?",
       "É engajado?",
       "Busca a melhoria contínua do seu processo?",
       "Colabora com colegas e outras áreas?",
@@ -83,11 +85,11 @@ const BLOCOS = [
   },
 ] as const;
 
-const POTENCIAIS = ["Baixo", "Médio", "Alto"] as const;
+const POTENCIAIS = ["Alto Potencial", "Cultura", "Técnico"] as const;
 type Potencial = (typeof POTENCIAIS)[number];
 
 const MATRIZ: { label: string; acao: string }[][] = [
-  // linha 0 = potencial Alto
+  // linha 0 = Alto Potencial
   [
     { label: "Enigma", acao: "Acompanhar de perto — potencial alto sem entrega" },
     { label: "Forte contribuidor", acao: "Desenvolver para assumir novos desafios" },
@@ -124,7 +126,6 @@ interface Avaliacao {
   notas: Notas;
   detalhes: Detalhes;
   potencial: Potencial;
-  planoDesenvolvimento: string;
   registroDevolutiva: string;
   dataDevolutiva: string;
   devolutivaCompartilhada: boolean;
@@ -151,12 +152,11 @@ const AVALIACOES_INICIAIS: Avaliacao[] = [
   {
     id: "AV-2026-001",
     empregado: "Fernanda Lima",
-    avaliador: "Gestor da Qualidade",
+    avaliador: "Carla Menezes",
     ciclo: "Ciclo 2026.1",
     notas: notasIniciais([9, 9, 10, 9, 8, 9, 8, 9, 9, 8, 10, 9, 9, 9, 10]),
     detalhes: {},
-    potencial: "Alto",
-    planoDesenvolvimento: "Preparar para liderar auditorias internas do próximo ciclo.",
+    potencial: "Alto Potencial",
     registroDevolutiva: "Conversa realizada; alinhado plano de sucessão técnica.",
     dataDevolutiva: "2026-04-18",
     devolutivaCompartilhada: true,
@@ -165,12 +165,11 @@ const AVALIACOES_INICIAIS: Avaliacao[] = [
   {
     id: "AV-2026-002",
     empregado: "Ana Ribeiro",
-    avaliador: "Gestor da Qualidade",
+    avaliador: "Diego Almeida",
     ciclo: "Ciclo 2026.1",
     notas: notasIniciais([6, 8, 6, 6, 7, 6, 6, 5, 7, 7, 8, 8, 7, 8, 6]),
     detalhes: {},
-    potencial: "Alto",
-    planoDesenvolvimento: "",
+    potencial: "Alto Potencial",
     registroDevolutiva: "",
     dataDevolutiva: "",
     devolutivaCompartilhada: false,
@@ -179,12 +178,11 @@ const AVALIACOES_INICIAIS: Avaliacao[] = [
   {
     id: "AV-2026-003",
     empregado: "Marcos Vinícius",
-    avaliador: "Gestor de Área",
+    avaliador: "Diego Almeida",
     ciclo: "Ciclo 2026.1",
     notas: notasIniciais([7, 6, 6, 7, 6, 7, 7, 6, 6, 6, 7, 7, 6, 7, 7]),
     detalhes: {},
-    potencial: "Médio",
-    planoDesenvolvimento: "",
+    potencial: "Cultura",
     registroDevolutiva: "",
     dataDevolutiva: "",
     devolutivaCompartilhada: false,
@@ -206,13 +204,19 @@ function faixaDesempenho(media: number, meta: number): 0 | 1 | 2 {
   if (media < meta + 1.5) return 1;
   return 2;
 }
-const linhaPotencial = (p: Potencial) => (p === "Alto" ? 0 : p === "Médio" ? 1 : 2);
+const linhaPotencial = (p: Potencial) => (p === "Alto Potencial" ? 0 : p === "Cultura" ? 1 : 2);
 
 /* -------------------------------- componente ------------------------------ */
 
 export function PerformancePage() {
-  const [perfil, setPerfil] = useState("Gestor da Qualidade");
+  const [perfil, setPerfil] = useState("Líder");
+  const [acumulaLider, setAcumulaLider] = useState(false);
+  const [liderAtual, setLiderAtual] = useState(LIDERES[0]);
+  const [busca, setBusca] = useState("");
   const podeConfigurar = PERFIS_CONFIG.includes(perfil);
+  const ehDiretoria = perfil === "Diretoria";
+  const ehLider = perfil === "Líder" || acumulaLider;
+  const temAcesso = ehDiretoria || ehLider;
 
   const [periodicidade, setPeriodicidade] = useState("Anual");
   const [metaMinima, setMetaMinima] = useState(7);
@@ -226,13 +230,22 @@ export function PerformancePage() {
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>(AVALIACOES_INICIAIS);
   const [abertaId, setAbertaId] = useState<string | null>(null);
   const [novaOpen, setNovaOpen] = useState(false);
-  const [nova, setNova] = useState({ empregado: EMPREGADOS[0], ciclo: CICLOS[0].nome });
+  const [nova, setNova] = useState({ empregado: EMPREGADOS[0], ciclo: CICLOS[0].nome, mes: 0, agenda: true });
 
-  // Governança: só vê o que o próprio perfil avaliou
-  const minhas = useMemo(
-    () => avaliacoes.filter((a) => a.avaliador === perfil),
-    [avaliacoes, perfil],
-  );
+  // Governança: a Diretoria vê tudo; o Líder vê apenas seus avaliados
+  const minhas = useMemo(() => {
+    const base = ehDiretoria
+      ? avaliacoes
+      : ehLider
+        ? avaliacoes.filter((a) => a.avaliador === liderAtual)
+        : [];
+    const t = busca.trim().toLowerCase();
+    if (!t) return base;
+    return base.filter((a) =>
+      [a.id, a.empregado, a.ciclo, a.avaliador, CARGOS[a.empregado] ?? ""]
+        .join(" ").toLowerCase().includes(t),
+    );
+  }, [avaliacoes, ehDiretoria, ehLider, liderAtual, busca]);
   const aberta = avaliacoes.find((a) => a.id === abertaId) ?? null;
 
   const patch = (id: string, p: Partial<Avaliacao>) =>
@@ -243,30 +256,36 @@ export function PerformancePage() {
     const nv: Avaliacao = {
       id,
       empregado: nova.empregado,
-      avaliador: perfil,
+      avaliador: ehLider ? liderAtual : "Diretoria",
       ciclo: nova.ciclo,
       notas: notasIniciais(),
       detalhes: {},
-      potencial: "Médio",
-      planoDesenvolvimento: "",
-      registroDevolutiva: "",
+      potencial: "Cultura",
+        registroDevolutiva: "",
       dataDevolutiva: "",
       devolutivaCompartilhada: false,
       concluida: false,
     };
     setAvaliacoes((p) => [nv, ...p]);
     setNovaOpen(false);
-    setAbertaId(id);
-    if (notificar) toast.info(`${nova.empregado} foi notificado sobre a abertura da avaliação.`);
+    if (nova.mes) {
+      setProgramacao((prev) => ({
+        ...prev,
+        [nova.mes]: [...(prev[nova.mes] ?? []), `${nova.empregado} — ${nova.ciclo}`],
+      }));
+    }
+    if (notificar) {
+      toast.info(`${nova.empregado} foi notificado`, {
+        description: `Avaliação programada${nova.mes ? ` para ${MESES[nova.mes - 1]}` : ""}${nova.agenda ? " e vinculada à agenda do avaliador." : "."}`,
+      });
+    }
+    setNova((n) => ({ ...n, mes: 0 }));
   }
 
-  function toggleMes(mes: number) {
-    if (!podeConfigurar) return;
-    setProgramacao((prev) => {
-      const atual = prev[mes] ?? [];
-      if (atual.length) { const c = { ...prev }; delete c[mes]; return c; }
-      return { ...prev, [mes]: ["Ciclo — avaliação de desempenho"] };
-    });
+  function agendarNoMes(mes: number) {
+    if (!temAcesso) return;
+    setNova((n) => ({ ...n, mes }));
+    setNovaOpen(true);
   }
 
   return (
@@ -281,7 +300,7 @@ export function PerformancePage() {
               </Badge>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ciclos, formulário CHA (Conhecimento, Habilidades e Atitudes), matriz de decisão e devolutiva.
+              Ciclos, Método CHA (Conhecimento, Habilidades e Atitudes), Matriz de Apoio à Decisão e devolutiva.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -292,7 +311,25 @@ export function PerformancePage() {
                 {PERFIS.map((p) => <SelectItem key={p} value={p} className="text-xs">{p}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button className="gap-2 bg-brand text-brand-foreground hover:bg-brand/90" onClick={() => setNovaOpen(true)}>
+            {perfil !== "Líder" && perfil !== "Diretoria" && (
+              <label className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/20 px-2 py-1.5 text-[11px] text-muted-foreground">
+                <Switch checked={acumulaLider} onCheckedChange={setAcumulaLider} />
+                Acumula perfil de Líder
+              </label>
+            )}
+            {ehLider && (
+              <Select value={liderAtual} onValueChange={setLiderAtual}>
+                <SelectTrigger className="h-9 w-[170px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {LIDERES.map((l) => <SelectItem key={l} value={l} className="text-xs">{l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+            <Button
+              className="gap-2 bg-brand text-brand-foreground hover:bg-brand/90"
+              disabled={!temAcesso}
+              onClick={() => setNovaOpen(true)}
+            >
               <Plus className="h-4 w-4" /> Nova avaliação
             </Button>
           </div>
@@ -302,9 +339,11 @@ export function PerformancePage() {
           <CardContent className="flex items-start gap-2 p-3 text-xs text-muted-foreground">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
             <span>
-              <strong className="text-foreground">Confidencialidade:</strong> cada avaliação é visível apenas para o
-              avaliador que a realizou. Nem outros avaliadores nem o avaliado têm acesso ao formulário — o avaliado só
-              enxerga a devolutiva quando ela é explicitamente compartilhada.
+              <strong className="text-foreground">Confidencialidade e acesso:</strong> cada perfil Líder vê apenas as
+              avaliações dos seus próprios avaliados. Somente a Diretoria vê todas as avaliações — e por isso é o único
+              perfil com a coluna <em>Avaliador</em>. O Gestor da Qualidade não tem acesso às avaliações, a menos que
+              também acumule o perfil de Líder. Ao avaliado são compartilhados os itens e notas do CHA, a nota geral e o
+              registro da devolutiva.
             </span>
           </CardContent>
         </Card>
@@ -340,6 +379,15 @@ export function PerformancePage() {
               ))}
             </div>
 
+            <div className="relative max-w-md">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Buscar por empregado, ciclo, ano, avaliador ou código…"
+                className="h-9 pl-9 text-xs"
+              />
+            </div>
             <Card className="rounded-xl">
               <CardContent className="p-0">
                 <Table>
@@ -347,6 +395,7 @@ export function PerformancePage() {
                     <TableRow>
                       <TableHead>Avaliação</TableHead>
                       <TableHead>Empregado</TableHead>
+                      {ehDiretoria && <TableHead>Avaliador</TableHead>}
                       <TableHead>Ciclo</TableHead>
                       <TableHead className="text-center">Média geral</TableHead>
                       <TableHead>Quadrante</TableHead>
@@ -366,6 +415,9 @@ export function PerformancePage() {
                             <div className="text-sm font-medium">{a.empregado}</div>
                             <div className="text-[11px] text-muted-foreground">{CARGOS[a.empregado] ?? "—"}</div>
                           </TableCell>
+                          {ehDiretoria && (
+                            <TableCell className="text-sm text-muted-foreground">{a.avaliador}</TableCell>
+                          )}
                           <TableCell className="text-sm text-muted-foreground">{a.ciclo}</TableCell>
                           <TableCell className="text-center">
                             <span className={cn("text-sm font-bold", m >= metaMinima ? "text-[color:var(--success)]" : "text-[color:var(--severity-critical)]")}>
@@ -391,8 +443,10 @@ export function PerformancePage() {
                     })}
                     {minhas.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
-                          Nenhuma avaliação registrada por este perfil. Avaliações de outros avaliadores não são exibidas.
+                        <TableCell colSpan={ehDiretoria ? 8 : 7} className="py-10 text-center text-sm text-muted-foreground">
+                          {temAcesso
+                            ? "Nenhuma avaliação encontrada para este avaliador ou termo de busca."
+                            : "Seu perfil não tem acesso às avaliações. O acesso é exclusivo da Diretoria e dos perfis Líder."}
                         </TableCell>
                       </TableRow>
                     )}
@@ -404,19 +458,20 @@ export function PerformancePage() {
 
           {/* --------------------------- ciclo ---------------------------- */}
           <TabsContent value="ciclo" className="mt-4 space-y-4">
-            {!podeConfigurar ? (
+            {!temAcesso ? (
               <Card className="rounded-xl">
                 <CardContent className="flex flex-col items-center gap-2 p-10 text-center">
                   <ShieldCheck className="h-8 w-8 text-muted-foreground" />
                   <div className="text-sm font-semibold">Configuração restrita</div>
                   <p className="max-w-md text-xs text-muted-foreground">
-                    A configuração do ciclo é permitida apenas para Gestor da Qualidade e Alta Direção.
+                    Os parâmetros do ciclo são definidos pela Diretoria e a programação é feita pelos perfis Líder.
                     Seu perfil atual é <strong>{perfil}</strong>.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <>
+                {podeConfigurar && (
                 <Card className="rounded-xl">
                   <CardContent className="space-y-4 p-5">
                     <div className="flex items-center gap-2">
@@ -449,22 +504,25 @@ export function PerformancePage() {
                     <Separator />
                     <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3">
                       <div>
-                        <div className="text-sm font-medium">Notificar o empregado avaliado quando o ciclo abrir</div>
+                        <div className="text-sm font-medium">Notificar o avaliado ao programar a avaliação</div>
                         <div className="text-[11px] text-muted-foreground">
-                          Envia aviso automático no início do ciclo, sem expor o conteúdo da avaliação.
+                          O aviso é enviado assim que o avaliador agenda a avaliação, sem expor o conteúdo do formulário.
                         </div>
                       </div>
                       <Switch checked={notificar} onCheckedChange={setNotificar} />
                     </div>
                   </CardContent>
                 </Card>
+                )}
 
                 <Card className="rounded-xl">
                   <CardContent className="p-5">
                     <div className="mb-3 flex items-center gap-2">
                       <CalendarClock className="h-4 w-4 text-brand" />
                       <h2 className="text-sm font-semibold">Programação do ciclo — 2026</h2>
-                      <span className="text-[11px] text-muted-foreground">Clique no mês para programar ou remover.</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        Clique no mês para agendar quem será avaliado — o avaliado é notificado assim que o avaliador programa a avaliação.
+                      </span>
                     </div>
                     <div className="overflow-x-auto">
                       <div className="grid min-w-[1100px] grid-cols-12 gap-2">
@@ -473,11 +531,14 @@ export function PerformancePage() {
                           return (
                             <button
                               key={m}
-                              onClick={() => toggleMes(i + 1)}
+                              onClick={() => agendarNoMes(i + 1)}
                               className="border-l border-dashed border-border pl-2 text-left"
                             >
                               <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{m}</div>
                               <div className="flex min-h-[110px] flex-col gap-2">
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+                                  <CalendarPlus className="h-3 w-3" /> agendar
+                                </div>
                                 {itens.map((t) => (
                                   <div key={t} className="rounded-lg border border-brand/30 bg-brand-soft p-2 text-[11px] font-medium text-brand">
                                     {t}
@@ -502,7 +563,9 @@ export function PerformancePage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Nova avaliação</DialogTitle>
-            <DialogDescription>O avaliador é preenchido automaticamente pelo perfil logado.</DialogDescription>
+            <DialogDescription>
+              O avaliador é preenchido automaticamente pelo perfil logado. O avaliado é notificado assim que a avaliação é programada.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
@@ -525,12 +588,34 @@ export function PerformancePage() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Avaliador</Label>
-              <Input value={perfil} readOnly className="h-9 bg-muted/40 text-xs" />
+              <Input value={ehLider ? liderAtual : "Diretoria"} readOnly className="h-9 bg-muted/40 text-xs" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Mês programado</Label>
+              <Select
+                value={String(nova.mes)}
+                onValueChange={(v) => setNova((n) => ({ ...n, mes: Number(v) }))}
+              >
+                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0" className="text-xs">Sem data definida</SelectItem>
+                  {MESES.map((m, i) => (
+                    <SelectItem key={m} value={String(i + 1)} className="text-xs">{m}/2026</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3">
+              <div>
+                <div className="text-xs font-medium">Vincular à agenda automaticamente</div>
+                <div className="text-[10px] text-muted-foreground">Cria o compromisso na agenda do avaliador e do avaliado.</div>
+              </div>
+              <Switch checked={nova.agenda} onCheckedChange={(v) => setNova((n) => ({ ...n, agenda: v }))} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNovaOpen(false)}>Cancelar</Button>
-            <Button className="bg-brand text-brand-foreground hover:bg-brand/90" onClick={criar}>Iniciar avaliação</Button>
+            <Button className="bg-brand text-brand-foreground hover:bg-brand/90" onClick={criar}>Programar avaliação</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -574,7 +659,7 @@ function FormularioAvaliacao({
         <DialogTitle className="flex items-center gap-2">
           <Star className="h-4 w-4 text-brand" /> Avaliação de desempenho — {a.empregado}
         </DialogTitle>
-        <DialogDescription>Metodologia CHA · escala de 1 a 10 · meta mínima {meta}.</DialogDescription>
+        <DialogDescription>Método CHA · escala de 1 a 10 · meta mínima {meta}.</DialogDescription>
       </DialogHeader>
 
       <div className="grid gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 md:grid-cols-3">
@@ -666,18 +751,18 @@ function FormularioAvaliacao({
         </CardContent>
       </Card>
 
-      {/* matriz de decisão */}
+      {/* Matriz de Apoio à Decisão */}
       <Card className="rounded-xl">
         <CardContent className="space-y-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Grid3x3 className="h-4 w-4 text-brand" />
-              <h3 className="text-sm font-semibold">Matriz de decisão — desempenho × potencial</h3>
+              <h3 className="text-sm font-semibold">Matriz de Apoio à Decisão — Perfil Atual: Desempenho x Cultura</h3>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Potencial avaliado:</span>
+              <span className="text-xs text-muted-foreground">Dimensão predominante:</span>
               <Select value={a.potencial} onValueChange={(v) => onPatch({ potencial: v as Potencial })}>
-                <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {POTENCIAIS.map((p) => <SelectItem key={p} value={p} className="text-xs">{p}</SelectItem>)}
                 </SelectContent>
@@ -685,8 +770,18 @@ function FormularioAvaliacao({
             </div>
           </div>
           <div className="flex">
-            <div className="flex w-6 items-center justify-center">
-              <span className="-rotate-90 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Potencial →</span>
+            <div className="mr-2 flex w-[86px] shrink-0 flex-col gap-2">
+              {POTENCIAIS.map((d) => (
+                <div
+                  key={d}
+                  className={cn(
+                    "flex min-h-[92px] items-center justify-end rounded-lg pr-2 text-right text-[10px] font-semibold uppercase leading-tight tracking-wide",
+                    d === a.potencial ? "text-brand" : "text-muted-foreground",
+                  )}
+                >
+                  {d}
+                </div>
+              ))}
             </div>
             <div className="flex-1">
               <div className="grid grid-cols-3 gap-2">
@@ -727,24 +822,29 @@ function FormularioAvaliacao({
             <MessageSquare className="h-4 w-4 text-brand" />
             <h3 className="text-sm font-semibold">Devolutiva</h3>
           </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">Plano de ação de desenvolvimento</Label>
-              <Button
-                size="sm" variant="outline" className="h-7 gap-1.5 rounded-lg text-[11px]"
-                onClick={() => toast.success("Plano de ação gerado", {
-                  description: `Plano de desenvolvimento vinculado à avaliação ${a.id} de ${a.empregado}.`,
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-brand/25 bg-brand-soft/30 p-3">
+            <div className="text-[11px] text-muted-foreground">
+              O plano de ação é elaborado em comum acordo entre avaliador e avaliado, após a devolutiva, e fica editável
+              pelos dois perfis.
+            </div>
+            <Button
+              asChild
+              size="sm" variant="outline" className="h-7 gap-1.5 rounded-lg text-[11px]"
+            >
+              <Link
+                to="/planos-de-acao/novo"
+                search={{
+                  origem: "Avaliação de Desempenho",
+                  vinculado: a.id,
+                  problema: `Desenvolvimento de ${a.empregado} — avaliação ${a.id} (média ${geral.toFixed(1)}).`,
+                }}
+                onClick={() => toast.success("Plano de ação iniciado", {
+                  description: `Vinculado à avaliação ${a.id} de ${a.empregado}.`,
                 })}
               >
                 <Plus className="h-3.5 w-3.5" /> Gerar Plano de Ação
-              </Button>
-            </div>
-            <Textarea
-              value={a.planoDesenvolvimento}
-              onChange={(e) => onPatch({ planoDesenvolvimento: e.target.value })}
-              placeholder="Ações de desenvolvimento acordadas com o avaliado…"
-              className="min-h-[70px] text-xs"
-            />
+              </Link>
+            </Button>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Registro da devolutiva</Label>
@@ -762,8 +862,8 @@ function FormularioAvaliacao({
             </div>
             <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3">
               <div>
-                <div className="text-xs font-medium">Compartilhar devolutiva com o avaliado</div>
-                <div className="text-[10px] text-muted-foreground">As notas e o formulário permanecem restritos ao avaliador.</div>
+                <div className="text-xs font-medium">Compartilhar com o avaliado</div>
+                <div className="text-[10px] text-muted-foreground">Compartilha os itens e notas do CHA, a nota geral e o registro da devolutiva.</div>
               </div>
               <Switch checked={a.devolutivaCompartilhada} onCheckedChange={(v) => onPatch({ devolutivaCompartilhada: v })} />
             </div>
