@@ -65,6 +65,9 @@ type Comunicacao = {
   quando: string;
   publico: string[];
   leituras: Leitura[];
+  imediata?: boolean;
+  nomeExterno?: string;
+  emails?: string[];
 };
 
 const PROCESSOS_INICIAIS: ProcessoCom[] = [
@@ -78,9 +81,15 @@ const PROCESSOS_INICIAIS: ProcessoCom[] = [
   { id: "PC-008", tipo: "Interna", descricao: "Avisos urgentes de parada de linha e mudança de escala.", forma: "Aplicativo de mensagem", responsavel: "Recursos Humanos", quando: "", sobDemanda: true, publico: ["Todos"] },
 ];
 
+function proximoCodigo(lista: Comunicacao[], tipo: string) {
+  const prefixo = tipo === "Externa" ? "COM_EXT" : "COM_INT";
+  const n = lista.filter((c) => c.id.startsWith(prefixo)).length + 1;
+  return `${prefixo}_${String(n).padStart(3, "0")}`;
+}
+
 const COMUNICACOES_INICIAIS: Comunicacao[] = [
   {
-    id: "CM-2026-014", tipo: "Interna",
+    id: "COM_INT_001", tipo: "Interna",
     descricao: "Revisão 04 da Política da Qualidade publicada. Leitura obrigatória antes do dia 20/08.",
     responsavel: "Gestor da Qualidade", quando: "2026-08-14T09:00",
     publico: ["Todos"],
@@ -92,7 +101,7 @@ const COMUNICACOES_INICIAIS: Comunicacao[] = [
     ],
   },
   {
-    id: "CM-2026-015", tipo: "Interna",
+    id: "COM_INT_002", tipo: "Interna",
     descricao: "Resultado da auditoria interna do 2º semestre: 3 NCs registradas no módulo de Não Conformidades.",
     responsavel: "Gestor da Qualidade", quando: "2026-08-17T14:30",
     publico: ["Alta Direção", "Gestor de Área", "Colaborador"],
@@ -102,9 +111,10 @@ const COMUNICACOES_INICIAIS: Comunicacao[] = [
     ],
   },
   {
-    id: "CM-2026-016", tipo: "Externa",
+    id: "COM_EXT_001", tipo: "Externa",
     descricao: "Comunicado a fornecedores sobre nova especificação de embalagem MP-2231.",
     responsavel: "Comercial", quando: "2026-08-12T10:00",
+    nomeExterno: "TecPack Embalagens", emails: ["rita@tecpack.com.br"],
     publico: ["Comercial"],
     leituras: [{ perfil: "Comercial", ciente: true, cienteEm: "12/08 10:22" }],
   },
