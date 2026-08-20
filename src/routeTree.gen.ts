@@ -13,6 +13,7 @@ import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as TreinamentosRouteImport } from './routes/treinamentos'
 import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as RiscosRouteImport } from './routes/riscos'
+import { Route as ProdutoServicoRouteImport } from './routes/produto-servico'
 import { Route as ProducaoRouteImport } from './routes/producao'
 import { Route as ProcessosRouteImport } from './routes/processos'
 import { Route as PlanosDeAcaoRouteImport } from './routes/planos-de-acao'
@@ -62,6 +63,11 @@ const SuporteRoute = SuporteRouteImport.update({
 const RiscosRoute = RiscosRouteImport.update({
   id: '/riscos',
   path: '/riscos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProdutoServicoRoute = ProdutoServicoRouteImport.update({
+  id: '/produto-servico',
+  path: '/produto-servico',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProducaoRoute = ProducaoRouteImport.update({
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/planos-de-acao': typeof PlanosDeAcaoRouteWithChildren
   '/processos': typeof ProcessosRoute
   '/producao': typeof ProducaoRoute
+  '/produto-servico': typeof ProdutoServicoRoute
   '/riscos': typeof RiscosRoute
   '/suporte': typeof SuporteRoute
   '/treinamentos': typeof TreinamentosRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/partes-interessadas': typeof PartesInteressadasRoute
   '/processos': typeof ProcessosRoute
   '/producao': typeof ProducaoRoute
+  '/produto-servico': typeof ProdutoServicoRoute
   '/riscos': typeof RiscosRoute
   '/suporte': typeof SuporteRoute
   '/treinamentos': typeof TreinamentosRoute
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/planos-de-acao': typeof PlanosDeAcaoRouteWithChildren
   '/processos': typeof ProcessosRoute
   '/producao': typeof ProducaoRoute
+  '/produto-servico': typeof ProdutoServicoRoute
   '/riscos': typeof RiscosRoute
   '/suporte': typeof SuporteRoute
   '/treinamentos': typeof TreinamentosRoute
@@ -342,6 +351,7 @@ export interface FileRouteTypes {
     | '/planos-de-acao'
     | '/processos'
     | '/producao'
+    | '/produto-servico'
     | '/riscos'
     | '/suporte'
     | '/treinamentos'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
     | '/partes-interessadas'
     | '/processos'
     | '/producao'
+    | '/produto-servico'
     | '/riscos'
     | '/suporte'
     | '/treinamentos'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/planos-de-acao'
     | '/processos'
     | '/producao'
+    | '/produto-servico'
     | '/riscos'
     | '/suporte'
     | '/treinamentos'
@@ -447,6 +459,7 @@ export interface RootRouteChildren {
   PlanosDeAcaoRoute: typeof PlanosDeAcaoRouteWithChildren
   ProcessosRoute: typeof ProcessosRoute
   ProducaoRoute: typeof ProducaoRoute
+  ProdutoServicoRoute: typeof ProdutoServicoRoute
   RiscosRoute: typeof RiscosRoute
   SuporteRoute: typeof SuporteRoute
   TreinamentosRoute: typeof TreinamentosRoute
@@ -481,6 +494,13 @@ declare module '@tanstack/react-router' {
       path: '/riscos'
       fullPath: '/riscos'
       preLoaderRoute: typeof RiscosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/produto-servico': {
+      id: '/produto-servico'
+      path: '/produto-servico'
+      fullPath: '/produto-servico'
+      preLoaderRoute: typeof ProdutoServicoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/producao': {
@@ -777,6 +797,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlanosDeAcaoRoute: PlanosDeAcaoRouteWithChildren,
   ProcessosRoute: ProcessosRoute,
   ProducaoRoute: ProducaoRoute,
+  ProdutoServicoRoute: ProdutoServicoRoute,
   RiscosRoute: RiscosRoute,
   SuporteRoute: SuporteRoute,
   TreinamentosRoute: TreinamentosRoute,
